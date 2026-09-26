@@ -1,0 +1,3 @@
+# Quick checks on every commit (a few seconds). Rust tests run before a push instead, see pre-push.
+pnpm typecheck
+pnpm test

@@ -1,0 +1,1941 @@
+/* TODO: !important! Migrate everything to tailwind */
+
+/* Palette mirrors src/theme.ts */
+:root {
+  --text: #000000;
+  --background: #ffffff;
+  --background-element: #f0f0f3;
+  --background-selected: #e0e1e6;
+  --text-secondary: #60646c;
+  --accent: #1e88e5;
+  --success: #43a047;
+  --warning: #fb8c00;
+  --danger: #e53935;
+
+  --font-display: 'Spline Sans', Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --tab-bar-height: 56px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #ffffff;
+    --background: #000000;
+    --background-element: #212225;
+    --background-selected: #2e3135;
+    --text-secondary: #b0b4ba;
+    --accent: #64b5f6;
+    --success: #66bb6a;
+    --warning: #ffa726;
+    --danger: #ef5350;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* An app, not a page: no pinch or double-tap zoom (it also blew up the charts). Scrolling still works, and
+   touch-action narrows down the tree, so nothing inside can turn zoom back on. The viewport meta says the
+   same for webviews that go by that. */
+html {
+  touch-action: pan-x pan-y;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- Typography (ThemedText types) ---------- */
+
+.t-default {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+.t-small {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.t-subtitle {
+  font-size: 24px;
+  line-height: 44px;
+  font-weight: 600;
+}
+/* Section and screen headings: a step below .t-subtitle, which stays for big numbers (stat cards etc.). */
+.t-heading {
+  font-size: 20px;
+  line-height: 32px;
+  font-weight: 600;
+}
+.t-title {
+  font-size: 38px;
+  line-height: 52px;
+  font-weight: 600;
+}
+.t-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+.secondary {
+  color: var(--text-secondary);
+}
+.good {
+  color: var(--success);
+}
+.bad {
+  color: var(--danger);
+}
+
+/* ---------- App shell ---------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: var(--safe-top);
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Nothing (e.g. an open dropdown) ever scrolls a screen sideways. */
+  overflow-x: hidden;
+  /* Lets what's inside size itself to the visible screen (cqh), e.g. the Play stage on phones. */
+  container-type: size;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-bar {
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid var(--background-selected);
+  background: var(--background);
+  padding-bottom: var(--safe-bottom);
+  /* The tabs sit in the pages' column (see .content: 640px less its 16px sides), not spread across a wide
+     window; the border still runs the full width. */
+  padding-inline: max(0px, calc((100% - 608px) / 2));
+}
+
+.tab {
+  flex: 1;
+  height: var(--tab-bar-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.tab.on {
+  color: var(--accent);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
+.content.play {
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 40px;
+}
+.content.settings {
+  gap: 24px;
+}
+.content.stats {
+  gap: 20px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 10px;
+}
+.content.play .section {
+  margin-top: 8px;
+}
+/* Two classes, so the general .response-buttons rule further down doesn't show it; phones do (see below). */
+.response-buttons.stage-filler {
+  display: none;
+}
+.play-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  gap: 16px;
+}
+/* Height the chips, answer buttons, controls and page padding take, with a little room left below. Counted
+   with all four buttons, so the grid keeps its size as streams are turned on and off. More for One per row,
+   whose buttons stack higher. Phones set their own below. */
+.play-stage {
+  --stage-taken: 340px;
+  --history-room: 0px;
+}
+.play-stage.rows {
+  --stage-taken: 412px;
+}
+/* Practice mode: the trial history strip above the grid. It's always as tall as a pill with all four
+   streams (see .pill), so the grid keeps its size as streams are turned on and off. */
+.play-stage {
+  --pill: 41px;
+}
+.play-stage.practice {
+  --history-room: calc(var(--pill) + 16px);
+}
+/* The grid's size, set on the stage so the chips, practice history and answer buttons can match its width:
+   the content width, or the height left after everything else (--stage-fit; phones work it out their own
+   way below). */
+.play-stage {
+  --stage-fit: calc(100cqh - var(--stage-taken) - var(--history-room));
+  --stage-grid: min(608px, calc(100cqw - 32px), max(130px, var(--stage-fit)));
+}
+/* Rounded so each of the three boxes (after the two 8px gaps) is a whole number of pixels, and all come
+   out the same size. */
+@supports (width: round(down, 10px, 3px)) {
+  .play-stage {
+    --stage-grid: calc(round(down, min(608px, calc(100cqw - 32px), max(130px, var(--stage-fit))) - 16px, 3px) + 16px);
+  }
+}
+
+/* The chips, practice history and answer buttons line up with the grid's edges (on phones they take the
+   full width instead; see below). The chips never get narrower than they need to stay on one line (in a
+   short window, where the grid is small). */
+.play-stage .hud-row,
+.play-stage .history-area,
+.play-stage .response-buttons {
+  align-self: center;
+  width: var(--stage-grid);
+}
+.play-stage .hud-row {
+  min-width: max-content;
+}
+/* Less padding in the chips when the grid is narrower (practice mode), so they still fit its width. */
+.play-stage .hud-row .hud-chip {
+  padding-inline: clamp(6px, calc(var(--stage-grid) * 0.035), 16px);
+}
+
+/* Phones (and narrow, tall windows, so it can be previewed on a desktop): the game fills the screen, with
+   the round details scrolling in below. Bigger HUD chips at the top, then the grid, as big as fits, the
+   answer buttons and the controls; like on desktop, any spare height ends up at the bottom. */
+@media (max-width: 599.98px) and (orientation: portrait) {
+  .content.play {
+    padding-bottom: 12px;
+  }
+  .play-stage {
+    /* Exactly the scroll area's height, less the page's 16px top and 12px bottom padding. */
+    min-height: calc(100cqh - 16px - 12px);
+  }
+  /* The chips keep their full, easy-to-tap size, following the screen width (not the grid, as on
+     desktop). Their height is counted into --stage-taken: two rows of a chip (an icon between two
+     paddings) with 8px between them. */
+  .play-stage {
+    --hud-w: calc(100cqw - 32px);
+    --chip-icon: clamp(11px, calc(var(--hud-w) * 0.066), 26px);
+    --chip-pad: clamp(7px, calc(var(--hud-w) * 0.037), 14px);
+    --hud-h: calc(2 * (var(--chip-icon) + 2 * var(--chip-pad)) + 8px);
+  }
+  /* Height the page padding, gaps, trial timer, chips, answer buttons (all four, see the filler below)
+     and controls take; more for One per row, whose buttons stack higher. */
+  .play-stage {
+    --stage-taken: calc(var(--hud-h) + 301px);
+  }
+  .play-stage.rows {
+    --stage-taken: calc(var(--hud-h) + 365px);
+  }
+  /* Practice mode: room for the trial history strip, 8px above the grid. The controls get smaller (40px
+     instead of 54px) to give some of it back; the chips and answer buttons keep their size, and the grid
+     only shrinks by what's still missing where the screen has no spare height. */
+  .play-stage.practice {
+    --history-room: calc(var(--pill) + 8px - 14px);
+  }
+  .play-stage .history-area {
+    margin-bottom: -8px;
+  }
+  .play-stage.practice .control-button {
+    padding: 8px;
+    border-radius: 12px;
+  }
+  /* Only the grid follows --stage-grid here. The chips, the practice history and the answer buttons all
+     take the whole content width (the screen less the page's 16px sides), in easy thumb reach. */
+  .play-stage .hud-row,
+  .play-stage .history-area,
+  .play-stage .response-buttons {
+    width: 100%;
+  }
+  /* Fixed button heights, so the hidden filler below the controls (see ButtonRoomFiller) makes up exactly
+     the height of the buttons that aren't there: the grid then sits in the same place whatever streams are
+     on, and the spare height ends up at the bottom. A lone button in the last row of Two per row spans both
+     columns. */
+  .play-stage .response-buttons.rows .response-button {
+    height: 48px;
+  }
+  .play-stage .response-buttons.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .play-stage .response-buttons.grid .response-button {
+    height: 70px;
+    padding-block: 10px;
+  }
+  .play-stage .response-buttons.grid .response-button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .play-stage .stage-filler {
+    display: flex;
+    visibility: hidden;
+    /* The stage's 16px gap comes before it, where the buttons have 10px between rows. */
+    margin-top: -6px;
+  }
+  .play-stage .stage-filler.grid {
+    display: grid;
+  }
+  /* The chips in two rows of two (target and N; speed and streams), each half the width, so the icons
+     and text can be big. Scoped to .play-stage so these win over the general .hud-row rules further down. */
+  /* Sized from the grid's width (not the screen's), so the chips always fit the grid's width: full size
+     with a full-width grid, smaller when the grid is (short phones, practice mode). */
+  .play-stage .hud-row {
+    --hud-icon: var(--chip-icon);
+    --hud-bolt: clamp(8px, calc(var(--hud-w) * 0.05), 20px);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .play-stage .hud-row .hud-chip {
+    padding-block: var(--chip-pad);
+    padding-inline: clamp(4px, calc(var(--hud-w) * 0.037), 12px);
+    font-size: clamp(10px, calc(var(--hud-w) * 0.05), 18px);
+  }
+}
+.content.stats .section {
+  gap: 8px;
+}
+
+/* A section title with its ⓘ note, and an optional action on the right. When they don't all fit (a long
+   title with a chart's crosshair switch and Reset zoom), the action moves under them, starting at the left
+   (space-between puts a line's only item at the start), rather than the title or the buttons breaking. */
+.section-header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.section-header .section-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* The note opens under the whole section header (not the icon), so it always fits the content width. */
+.info-tip {
+  display: inline-flex;
+}
+/* Sized so the circle is as tall as the heading's capitals, and centred on them. */
+.section-header .info-tip-button {
+  transform: translateY(0.33px);
+}
+.info-tip-button {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.info-tip-button.on {
+  color: var(--text);
+  background: var(--background-element);
+}
+@media (hover: hover) {
+  .info-tip-button:hover {
+    color: var(--text);
+    background: var(--background-element);
+  }
+}
+.info-tip-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 2px);
+  left: 0;
+  width: min(360px, 100%);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--background-selected);
+  background: var(--background);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  text-align: left;
+}
+.info-tip-panel p {
+  margin: 0;
+}
+.info-tip-panel strong {
+  font-weight: 600;
+}
+
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.card {
+  background: var(--background-element);
+  border-radius: 14px;
+}
+
+.stack-8 {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 8px;
+}
+.stack-10 {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 10px;
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+/* Same rules the <ion-icon> web component applies to its SVGs. */
+.icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: currentColor;
+}
+.icon .ionicon-fill-none {
+  fill: none;
+}
+.icon .ionicon-stroke-width {
+  stroke-width: 32px;
+}
+
+/* ---------- Play ---------- */
+
+/* One line at every width: text, padding and icons scale with the window (full size from ~420px up),
+   so all four chips fit even on a 320px phone with every stream on. */
+.hud-row {
+  --hud-icon: clamp(12px, 4vw, 18px);
+  --hud-bolt: clamp(10px, 3.4vw, 16px);
+  display: flex;
+  flex-wrap: nowrap;
+  gap: clamp(3px, 1.2vw, 8px);
+  justify-content: center;
+  /* As wide as the answer buttons below, the chips sharing the extra room. */
+  align-self: stretch;
+}
+.hud-row .hud-chip {
+  flex-grow: 1;
+  justify-content: center;
+}
+.hud-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: clamp(3px, 1vw, 6px);
+  background: var(--background-element);
+  border-radius: 999px;
+  padding: clamp(7px, 2.2vw, 9px) clamp(6px, 2.4vw, 16px);
+  font-size: clamp(10.5px, 3.3vw, 14px);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.hud-row .hud-chip .icon {
+  width: var(--hud-icon) !important;
+  height: var(--hud-icon) !important;
+}
+.hud-row .hud-chip .speed-bolt .icon {
+  width: var(--hud-bolt) !important;
+  height: var(--hud-bolt) !important;
+}
+
+.speed-bolts {
+  display: inline-flex;
+  gap: 2px;
+}
+
+/* HUD chips that open a panel (daily target, N-back), centred under the HUD row. */
+.hud-row {
+  position: relative;
+}
+.hud-dropdown {
+  display: contents;
+}
+.hud-chip.interactive:not(:disabled) {
+  cursor: pointer;
+}
+.hud-chip.interactive[aria-expanded='true'] {
+  background: var(--background-selected);
+}
+@media (hover: hover) {
+  .hud-chip.interactive:not(:disabled):hover {
+    background: var(--background-selected);
+  }
+}
+.hud-popover {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--background-selected);
+  background: var(--background);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  /* max-height is set from the room left on screen, and the width stops at the screen less the page's 16px
+     sides; contents bigger than that scroll inside the panel, never the page. */
+  max-width: calc(100cqw - 32px);
+  overflow: auto;
+}
+.hud-popover.above {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+.target-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(260px, calc(100vw - 64px));
+}
+.target-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--background-element);
+  overflow: hidden;
+}
+.target-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--accent);
+}
+.target-fill.reached {
+  background: var(--success);
+}
+.target-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 2px;
+}
+.target-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+}
+.target-stat:nth-child(2) {
+  align-items: center;
+  text-align: center;
+}
+.target-stat:last-child {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Icons inside a HUD chip that can be tapped to change a setting in place (speed bolts, streams). */
+.hud-toggle {
+  display: inline-flex;
+  margin: -4px -2px;
+  padding: 4px 2px;
+  border-radius: 6px;
+  opacity: 0.25;
+}
+.hud-toggle.on {
+  color: var(--accent);
+  opacity: 1;
+}
+.hud-toggle:disabled {
+  cursor: default;
+}
+@media (hover: hover) {
+  .hud-toggle:not(:disabled):hover {
+    opacity: 0.6;
+  }
+  .hud-toggle.on:not(:disabled):hover {
+    opacity: 0.8;
+  }
+}
+
+.history-area {
+  align-self: stretch;
+  /* There before the round's first trial too, so the grid doesn't move when the pills appear. */
+  height: var(--pill);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+/* Oldest on the left, the current trial on the right edge. When they don't all fit (high N), the newest are cut off rather than the
+   N-back one: the auto margin only pushes them right while there's room. */
+.trial-history {
+  display: flex;
+  width: 100%;
+  gap: 4px;
+}
+.trial-history > :first-child {
+  margin-left: auto;
+}
+/* A pill's lines in two columns (arrow and colour, then number and letter), so even with all four streams
+   it's only two lines tall: 4px padding and a 2px border around 13px and 14px lines, 1px apart. */
+.pill {
+  display: grid;
+  grid-template-columns: auto;
+  justify-items: center;
+  align-items: center;
+  gap: 1px 3px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: var(--background-element);
+  padding: 4px 6px;
+}
+.pill.two-columns {
+  grid-template-columns: auto auto;
+}
+.pill.highlighted {
+  border-color: var(--accent);
+}
+.pill .arrow {
+  font-size: 11px;
+  line-height: 13px;
+}
+.pill .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* The grid is square, so the cells are square. Its size is set on the play stage. */
+.grid-area {
+  --grid: var(--stage-grid);
+  --gap: 8px;
+  --cell: calc((var(--grid) - 2 * var(--gap)) / 3);
+  position: relative;
+  flex: none;
+  align-self: center;
+}
+
+.stimulus-grid {
+  width: var(--grid);
+  height: var(--grid);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: var(--gap);
+}
+.stimulus-grid.solo {
+  --cell: var(--grid);
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+.stimulus-grid .cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid var(--background-selected);
+  background: var(--background-element);
+}
+.stimulus-grid .cell.center {
+  border-color: transparent;
+  background: transparent;
+}
+.stimulus-grid .box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 13px;
+}
+.stimulus-grid .digit {
+  font-size: calc(var(--cell) * 0.6);
+  line-height: 1;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px #d3d3d3;
+}
+
+.trial-timer {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--background-element);
+  overflow: hidden;
+}
+.trial-timer.idle {
+  visibility: hidden;
+}
+.trial-timer-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: left;
+  animation-name: trial-timer;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+/* Scaling rather than width, so each frame only repaints the bar instead of re-laying out the page. */
+@keyframes trial-timer {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.blur-overlay {
+  /* Over the grid only, not the trial timer under it. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--grid);
+  height: var(--grid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.response-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-self: stretch;
+}
+.response-button {
+  position: relative;
+  flex: 1 1 48%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--background-selected);
+  background: var(--background-element);
+  color: var(--text);
+}
+.response-button:focus-visible {
+  outline: none;
+}
+.response-button:disabled {
+  opacity: 0.4;
+}
+/* Lit while held down (see ResponseButtons), back to normal on release. */
+.response-button.held {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.response-buttons.rows .response-button {
+  flex-basis: 100%;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px;
+}
+.response-button.compact .t-small {
+  font-size: 12px;
+  line-height: 16px;
+}
+.key-hint {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 14px;
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  opacity: 0.55;
+}
+/* Only devices with a real keyboard + mouse get the key hints. */
+@media (hover: hover) and (pointer: fine) {
+  .key-hint {
+    display: block;
+  }
+}
+
+.main-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid;
+  color: #ffffff;
+}
+.control-button:active {
+  opacity: 0.8;
+}
+.control-button.practice {
+  background: var(--background-element);
+  border-color: var(--background-selected);
+  color: var(--text);
+}
+.control-button.practice.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.control-button.practice:disabled {
+  opacity: 0.4;
+}
+.control-button.start {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+.control-button.stop {
+  background: #f97316;
+  border-color: #f97316;
+}
+
+/* ---------- Round results ---------- */
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 8px;
+  padding: 14px;
+}
+.overall-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.detail-table {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 8px;
+}
+.h-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.h-scroll::-webkit-scrollbar {
+  display: none;
+}
+.detail-table table {
+  /* Fills the width; the column widths below are minimums (narrow screens scroll sideways). */
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+.detail-table th {
+  font-weight: 700;
+  padding: 5px 0;
+  border-bottom: 1px solid #88888855;
+}
+/* One height for every row, with or without a reaction time under the symbol, all centred. */
+.detail-table td {
+  height: 36px;
+  padding: 2px 0;
+  vertical-align: middle;
+}
+.detail-table tbody tr:nth-child(even) td {
+  background: var(--background-element);
+}
+.detail-table tbody tr:nth-child(even) td:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.detail-table tbody tr:nth-child(even) td:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.detail-table .c-idx {
+  width: 38px;
+  padding-left: 4px;
+}
+.detail-table .c-pos,
+.detail-table .c-num {
+  width: 46px;
+}
+.detail-table .c-color {
+  width: 48px;
+}
+.detail-table .c-letter {
+  width: 42px;
+}
+.detail-table .c-outcome {
+  width: 44px;
+}
+.detail-table .rt {
+  font-size: 9px;
+  line-height: 11px;
+  height: 11px;
+  opacity: 0.75;
+}
+.table-swatch {
+  display: inline-block;
+  vertical-align: middle;
+  width: 22px;
+  height: 14px;
+  border-radius: 4px;
+}
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  gap: 8px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-list.inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 4px;
+}
+.legend-list.inline .legend-note {
+  flex-basis: 100%;
+}
+
+.history-list {
+  align-self: stretch;
+  overflow-y: auto;
+  /* A classic scrollbar with its own lane beside the rows (styling it turns off the overlay kind, which
+     would be drawn over the results), and a little room between the two. */
+  scrollbar-gutter: stable;
+  padding-right: 8px;
+}
+.history-list::-webkit-scrollbar {
+  width: 8px;
+}
+.history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.history-list::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: var(--background-selected);
+}
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 0;
+  text-align: left;
+}
+.history-detail {
+  padding-bottom: 12px;
+}
+
+/* ---------- Stats ---------- */
+
+/* Loader: a lit box travels clockwise round a small 3×3 grid, changing colour at each cell. */
+.grid-loader {
+  display: flex;
+  justify-content: center;
+  padding: 72px 0;
+  /* Only appears if loading takes a moment, so a fast load doesn't flash it. */
+  animation: grid-loader-in 0.2s ease-out 0.15s both;
+}
+.grid-loader-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 22px);
+  grid-template-rows: repeat(3, 22px);
+  gap: 5px;
+}
+.grid-loader-cell {
+  border-radius: 6px;
+  background: var(--background-element);
+  position: relative;
+}
+.grid-loader-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--loader-color);
+  opacity: 0;
+  animation: grid-loader-step var(--loader-lap) ease-out var(--loader-delay) infinite;
+}
+.grid-loader-cell.center {
+  background: transparent;
+}
+/* Lit for one step of the lap (1/8), then fading out behind the moving box. */
+@keyframes grid-loader-step {
+  0% {
+    opacity: 1;
+  }
+  12.5% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes grid-loader-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* The startup screen: a big loader over the whole app, fading out once it's ready. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: var(--background);
+  transition: opacity 0.25s ease-out;
+}
+.splash.fading {
+  opacity: 0;
+  pointer-events: none;
+}
+.splash-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+.grid-loader.large {
+  padding: 0;
+  /* Shown straight away: it is the startup screen, not a fallback for slow loads. */
+  animation: none;
+}
+.grid-loader.large .grid-loader-grid {
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: repeat(3, 48px);
+  gap: 10px;
+}
+.grid-loader.large .grid-loader-cell {
+  border-radius: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid-loader-cell::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 700px) {
+  .summary-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 2px;
+  text-align: center;
+}
+
+
+.mode-table {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+/* Every number column in the modes and stream tables is this wide, so the two tables line up alike. */
+.mode-table,
+.stream-table {
+  --stat-col: 64px;
+}
+@media (max-width: 479.98px) {
+  .mode-table,
+  .stream-table {
+    --stat-col: 56px;
+  }
+}
+/* Column headings a size down, so "Accuracy" fits a narrow column. */
+.mode-row.header,
+.stream-table-row.header {
+  font-size: 11px;
+}
+.mode-row {
+  display: grid;
+  /* N | Streams | Speed | Rounds | Recent | ★ | Best. Each row is its own grid, so the mode's columns have
+     fixed widths (↺10; four 62px stream slots plus 8px, so the gap before the bolts matches the one after
+     ↺N) to line up from row to row; Speed takes the spare room. */
+  grid-template-columns: 38px 70px minmax(55px, 1fr) var(--stat-col) var(--stat-col) 14px var(--stat-col);
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  text-align: center;
+}
+/* The mode's parts (↺N, streams, bolts) become the row's first three cells, at the start of each. */
+.mode-row .mode-badge.aligned {
+  display: contents;
+}
+.mode-row .mode-badge-part,
+.mode-row.header > :nth-child(-n + 3) {
+  justify-self: start;
+}
+/* Their headings are as wide as what's under them (↺1, four stream slots, five bolts) and centred, so each
+   sits over the middle of its symbols rather than of the wider column. */
+.mode-row.header > :nth-child(1) {
+  width: 30px;
+}
+.mode-row.header > :nth-child(2) {
+  width: 62px;
+}
+.mode-row.header > :nth-child(3) {
+  width: 55px;
+}
+.mode-row.header {
+  opacity: 0.6;
+  padding-block: 4px;
+}
+.mode-row.on {
+  background: var(--background-selected);
+}
+/* Phones: drop the Best column so a four-stream mode still fits. */
+@media (max-width: 479.98px) {
+  .mode-row {
+    grid-template-columns: 38px 70px minmax(55px, 1fr) var(--stat-col) var(--stat-col) 14px;
+    gap: 4px;
+  }
+  .mode-row .best {
+    display: none;
+  }
+}
+/* Small phones: 4px from N to Streams keeps both gaps equal and the bolts on screen. */
+@media (max-width: 399.98px) {
+  .mode-row {
+    grid-template-columns: 34px 66px minmax(55px, 1fr) var(--stat-col) var(--stat-col) 14px;
+  }
+}
+
+/* A mode in Play-screen symbols: ↺N, stream icons, speed bolts. */
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.mode-badge-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+/* The star is set in the same font as the percentages, sized from the capital height and placed on the
+   text baseline, so it centres on the digits whatever font the engine picks. */
+.mode-row .mastered {
+  color: var(--warning);
+  text-align: center;
+}
+.mode-row .mastered .icon {
+  display: inline-block;
+  height: calc(1cap + 2px);
+  width: calc((1cap + 2px) * 480 / 448);
+  vertical-align: -0.5px;
+}
+@supports not (height: 1cap) {
+  .mode-row .mastered .icon {
+    height: calc(0.7em + 2px);
+    width: calc((0.7em + 2px) * 480 / 448);
+  }
+}
+.info-tip-panel .icon {
+  vertical-align: -2px;
+}
+.stream-slot {
+  display: inline-flex;
+}
+.stream-slot.off {
+  justify-content: center;
+  width: 14px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+/* Lists: N always takes two digits' room, so single- and double-digit levels line up. */
+.mode-badge.aligned .mode-badge-part.n {
+  min-width: calc(14px + 2ch + 2px);
+}
+.mode-badge .bolts {
+  gap: 0;
+}
+.mode-badge .bolts > span {
+  display: inline-flex;
+  opacity: 0.25;
+}
+.mode-badge .bolts > .on {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.mode-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* The picker's panel opens under the chip, aligned left (the HUD's is centred under the row). */
+.mode-picker {
+  position: relative;
+}
+.mode-picker .hud-popover {
+  left: 0;
+  transform: none;
+  align-items: stretch;
+  padding: 6px;
+}
+/* As wide as the widest row, even when the panel is narrower and scrolls sideways, so every row's
+   highlight spans it. */
+.mode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  min-width: 100%;
+}
+.mode-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  white-space: nowrap;
+  padding: 10px;
+  border-radius: 10px;
+}
+.mode-option.on,
+.mode-picker .hud-chip {
+  background: var(--background-element);
+}
+@media (hover: hover) {
+  .mode-option:not(.on):hover {
+    background: var(--background-element);
+  }
+  /* The table sits on a card already in --background-element: hover shows half of the selected shade,
+     and the selected row keeps its own. */
+  .mode-row:not(.header):not(.on):hover {
+    background: var(--background-selected);
+    background: color-mix(in srgb, var(--background-selected) 50%, var(--background-element));
+  }
+}
+
+.stream-table {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+.stream-table-row {
+  display: grid;
+  /* Stream | Accuracy | Matched | Missed | False */
+  grid-template-columns: 1fr repeat(4, var(--stat-col));
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  text-align: center;
+}
+/* A shortened count (1.2K): hovering or tapping it opens the exact number under it, growing to the left
+   (these counts sit in the right-hand columns). */
+.count-tip {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+}
+.count-tip-value {
+  cursor: pointer;
+}
+.count-tip-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: -8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--background-selected);
+  background: var(--background);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  white-space: nowrap;
+}
+.outcome-heading {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+.stream-table-row > :first-child {
+  justify-self: start;
+}
+.stream-table-row.header {
+  opacity: 0.6;
+  padding-block: 4px;
+}
+@media (max-width: 479.98px) {
+  .stream-table-row {
+    column-gap: 10px;
+  }
+}
+/* Phones: the stream names need the room back. */
+@media (max-width: 399.98px) {
+  .stream-table-row {
+    column-gap: 4px;
+  }
+}
+
+.text-button {
+  padding: 4px 0;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.spacer {
+  flex: 1;
+}
+.filter-chip {
+  font-size: 11px;
+  border-radius: 8px;
+  padding: 5px 10px;
+  background: var(--background-element);
+  color: var(--text);
+}
+.filter-chip.on {
+  background: var(--text);
+  color: var(--background);
+}
+
+/* uPlot charts: its legend (values at the cursor; tap a series to hide it) in the app's type. */
+.uplot-box,
+.uplot-frame {
+  align-self: stretch;
+  min-width: 0;
+}
+/* The crosshair switch in a chart's header (see CrosshairToggle): touch screens only. Just the icon, with
+   its ring filled (grey off, accent on); the button around it is a bit bigger than the icon, for the finger. */
+.crosshair-toggle {
+  display: none;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.crosshair-toggle .icon .ionicon-stroke-width {
+  fill: var(--background-selected);
+}
+.crosshair-toggle.on {
+  color: var(--accent);
+}
+.crosshair-toggle.on .icon .ionicon-stroke-width {
+  fill: var(--accent);
+}
+@media (hover: none) {
+  .crosshair-toggle {
+    display: inline-flex;
+  }
+}
+.uplot-box .uplot {
+  font-family: var(--font-display);
+}
+.uplot-box .u-legend {
+  font-size: 12px;
+  line-height: 16px;
+  text-align: left;
+  margin-top: 4px;
+}
+.uplot-box .u-legend .u-series > * {
+  padding: 2px 4px;
+}
+.uplot-box .u-legend .u-series:first-child {
+  display: block;
+  color: var(--text-secondary);
+}
+.uplot-box .u-legend .u-series {
+  cursor: pointer;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 16px;
+}
+.chart-legend > span,
+.legend-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-toggle {
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border-radius: 6px;
+  color: inherit;
+}
+.legend-toggle.off {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+@media (hover: hover) {
+  .legend-toggle:hover {
+    background: var(--background-element);
+  }
+}
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.legend-swatch.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.legend-swatch.line {
+  height: 3px;
+  width: 14px;
+}
+.legend-swatch.dotted,
+.legend-swatch.dashed {
+  height: 0;
+  width: 14px;
+  border-top: 2px dotted;
+  border-radius: 0;
+}
+.legend-swatch.dashed {
+  border-top-style: dashed;
+}
+.chart-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 20px;
+}
+.chart-stats strong {
+  color: var(--text);
+  font-weight: 600;
+}
+/* The mouse controls; touch screens get their own (pinch) hint. */
+.zoom-hint {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .zoom-hint {
+    display: block;
+  }
+}
+.zoom-hint-touch {
+  display: none;
+}
+@media (hover: none) {
+  .zoom-hint-touch {
+    display: block;
+  }
+}
+/* Round charts pan with click-and-hold and stretch an axis when dragged along it. */
+.uplot-box .u-over.pannable {
+  cursor: grab;
+  /* Pinches and sideways drags go to the chart (crosshair, zoom; see chartInteraction); vertical swipes still scroll. */
+  touch-action: pan-y;
+}
+.uplot-box .u-over.pannable.dragging {
+  cursor: grabbing;
+}
+.axis-handle {
+  position: absolute;
+  z-index: 2;
+}
+.axis-handle.x {
+  height: 28px;
+  cursor: ew-resize;
+}
+.axis-handle.y {
+  width: 44px;
+  cursor: ns-resize;
+}
+/* Only mouse and pen drive these; touch keeps scrolling the page. */
+@media (hover: none) {
+  .axis-handle {
+    display: none;
+  }
+  .uplot-box .u-over.pannable {
+    cursor: default;
+  }
+}
+.chart-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  min-width: 170px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--text);
+  /* See-through, so the points under the tooltip stay visible. */
+  background: color-mix(in srgb, var(--text) 72%, transparent);
+  color: var(--background);
+  font-size: 12px;
+  line-height: 17px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.chart-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.chart-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.chart-tooltip-row > :first-child {
+  opacity: 0.7;
+}
+
+.chart-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  text-align: center;
+}
+.chart-box svg {
+  display: block;
+  font-family: var(--font-display);
+}
+.chart-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.year-dropdown {
+  align-self: flex-start;
+  border-radius: 8px;
+  border: 1px solid var(--background-selected);
+  background: var(--background-element);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.calendar-row {
+  display: flex;
+  align-self: stretch;
+}
+.calendar-day-labels {
+  display: flex;
+  flex-direction: column;
+  width: 14px;
+  flex-shrink: 0;
+}
+.calendar-day-labels span {
+  font-size: 10px;
+  line-height: 17px;
+  height: 17px;
+  text-align: center;
+}
+.calendar-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.calendar-scroll::-webkit-scrollbar {
+  display: none;
+}
+.calendar-weeks {
+  display: flex;
+  width: max-content;
+}
+.calendar-week {
+  display: flex;
+  flex-direction: column;
+}
+/* Boxes touch; a border in the page colour separates them. */
+.calendar-cell {
+  display: block;
+  box-sizing: border-box;
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+  border: 1px solid var(--background);
+}
+.calendar-cell.empty {
+  background: transparent;
+}
+.calendar-cell.legend {
+  width: 12px;
+  height: 12px;
+}
+.calendar-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.calendar-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------- Settings ---------- */
+
+.switch-row {
+  cursor: pointer;
+}
+.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border-radius: 13px;
+  background: var(--background-selected);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+.switch:checked {
+  background: var(--accent);
+}
+.switch:checked::after {
+  transform: translateX(18px);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.stepper.disabled {
+  opacity: 0.45;
+}
+.stepper-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--background-selected);
+  background: var(--background-element);
+}
+.stepper-button:disabled {
+  opacity: 0.35;
+}
+.stepper-value {
+  min-width: 56px;
+  text-align: center;
+}
+
+.slider {
+  width: 100%;
+  margin: 8px 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* A control with its label or unit right beside it, rather than pushed to the far edge. */
+.inline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* A single switch sits right after its label (lists of switches keep theirs aligned on the right). */
+.switch-row.inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+  cursor: pointer;
+}
+/* The same room below the speed chips as between them and the heading above. */
+.preset-row + .switch-row {
+  margin-top: 6px;
+}
+.preset-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  padding: 6px 12px;
+  background: var(--background-element);
+  color: var(--text);
+}
+.preset-chip.on {
+  background: var(--accent);
+  color: #ffffff;
+}
+.preset-sub {
+  opacity: 0.7;
+}
+.layout-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.layout-options .preset-chip {
+  padding: 8px 12px;
+}
+.layout-preview {
+  display: block;
+  margin: 4px 0 6px;
+}
+
+.key-binding-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+/* A fixed height, so switching to "Press a key…" (another font, with a taller line) doesn't move the
+   rows below. */
+.key-binding {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 34px;
+  line-height: 1;
+  min-width: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--background-selected);
+  border-bottom-width: 3px;
+  background: var(--background-element);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.key-binding.listening {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+
+.match-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.data-row {
+  display: flex;
+  gap: 10px;
+}
+.outline-button {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 14px;
+  border: 1.5px solid;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  text-align: center;
+}
+.outline-button:disabled {
+  opacity: 0.5;
+}
+.outline-button.accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.outline-button.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+/* The tick sits at the right edge so the label stays centred. */
+.reset-button {
+  position: relative;
+}
+.reset-done {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  display: flex;
+  color: var(--success);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.6);
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+.reset-done.on {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reset-done {
+    transition: opacity 0.2s ease-out;
+  }
+}
+.app-version {
+  text-align: center;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

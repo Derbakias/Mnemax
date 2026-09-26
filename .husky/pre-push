@@ -1,0 +1,22 @@
+# Rust tests take a while to compile, so they only run when the push changes Rust code:
+# anything in src-tauri/ except the generated Android project.
+run=false
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Deleting a remote branch (all zeros): nothing to test.
+  case $local_sha in *[!0]*) ;; *) continue ;; esac
+  # A new branch: the commits no remote has yet. Otherwise: what's new since the remote's version.
+  case $remote_sha in
+    *[!0]*) range="$remote_sha..$local_sha" ;;
+    *) range="$local_sha --not --remotes" ;;
+  esac
+  # If the changes can't be listed (e.g. the remote has commits we don't), test to be safe.
+  if ! files=$(git log --format= --name-only $range 2>/dev/null) ||
+    echo "$files" | grep '^src-tauri/' | grep -qv '^src-tauri/gen/'; then
+    run=true
+  fi
+done
+
+if [ "$run" = true ]; then
+  echo "Rust code changed: running cargo test"
+  cd src-tauri && cargo test
+fi

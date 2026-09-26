@@ -1,0 +1,130 @@
+name: Bug report
+description: Something doesn't work or looks wrong
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this! Mnemax is only tested on **Linux** and **Android**, so reports from Windows, macOS and iOS are especially valuable.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to Settings → …
+        2. Start a round with …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - UI / layout / visuals
+        - Gameplay (trials, timing, scoring)
+        - Audio (letters)
+        - Stats / charts
+        - Settings
+        - Import / export
+        - Keyboard controls
+        - Install / build / startup
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or screen recording
+      description: "**Required for UI-related issues.** Drag and drop images here."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux
+        - Android
+        - Windows
+        - macOS
+        - iOS
+        - Browser (pnpm dev)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS and version
+      description: Include the distro and desktop environment on Linux, or the device model on mobile.
+      placeholder: "e.g. Ubuntu 24.04 (GNOME, Wayland) · Android 14 on Pixel 7 · Windows 11 23H2 · macOS 15.1"
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Mnemax version or commit
+      description: The release version, or the commit hash if you built from source.
+      placeholder: "e.g. 0.1.0 or a1b2c3d"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install or run it?
+      options:
+        - AppImage
+        - .deb
+        - .rpm
+        - Android APK
+        - Built from source (release build)
+        - Dev server (pnpm desktop / pnpm android)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: display
+    attributes:
+      label: Screen size / scaling (for UI issues)
+      placeholder: "e.g. 1920×1080 at 125%, or window resized to 400×700"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Terminal output, browser devtools console, or `adb logcat` output, if relevant.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+    validations:
+      required: false
