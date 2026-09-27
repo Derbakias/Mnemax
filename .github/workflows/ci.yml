@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       # The branch name comes from whoever opened the pull request, so it's passed in through env rather
       # than pasted into the script.
       - env:
@@ -34,6 +36,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       # The pnpm version comes from packageManager in package.json.
       - uses: pnpm/action-setup@v6
@@ -53,6 +57,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Install Tauri system libraries
         run: |

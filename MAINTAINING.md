@@ -92,7 +92,10 @@ checked by CI first, and it never appears in the release notes, because they onl
 
 - The first time someone contributes, GitHub doesn't run the workflows on their pull request until the admin 
   allows that. Click **Approve and run workflows** on the pull request, after checking the changes don't
-  touch `.github/workflows/` in a suspicious way.
+  touch `.github/workflows/` or `scripts/` in a suspicious way.
+- The checks run with the pull request's own copy of the workflows and scripts, so a pull request that
+  changes them can change what the checks do, for example to let a badly named branch pass. Look closely
+  at any change to `.github/` or `scripts/check-branch-name.sh`.
 - Before merging, fix up the title if needed (see above) and add a label.
 - Squash-merging keeps the contributor as the commit's author, and the release notes credit them
   ("by @name").

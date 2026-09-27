@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Tag matches package.json
         if: github.ref_type == 'tag'
         run: |
@@ -40,6 +42,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       # GStreamer is bundled into the AppImage for the letter sounds (bundleMediaFramework). The WAV
       # decoder is in plugins-good. The "ugly" plugins are left out because of their licenses.
@@ -79,6 +83,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-java@v6
         with:

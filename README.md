@@ -308,13 +308,13 @@ key. Release builds need your own key, set up like this:
 
    ```bash
    mkdir -p ~/android-keys
-   keytool -genkey -v -keystore ~/android-keys/mnemax.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mnemax
+   keytool -genkey -v -keystore ~/android-keys/mnemax-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mnemax
    ```
 
 2. Create `src-tauri/gen/android/keystore.properties`:
 
    ```properties
-   storeFile=/home/<you>/android-keys/mnemax.jks
+   storeFile=/home/<you>/android-keys/mnemax-release.jks
    keyAlias=mnemax
    password=<your key password>
    ```
