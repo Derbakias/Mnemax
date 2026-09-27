@@ -4,6 +4,10 @@ run=false
 while read -r local_ref local_sha remote_ref remote_sha; do
   # Deleting a remote branch (all zeros): nothing to test.
   case $local_sha in *[!0]*) ;; *) continue ;; esac
+  # Branches must follow the naming rules (tags aren't checked).
+  case $remote_ref in
+    refs/heads/*) sh scripts/check-branch-name.sh "${remote_ref#refs/heads/}" || exit 1 ;;
+  esac
   # A new branch: the commits no remote has yet. Otherwise: what's new since the remote's version.
   case $remote_sha in
     *[!0]*) range="$remote_sha..$local_sha" ;;
