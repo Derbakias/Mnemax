@@ -1,0 +1,161 @@
+# Builds the release files and attaches them to a draft GitHub release.
+#
+# Pushing a version tag (for example v0.2.0, made by `pnpm version`) builds everything and creates a draft
+# release for that tag. Check the draft, then publish it by hand. Running the workflow by hand from the
+# Actions tab only builds the files and keeps them as workflow artifacts, which is handy for testing.
+#
+# The Android APKs are signed with the release key, stored as repository secrets:
+#   ANDROID_KEYSTORE_BASE64  the .jks file, base64-encoded (base64 -w0 mnemax.jks)
+#   ANDROID_KEY_ALIAS        the key alias (mnemax)
+#   ANDROID_KEY_PASSWORD     the password for both the keystore and the key
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    name: Check version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches package.json
+        if: github.ref_type == 'tag'
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match the version in package.json ($version)"
+            exit 1
+          fi
+
+  linux:
+    name: Linux
+    needs: check-version
+    # The oldest supported Ubuntu, so the .deb and AppImage run on older distributions too (glibc).
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # GStreamer is bundled into the AppImage for the letter sounds (bundleMediaFramework). The WAV
+      # decoder is in plugins-good. The "ugly" plugins are left out because of their licenses.
+      - name: Install Tauri system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf file \
+            gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm desktop:build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux
+          path: release/*
+          if-no-files-found: error
+
+  android:
+    name: Android
+    needs: check-version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # The same NDK version as the local builds.
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ndk;27.1.12297006
+
+      - name: Point Tauri at the NDK
+        run: echo "NDK_HOME=$ANDROID_HOME/ndk/27.1.12297006" >> "$GITHUB_ENV"
+
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # The same keystore.properties as a local build (see Signing in the README). Stop here rather than
+      # build APKs that phones won't install.
+      - name: Set up the signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::The Android signing secrets aren't set (see the top of this workflow)"
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/mnemax.jks"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$keystore"
+          {
+            echo "storeFile=$keystore"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "password=$KEY_PASSWORD"
+          } > src-tauri/gen/android/keystore.properties
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm android:build
+      - run: pnpm android:build --target aarch64
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android
+          path: release/*
+          if-no-files-found: error
+
+  release:
+    name: Draft release
+    if: github.ref_type == 'tag'
+    needs: [linux, android]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: release
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          name: Mnemax ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: release/*

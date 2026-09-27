@@ -1,0 +1,82 @@
+# The same checks as the git hooks (see Contributing in the README), run on every pull request and on main.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request or branch cancels the run that's still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Pull requests must come from a branch named like feature/streak-counter (see MAINTAINING.md). This runs
+  # for pull requests from forks too, where the repository's own branch rules don't reach.
+  branch-name:
+    name: Branch name
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # The branch name comes from whoever opened the pull request, so it's passed in through env rather
+      # than pasted into the script.
+      - env:
+          BRANCH: ${{ github.head_ref }}
+        run: sh scripts/check-branch-name.sh "$BRANCH"
+
+  web:
+    name: Typecheck and tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # The pnpm version comes from packageManager in package.json.
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  rust:
+    name: Rust tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Tauri system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev
+
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # Tauri embeds the built interface (dist/) when it compiles, so it has to exist before cargo test.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - run: cargo test
+        working-directory: src-tauri

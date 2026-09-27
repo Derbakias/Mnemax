@@ -128,11 +128,12 @@ Mnemax/
 │   ├── capabilities/          # What the interface is allowed to access
 │   ├── icons/                 # App icons for every platform
 │   └── gen/android/           # Android project (Gradle)
-├── scripts/build-release.mjs  # Builds and names the release files (see Release file names)
+├── scripts/                   # Release build (build-release.mjs) and branch name check
 ├── public/                    # Files served as they are (favicon)
 ├── assets/                    # App icon source files (see Changing the app icon)
 ├── docs/images/               # Images used in this README
-└── .github/ISSUE_TEMPLATE/    # Bug report and feature request forms
+├── MAINTAINING.md             # Pull requests, releases and repository setup, for the maintainer
+└── .github/                   # Issue forms, CI and release workflows, Dependabot
 ```
 
 ## Getting started
@@ -229,25 +230,9 @@ With an Android emulator, `pnpm android` on its own is usually enough.
 
 ## Building releases
 
-### Setting the version (maintainers)
-
-The version number lives in one place: the `version` field in `package.json`. Tauri reads it from there
-(`tauri.conf.json` points to `../package.json`) and uses it for the Linux packages and the Android app
-version. It is also shown at the bottom of the **Settings** screen in the app.
-
-The version changes only when a release is made, not in individual pull requests. Several merged changes
-usually go out together in one release. To set the new version, either edit `package.json` by hand or
-run:
-
-```bash
-pnpm version patch   # bug fixes only:     0.1.0 → 0.1.1
-pnpm version minor   # new features:       0.1.0 → 0.2.0
-pnpm version major   # breaking changes:   0.1.0 → 1.0.0
-```
-
-`pnpm version` also commits the change and creates a git tag (for example `v0.1.1`), so it needs a clean
-working tree. Push the tag with `git push --follow-tags` and create the GitHub release from it. To only
-change the number, without a commit or tag, add `--no-git-tag-version`.
+Making a release (setting the version, tagging, and publishing the files built by GitHub) is described
+in [MAINTAINING.md](MAINTAINING.md). The sections below are for building the release files on your own
+computer.
 
 ### Changing the app icon
 
@@ -381,10 +366,21 @@ Git hooks run most of these for you. `pnpm install` sets them up (with [husky](h
 - **Before each push:** `cargo test`, but only if the push changes Rust code in `src-tauri/`, because
   compiling the Rust tests can take a while.
 
-If a check fails, the commit or push is stopped so you can fix the problem first.
+If a check fails, the commit or push is stopped so you can fix the problem first. The same checks run
+again on GitHub for every pull request (the **CI** workflow), and a pull request can only be merged once
+they pass.
+
+Make your changes on a branch named after the kind of change: `feature/` for new features and
+improvements, `fix/` for bug fixes, `docs/` for documentation, or `chore/` for tooling and other
+maintenance, followed by lowercase words joined by hyphens (for example `fix/android-audio`). Pull
+requests from other branch names fail the checks.
+
+Give your pull request a title that describes the change for users (for example, "Fix letter audio
+cutting off on Android"). Pull requests are squash-merged, so the title becomes the commit on `main`
+and a line in the release notes.
 
 Please don't change the version number in pull requests. It's updated when a release is made (see
-[Setting the version](#setting-the-version-maintainers)).
+[MAINTAINING.md](MAINTAINING.md)).
 
 ## Credits
 
