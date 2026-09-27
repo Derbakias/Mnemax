@@ -102,8 +102,8 @@ checked by CI first, and it never appears in the release notes, because they onl
 
 ## Dependabot pull requests
 
-Dependabot opens grouped pull requests every month (npm, Rust and GitHub Actions and the Android project), 
-already labelled `dependencies`. If CI passes, a patch or minor update can usually just
+Dependabot opens grouped pull requests every month (npm, Rust and GitHub Actions), already labelled
+`dependencies`. If CI passes, a patch or minor update can usually just
 be merged. For bigger updates, run the app (`pnpm desktop`, and `pnpm android` for Android changes)
 before merging.
 
@@ -112,6 +112,14 @@ Merge them together: Tauri refuses to build when the versions of the npm package
 match.
 
 Security updates arrive as their own pull requests. Merge them as soon as possible.
+
+The Android project (`src-tauri/gen/android`) isn't updated by Dependabot. Tauri generates it, and its
+Android libraries have to work with the Kotlin version in Tauri's template: newer `appcompat` or
+`material` versions need a newer Kotlin, and the Android build then fails. CI doesn't build Android, so
+that only shows up in the Release workflow. When upgrading Tauri, compare this project with the template
+of the new version (create a throwaway project with `pnpm create tauri-app` and run
+`pnpm tauri android init` in it) and copy over the versions in the `build.gradle.kts` files and
+`gradle-wrapper.properties`. Then check that `pnpm android:build` still works.
 
 ## Issues
 
