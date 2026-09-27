@@ -157,6 +157,13 @@ gh run watch                          # optional: follow the build in the termin
 
 `pnpm version` needs a clean working tree. The pre-commit hook runs the tests on the version commit too.
 
+Don't create or publish a release on GitHub's **Releases** page yourself, and wait for the workflow to
+finish before touching it. The workflow creates the draft and attaches the files. Releases in this
+repository are immutable: once one is published, files can't be added to it, and its version number can
+never be used again, even if you delete it. A release published before the files were attached is
+stuck empty, and the fix is a new patch version. A tag created on the Releases page (for example `0.1.0`
+without the `v`) doesn't start the workflow at all.
+
 The tag starts the **Release** workflow (`.github/workflows/release.yml`). It checks that the tag matches
 `package.json`, builds the Linux files and the signed Android APKs, names them as in
 [Release file names](README.md#release-file-names), and attaches them to a draft release. This takes
@@ -248,6 +255,8 @@ For reference, and in case something needs to be set up again.
   messages and the pull request's description don't end up on `main`.
 - **Code security**: Dependabot alerts and security updates, secret scanning, and push protection
   (which blocks a push that contains a password or key) are on.
+- **Releases**: immutable releases are on (Settings → General → Releases). A published release's files
+  and tag can't be changed, so a download always matches what was published.
 - **Secrets**: the three Android signing secrets above.
 - **Labels**: the ones in [Which label](#which-label), plus `triage`, `good first issue`, `help wanted`,
   `question`, `duplicate`, `invalid` and `wontfix` for issues.
