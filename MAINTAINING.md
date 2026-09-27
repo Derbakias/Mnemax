@@ -232,7 +232,9 @@ For reference, and in case something needs to be set up again.
     approving review is needed, since you can't approve your own pull requests. Repository admins can
     bypass these rules.
   - *Protect tags*: only repository admins can create, move or delete tags.
-- **General**: only squash merging is allowed, and merged branches are deleted automatically.
+- **General**: only squash merging is allowed, and merged branches are deleted automatically. The squash
+  commit is titled with the pull request's title and has an empty body, so the branch's own commit
+  messages and the pull request's description don't end up on `main`.
 - **Code security**: Dependabot alerts and security updates, secret scanning, and push protection
   (which blocks a push that contains a password or key) are on.
 - **Secrets**: the three Android signing secrets above.
