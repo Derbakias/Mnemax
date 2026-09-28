@@ -4,6 +4,11 @@
 # release for that tag. Check the draft, then publish it by hand. Running the workflow by hand from the
 # Actions tab only builds the files and keeps them as workflow artifacts, which is handy for testing.
 #
+# The Windows installer and the macOS disk image aren't signed with a paid certificate: Windows shows a
+# SmartScreen warning the first time, and macOS asks the user to allow the app in Privacy & Security. The
+# macOS app gets an ad-hoc signature (bundle.macOS.signingIdentity "-" in tauri.conf.json), without which
+# Apple Silicon Macs report an app downloaded from the internet as damaged.
+#
 # The Android APKs are signed with the release key, stored as repository secrets:
 #   ANDROID_KEYSTORE_BASE64  the .jks file, base64-encoded (base64 -w0 mnemax.jks)
 #   ANDROID_KEY_ALIAS        the key alias (mnemax)
@@ -74,6 +79,74 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: linux
+          path: release/*
+          if-no-files-found: error
+
+  windows:
+    name: Windows
+    needs: check-version
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # Only the NSIS installer (the .exe); Tauri would otherwise make an .msi too.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm desktop:build --bundles nsis
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows
+          path: release/*
+          if-no-files-found: error
+
+  macos:
+    name: macOS
+    needs: check-version
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # Both Mac architectures, for one universal app that runs on Apple Silicon and Intel Macs.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm desktop:build --target universal-apple-darwin --bundles dmg
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macos
           path: release/*
           if-no-files-found: error
 
@@ -148,7 +221,7 @@ jobs:
   release:
     name: Draft release
     if: github.ref_type == 'tag'
-    needs: [linux, android]
+    needs: [linux, windows, macos, android]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

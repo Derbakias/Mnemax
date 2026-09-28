@@ -165,11 +165,13 @@ stuck empty, and the fix is a new patch version. A tag created on the Releases p
 without the `v`) doesn't start the workflow at all.
 
 The tag starts the **Release** workflow (`.github/workflows/release.yml`). It checks that the tag matches
-`package.json`, builds the Linux files and the signed Android APKs, names them as in
+`package.json`, builds the Linux files, the Windows installer, the macOS disk image and the signed
+Android APKs, names them as in
 [Release file names](README.md#release-file-names), and attaches them to a draft release. This takes
 a while, mostly for the Android builds. Then, on GitHub under **Releases**, open the draft and:
 
-1. Check that all five files are attached: the AppImage, `.deb`, `.rpm`, universal APK and arm64 APK.
+1. Check that all seven files are attached: the AppImage, `.deb`, `.rpm`, Windows `-setup.exe`, macOS
+   `.dmg`, universal APK and arm64 APK.
 2. Read the notes. If you added labels after the draft was made, click **Generate release notes** again
    to redo the sections. Add a sentence or two at the top about the highlights.
 3. Click **Publish release**.
@@ -181,7 +183,7 @@ days.
 ### If the release build fails
 
 If it looks like a one-off (a download timed out, for example), re-run the failed jobs with
-`gh run rerun --failed` or the button on the run's page. The draft is created once both builds pass.
+`gh run rerun --failed` or the button on the run's page. The draft is created once all four builds pass (Linux, Windows, macOS and Android).
 
 If something needs fixing in the code, and the release hasn't been published yet:
 
