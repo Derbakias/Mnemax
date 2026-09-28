@@ -91,7 +91,7 @@ function AppShell() {
         {/* Keyboard shortcuts stay off under the startup screen, so Space can't start a round behind it. */}
         <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} onStageChange={setPlayStage} />
       </main>
-      <main className="screen" hidden={tab !== 'stats'}>
+      <main className="screen stats-screen" hidden={tab !== 'stats'}>
         <StatsScreen onReady={onStatsReady} />
       </main>
       <main className="screen" hidden={tab !== 'settings'}>

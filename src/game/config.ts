@@ -32,6 +32,8 @@ export function stimulusVisibleMs(trialDurationMs: number): number {
 
 // TODO: Find better colour combinations
 export const COLOR_PALETTE = ['#E53935', '#1E88E5', '#43A047', '#FDD835', '#8E24AA', '#FB8C00'];
+/** Each palette colour's name, for screen readers where a swatch shows it. */
+export const COLOR_NAMES = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 /**
  * A deeper shade of each palette colour (and of the neutral one), for the lit box's 3D edge and the digit's
  * shadow. Hand-picked rather than the colour darkened with black, which turns yellow a muddy olive: yellow

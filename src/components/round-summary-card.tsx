@@ -1,7 +1,7 @@
+import { AccuracyHeading, OutcomeHeading, StreamName } from './stream-table';
 import { TRIALS_PER_ROUND } from '@/game/config';
 import { summarizeRound } from '@/game/scoring';
 import type { RoundResult } from '@/game/types';
-import { STREAM_LABELS } from '@/game/types';
 import { accuracyColor, useTheme } from '@/theme';
 
 interface RoundSummaryCardProps {
@@ -35,24 +35,34 @@ export function RoundSummaryCard({ result, compact = false }: RoundSummaryCardPr
           Stopped after {result.trials.length} of {TRIALS_PER_ROUND} trials, so this round scores 0.
         </p>
       )}
-      {summary.scores.map((score) => {
-        const streamPct = Math.round(score.accuracy * 100);
-        const targets = score.hits + score.misses;
-        return (
-          <div key={score.stream} className="row-between">
-            <span className="t-small">{STREAM_LABELS[score.stream]}</span>
-            <span className="t-code" style={{ color: accuracyColor(streamPct, theme) }}>
-              {streamPct}% · <span className="good">✓ {score.hits}/{targets}</span>
-              {' · '}
-              <span className="good">〇 {score.correctRejections}</span>
-              {' · '}
-              <span className="bad">✕ {score.misses}</span>
-              {' · '}
-              <span className="bad">■ {score.falseAlarms}</span>
-            </span>
-          </div>
-        );
-      })}
+      {/* Like the Stats screen's stream table: the symbols head the columns, the rows hold just the numbers. */}
+      <div className="stream-table five">
+        <div className="stream-table-row header t-code">
+          <span>Stream</span>
+          <AccuracyHeading />
+          <OutcomeHeading outcome="hit" label="Matched" />
+          <OutcomeHeading outcome="correctRejection" label="No match" />
+          <OutcomeHeading outcome="miss" label="Missed" />
+          <OutcomeHeading outcome="falseAlarm" label="False" />
+        </div>
+        {summary.scores.map((score) => {
+          const streamPct = Math.round(score.accuracy * 100);
+          return (
+            <div key={score.stream} className="stream-table-row">
+              <StreamName stream={score.stream} />
+              <span className="t-code" style={{ color: accuracyColor(streamPct, theme) }}>
+                {streamPct}%
+              </span>
+              <span className="t-code good">
+                {score.hits}/{score.hits + score.misses}
+              </span>
+              <span className="t-code good">{score.correctRejections}</span>
+              <span className="t-code bad">{score.misses}</span>
+              <span className="t-code bad">{score.falseAlarms}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

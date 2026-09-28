@@ -7,9 +7,9 @@ let closeOpenPopup: (() => void) | null = null;
 
 /**
  * Open state for a small popup that shows while a mouse hovers its trigger, and stays open after a click or
- * tap (touch screens have no hover) until a second one, a click or tap outside `rootRef`, Escape, any
- * scroll, or another popup opening. Spread `hoverHandlers` on the element wrapping trigger and popup; call
- * `toggle` from the trigger.
+ * tap (touch screens have no hover) until a second one, a click or tap outside `rootRef`, Escape, or another
+ * popup opening. Scrolling leaves it open, so a long note can be read while scrolling. Spread
+ * `hoverHandlers` on the element wrapping trigger and popup; call `toggle` from the trigger.
  */
 export function useHoverOrTap<T extends HTMLElement>() {
   const [pinned, setPinned] = useState(false);
@@ -33,22 +33,20 @@ export function useHoverOrTap<T extends HTMLElement>() {
 
   useEffect(() => {
     if (!open) return;
-    // Captured, so the press is seen before anything on the page can stop it.
-    const onPointerDown = (e: PointerEvent) => {
+    // A click, not a press: a finger scrolling the page presses outside too, but a scroll or a drag never
+    // ends in a click, so only a real tap or click elsewhere closes it. Captured, so it's seen before
+    // anything on the page can stop it.
+    const onClick = (e: MouseEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) close();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
-    // Scroll events don't bubble, but a capturing listener on the document sees every scrolling element.
-    // A popup left open while its trigger scrolls away (by finger, wheel or trackpad) only gets in the way.
-    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('click', onClick, true);
     document.addEventListener('keydown', onKey);
-    document.addEventListener('scroll', close, { capture: true, passive: true });
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKey);
-      document.removeEventListener('scroll', close, { capture: true });
     };
   }, [open, close]);
 
@@ -98,7 +96,7 @@ export function ChartControlsTip() {
         <strong>Chart:</strong> scroll to zoom, drag to move, drag an axis to stretch it, double-click to reset.
       </p>
       <p className="zoom-hint-touch">
-        <strong>Chart:</strong> pinch to zoom, drag to move, double-tap to reset. Turn on the crosshair (the icon above the chart) to read values with one finger instead.
+        <strong>Chart:</strong> pinch to zoom, drag to move, drag along an axis to stretch it, double-tap to reset. Turn on the crosshair (the icon above the chart) to read values with one finger instead.
       </p>
     </>
   );

@@ -2,11 +2,13 @@ import {
   add,
   calculatorOutline,
   checkmarkCircle,
+  chevronDown,
   colorPaletteOutline,
   flash,
   refreshOutline,
   gridOutline,
   informationCircleOutline,
+  layersOutline,
   locateOutline,
   pause,
   play,
@@ -18,6 +20,9 @@ import {
   star,
   statsChartOutline,
   stop,
+  timeOutline,
+  trendingUpOutline,
+  trophyOutline,
   volumeHighOutline,
 } from 'ionicons/icons';
 
@@ -33,6 +38,31 @@ const TARGET =
   '<circle cx="256" cy="256" r="40"/>' +
   '</svg>';
 
+// A solid pie with a quarter pulled out: ionicons' outline pie reads as a clock at heading size. The view box
+// is cropped to the drawing, so its middle is the icon's middle.
+const PIE =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 12 460 460">' +
+  '<path d="M256 256L464 256A208 208 0 1 1 256 48Z"/>' +
+  '<path d="M284.28 227.72L284.28 19.72A208 208 0 0 1 492.28 227.72Z"/>' +
+  '</svg>';
+
+// The stream table's outcome headings (✓ ✕ ■ as in the round tables' key), drawn on a 14px grid to be shown
+// at 14px, pixel for pixel: as font characters they were centred at fractions of a pixel and came out soft.
+// Fill and stroke are set on the shapes themselves, over the fill and stroke `.icon svg` gives every icon
+// (the tick came out filled in, the square outlined).
+const OUTCOME_HIT =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="M2 7.5l3.5 3.5L12 3.5" fill="none" ' +
+  'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const OUTCOME_MISS =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" ' +
+  'fill="none" stroke-width="2" stroke-linecap="round"/></svg>';
+const OUTCOME_NO_MATCH =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="4.25" fill="none" ' +
+  'stroke-width="1.75"/></svg>';
+const OUTCOME_FALSE =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><rect x="2" y="2" width="10" height="10" ' +
+  'rx="1" stroke="none"/></svg>';
+
 // Ionicons' refresh arrow, mirrored to turn anticlockwise (↺): "steps back" for the N-back level.
 const refreshSvg = inline(refreshOutline);
 const COUNTER_CLOCKWISE = refreshSvg
@@ -47,13 +77,20 @@ const ICONS = {
   add: inline(add),
   'calculator-outline': inline(calculatorOutline),
   'checkmark-circle': inline(checkmarkCircle),
+  'chevron-down': inline(chevronDown),
   'color-palette-outline': inline(colorPaletteOutline),
   'counter-clockwise': COUNTER_CLOCKWISE,
   flash: inline(flash),
   'grid-outline': inline(gridOutline),
   'information-circle-outline': inline(informationCircleOutline),
+  'layers-outline': inline(layersOutline),
   'locate-outline': inline(locateOutline),
+  'outcome-false': OUTCOME_FALSE,
+  'outcome-hit': OUTCOME_HIT,
+  'outcome-miss': OUTCOME_MISS,
+  'outcome-no-match': OUTCOME_NO_MATCH,
   pause: inline(pause),
+  pie: PIE,
   play: inline(play),
   'play-circle-outline': inline(playCircleOutline),
   remove: inline(remove),
@@ -65,6 +102,9 @@ const ICONS = {
   'star-tight': STAR_TIGHT,
   stop: inline(stop),
   target: TARGET,
+  'time-outline': inline(timeOutline),
+  'trending-up-outline': inline(trendingUpOutline),
+  'trophy-outline': inline(trophyOutline),
   'volume-high-outline': inline(volumeHighOutline),
 };
 

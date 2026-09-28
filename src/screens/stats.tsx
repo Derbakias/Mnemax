@@ -6,17 +6,16 @@ import { Count } from '@/components/count';
 import { DailyTimeChart } from '@/components/daily-time-chart';
 import { GridLoader } from '@/components/grid-loader';
 import { HudDropdown } from '@/components/hud-dropdown';
-import { Icon } from '@/components/icon';
+import { Icon, type IconName } from '@/components/icon';
 import { ChartControlsTip } from '@/components/info-tip';
 import { LevelChart } from '@/components/level-chart';
 import { ModeBadge } from '@/components/mode-badge';
 import { ProgressChart } from '@/components/progress-chart';
 import { RoundHistoryList } from '@/components/round-history-list';
 import { Section } from '@/components/section';
+import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/stream-table';
 import { ChartZoomActions, useChartZoom } from '@/components/uplot-chart';
-import { OUTCOME_GLYPHS } from '@/game/config';
-import type { RoundResult, StreamOutcome } from '@/game/types';
-import { STREAM_LABELS } from '@/game/types';
+import type { RoundResult } from '@/game/types';
 import {
   LEVEL_WINDOW,
   MASTERY_ACCURACY,
@@ -81,10 +80,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
     selected?.mode.key === modes[0]?.mode.key && 'Last played',
     selected?.mode.key === currentKey && 'Current mode',
   ].filter(Boolean);
-  const streamAgg = useMemo(
-    () => (selected ? aggregateStreams(selected.rounds).filter((a) => a.roundsPlayed > 0) : []),
-    [selected],
-  );
+  // Every stream, the ones this mode doesn't use too, so the table keeps its height from mode to mode.
+  const streamAgg = useMemo(() => (selected ? aggregateStreams(selected.rounds) : []), [selected]);
   // Another mode's chart starts unzoomed, so its section header shouldn't offer Reset zoom.
   const selectedModeKey = selected?.mode.key;
   const { reset: resetModeZoom } = modeZoom;
@@ -120,7 +117,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
   return (
     <div className="content stats">
       <div className="summary-row">
-        <StatCard
+        <StatTile
+          icon="trending-up-outline"
           label="Level"
           value={level.current.toFixed(2)}
           sub={
@@ -132,9 +130,30 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             ) : undefined
           }
         />
-        <StatCard label="Best level" value={level.best.toFixed(2)} />
-        <StatCard label="Rounds played" value={String(summary.totalRounds)} />
-        <StatCard label="Time played" value={formatDuration(summary.totalTimeMs)} />
+        <StatTile
+          icon="trophy-outline"
+          label="Best level"
+          value={level.best.toFixed(2)}
+          sub={
+            level.best - level.current < 0.005 ? (
+              <span className="good">At your best</span>
+            ) : (
+              `${(level.best - level.current).toFixed(2)} above level`
+            )
+          }
+        />
+        <StatTile
+          icon="layers-outline"
+          label="Rounds played"
+          value={String(summary.totalRounds)}
+          sub={`in ${modes.length} ${modes.length === 1 ? 'mode' : 'modes'}`}
+        />
+        <StatTile
+          icon="time-outline"
+          label="Time played"
+          value={formatDuration(summary.totalTimeMs)}
+          sub={`${formatDuration(summary.totalTimeMs / summary.totalRounds)} per round`}
+        />
       </div>
 
       <Section
@@ -152,7 +171,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             <ChartControlsTip />
           </>
         }>
-        <LevelChart history={history} zoom={levelZoom} />
+        <div className="panel panel-pad">
+          <LevelChart history={history} zoom={levelZoom} />
+        </div>
       </Section>
 
       <Section
@@ -216,32 +237,46 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
           {selectedTags.length > 0 && <span className="t-small secondary">{selectedTags.join(' · ')}</span>}
         </div>
 
-        <ProgressChart
-          key={selected.mode.key}
-          rounds={selected.rounds}
-          streams={selected.mode.streams}
-          zoom={modeZoom}
-        />
+        <div className="panel panel-pad">
+          <ProgressChart
+            key={selected.mode.key}
+            rounds={selected.rounds}
+            streams={selected.mode.streams}
+            zoom={modeZoom}
+          />
+        </div>
 
-        <div className="card stream-table">
+        <div className="panel stream-table">
           <div className="stream-table-row header t-code">
             <span>Stream</span>
-            <span>Accuracy</span>
+            <AccuracyHeading />
             <OutcomeHeading outcome="hit" label="Matched" />
             <OutcomeHeading outcome="miss" label="Missed" />
             <OutcomeHeading outcome="falseAlarm" label="False" />
           </div>
-          {streamAgg.map((a) => (
-            <div key={a.stream} className="stream-table-row">
-              <span className="t-default">{STREAM_LABELS[a.stream]}</span>
-              <span className="t-code" style={{ color: accuracyColor(a.accuracy * 100, theme) }}>
-                {Math.round(a.accuracy * 100)}%
-              </span>
-              <Count className="t-code good" value={a.hits} label="matched" />
-              <Count className="t-code bad" value={a.misses} label="missed" />
-              <Count className="t-code bad" value={a.falseAlarms} label="false matches" />
-            </div>
-          ))}
+          {streamAgg.map((a) =>
+            a.roundsPlayed > 0 ? (
+              <div key={a.stream} className="stream-table-row">
+                <StreamName stream={a.stream} />
+                <span className="t-code" style={{ color: accuracyColor(a.accuracy * 100, theme) }}>
+                  {Math.round(a.accuracy * 100)}%
+                </span>
+                <Count className="t-code good" value={a.hits} label="matched" />
+                <Count className="t-code bad" value={a.misses} label="missed" />
+                <Count className="t-code bad" value={a.falseAlarms} label="false matches" />
+              </div>
+            ) : (
+              <div key={a.stream} className="stream-table-row off">
+                <StreamName stream={a.stream} />
+                <span className="visually-hidden">not in this mode</span>
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className="t-code" aria-hidden>
+                    –
+                  </span>
+                ))}
+              </div>
+            ),
+          )}
         </div>
       </Section>
 
@@ -273,7 +308,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             count.
           </p>
         }>
-        <ActivityCalendar rounds={rounds} />
+        <div className="panel panel-pad">
+          <ActivityCalendar rounds={rounds} />
+        </div>
       </Section>
 
       <Section
@@ -293,7 +330,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             <ChartControlsTip />
           </>
         }>
-        <DailyTimeChart rounds={rounds} zoom={timeZoom} />
+        <div className="panel panel-pad">
+          <DailyTimeChart rounds={rounds} zoom={timeZoom} />
+        </div>
       </Section>
 
       <Section
@@ -308,7 +347,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             {confirmClear ? 'Tap again to delete all' : 'Clear history'}
           </button>
         }>
-        <RoundHistoryList rounds={rounds} />
+        <div className="panel panel-pad">
+          <RoundHistoryList rounds={rounds} />
+        </div>
       </Section>
     </div>
   );
@@ -326,7 +367,7 @@ function ModesTable({
   theme: Theme;
 }) {
   return (
-    <div className="card mode-table">
+    <div className="panel mode-table">
       <div className="mode-row header t-code">
         <span>N</span>
         <span>Streams</span>
@@ -357,18 +398,6 @@ function ModesTable({
   );
 }
 
-/** A stream-table heading led by the outcome's symbol, as in the round tables' key. */
-function OutcomeHeading({ outcome, label }: { outcome: StreamOutcome; label: string }) {
-  return (
-    <span className="outcome-heading">
-      <span className={outcome === 'hit' || outcome === 'correctRejection' ? 'good' : 'bad'}>
-        {OUTCOME_GLYPHS[outcome]}
-      </span>
-      {label}
-    </span>
-  );
-}
-
 function shortDate(time: number): string {
   return new Date(time).toLocaleDateString(undefined, {
     day: 'numeric',
@@ -376,12 +405,18 @@ function shortDate(time: number): string {
   });
 }
 
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: ReactNode }) {
+/** A headline number, with an icon beside its label. */
+function StatTile({ icon, label, value, sub }: { icon: IconName; label: string; value: string; sub?: ReactNode }) {
   return (
-    <div className="card stat-card">
-      <span className="t-subtitle">{value}</span>
-      <span className="t-small secondary">{label}</span>
-      {sub && <span className="t-small secondary">{sub}</span>}
+    <div className="panel stat-tile">
+      <div className="stat-tile-head">
+        <span className="stat-tile-icon">
+          <Icon name={icon} size={18} />
+        </span>
+        <span className="t-small secondary stat-tile-label">{label}</span>
+      </div>
+      <span className="stat-tile-value">{value}</span>
+      <span className="t-small secondary stat-tile-sub">{sub}</span>
     </div>
   );
 }

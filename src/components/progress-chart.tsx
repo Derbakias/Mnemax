@@ -180,33 +180,35 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
         </div>
       )}
 
-      {hasData && (
-        <ChartLegend
-          items={[
-            {
-              label: 'Round',
-              color: withAlpha(mainColor, 0.5),
-              mark: 'dot',
-              shown: !hidden.has('round'),
-              onToggle: () => toggleSeries('round'),
-            },
-            {
-              label: `Avg of ${ROLLING_WINDOW}`,
-              color: mainColor,
-              mark: 'line',
-              shown: !hidden.has('avg'),
-              onToggle: () => toggleSeries('avg'),
-            },
-            ...streams.map((s) => ({
-              label: STREAM_LABELS[s],
-              color: theme[STREAM_COLORS[s]],
-              mark: 'dashed' as const,
-              shown: !hidden.has(s),
-              onToggle: () => toggleSeries(s),
-            })),
-          ]}
-        />
-      )}
+      <div className="progress-legend">
+        {hasData && (
+          <ChartLegend
+            items={[
+              {
+                label: 'Round',
+                color: withAlpha(mainColor, 0.5),
+                mark: 'dot',
+                shown: !hidden.has('round'),
+                onToggle: () => toggleSeries('round'),
+              },
+              {
+                label: `Avg of ${ROLLING_WINDOW}`,
+                color: mainColor,
+                mark: 'line',
+                shown: !hidden.has('avg'),
+                onToggle: () => toggleSeries('avg'),
+              },
+              ...streams.map((s) => ({
+                label: STREAM_LABELS[s],
+                color: theme[STREAM_COLORS[s]],
+                mark: 'dashed' as const,
+                shown: !hidden.has(s),
+                onToggle: () => toggleSeries(s),
+              })),
+            ]}
+          />
+        )}
+      </div>
 
       <div className="chart-footer">
         {points.length >= RATE_MIN_ROUNDS && metric === 'accuracy' && rate.toPerfect && (
