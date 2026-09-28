@@ -52,13 +52,13 @@ const PIE =
 // (the tick came out filled in, the square outlined).
 const OUTCOME_HIT =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="M2 7.5l3.5 3.5L12 3.5" fill="none" ' +
-  'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const OUTCOME_MISS =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" ' +
-  'fill="none" stroke-width="1.75" stroke-linecap="round"/></svg>';
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" ' +
+  'fill="none" stroke-width="2" stroke-linecap="round"/></svg>';
 const OUTCOME_NO_MATCH =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><circle cx="7" cy="7" r="4.25" fill="none" ' +
-  'stroke-width="1.5"/></svg>';
+  'stroke-width="1.75"/></svg>';
 const OUTCOME_FALSE =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><rect x="2" y="2" width="10" height="10" ' +
   'rx="1" stroke="none"/></svg>';

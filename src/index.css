@@ -1878,13 +1878,12 @@ p {
   text-align: center;
 }
 /* Every stream has a row, so the table keeps its height from mode to mode; the ones the mode doesn't use are
-   dashed out. */
+   dashed out, in grey (not faded, which left the name too faint to read). */
 .stream-table-row + .stream-table-row:not(.header) {
   border-top: 1px solid var(--surface-border);
 }
 .stream-table-row.off {
   color: var(--text-secondary);
-  opacity: 0.5;
 }
 /* A shortened count (1.2K): hovering or tapping it opens the exact number under it, growing to the left
    (these counts sit in the right-hand columns). */

@@ -16,7 +16,6 @@ import { Section } from '@/components/section';
 import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/stream-table';
 import { ChartZoomActions, useChartZoom } from '@/components/uplot-chart';
 import type { RoundResult } from '@/game/types';
-import { STREAM_LABELS } from '@/game/types';
 import {
   LEVEL_WINDOW,
   MASTERY_ACCURACY,
@@ -267,11 +266,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
                 <Count className="t-code bad" value={a.falseAlarms} label="false matches" />
               </div>
             ) : (
-              <div
-                key={a.stream}
-                className="stream-table-row off"
-                aria-label={`${STREAM_LABELS[a.stream]}: not in this mode`}>
+              <div key={a.stream} className="stream-table-row off">
                 <StreamName stream={a.stream} />
+                <span className="visually-hidden">not in this mode</span>
                 {[0, 1, 2, 3].map((i) => (
                   <span key={i} className="t-code" aria-hidden>
                     –

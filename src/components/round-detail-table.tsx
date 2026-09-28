@@ -1,7 +1,7 @@
 import { Icon } from './icon';
 import { STREAM_ICONS } from './response-buttons';
-import { OutcomeIcon } from './stream-table';
-import { COLOR_PALETTE, TRIALS_PER_ROUND } from '@/game/config';
+import { OUTCOME_LABELS, OutcomeIcon } from './stream-table';
+import { COLOR_NAMES, COLOR_PALETTE, TRIALS_PER_ROUND } from '@/game/config';
 import type { RoundResult, StreamId, StreamOutcome, TrialRecord } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
 
@@ -18,8 +18,13 @@ function Shown({ stream, trial }: { stream: StreamId; trial: TrialRecord }) {
   if (stream === 'position') return <span>{stimulus.position + 1}</span>;
   if (stream === 'number') return <span>{stimulus.number}</span>;
   if (stream === 'audio') return <span>{stimulus.letter}</span>;
-  const color = COLOR_PALETTE[stimulus.color % COLOR_PALETTE.length];
-  return <span className="table-swatch" style={{ backgroundColor: color }} />;
+  const index = stimulus.color % COLOR_PALETTE.length;
+  return (
+    <>
+      <span className="table-swatch" style={{ backgroundColor: COLOR_PALETTE[index] }} aria-hidden />
+      <span className="visually-hidden">{COLOR_NAMES[index]}</span>
+    </>
+  );
 }
 
 /**
@@ -64,7 +69,12 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
                       <td key={stream}>
                         <div className="trial-cell">
                           <Shown stream={stream} trial={trial} />
-                          {outcome && <OutcomeIcon outcome={outcome} />}
+                          {outcome && (
+                            <>
+                              <OutcomeIcon outcome={outcome} />
+                              <span className="visually-hidden">{OUTCOME_LABELS[outcome]}</span>
+                            </>
+                          )}
                         </div>
                         {rt != null && <div className="rt">{Math.round(rt)} ms</div>}
                       </td>
