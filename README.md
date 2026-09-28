@@ -264,12 +264,15 @@ release/
 ├── Mnemax-0.1.0-x64.AppImage
 ├── Mnemax-0.1.0-x64.deb
 ├── Mnemax-0.1.0-x64.rpm
+├── Mnemax-0.1.0-x64-setup.exe   # Windows installer
+├── Mnemax-0.1.0-universal.dmg   # macOS, Apple Silicon and Intel
 ├── Mnemax-0.1.0-universal.apk   # all phone types
 └── Mnemax-0.1.0-arm64.apk       # 64-bit ARM only
 ```
 
 The version comes from `package.json`. `release/` is gitignored, so these files are never committed.
-Tauri's own copies stay in their usual places (`src-tauri/target/release/bundle/` and
+Tauri's own copies stay in their usual places (`src-tauri/target/release/bundle/`,
+`src-tauri/target/universal-apple-darwin/release/bundle/` for the macOS build, and
 `src-tauri/gen/android/app/build/outputs/apk/`). The script that does this is `scripts/build-release.mjs`.
 
 ### Linux
@@ -323,14 +326,33 @@ key. Release builds need your own key, set up like this:
 builds are unsigned (the file name ends in `-unsigned.apk`) and phones won't install them. For more, see
 the [Tauri Android signing guide](https://v2.tauri.app/distribute/sign/android/).
 
-### Windows, macOS, iOS
+### Windows and macOS
 
-These should work with the standard Tauri commands, but they haven't been tested
-(see [Platform support](#platform-support)):
+The Release workflow builds these on GitHub, so you don't need either system to release them. To build
+them yourself, on that system:
 
-- **Windows or macOS:** run `pnpm desktop:build` on that system
-- **iOS:** you need a Mac with Xcode. Run `pnpm tauri ios init` once, then `pnpm tauri ios dev` to try it
-  or `pnpm tauri ios build` to build it.
+```bash
+pnpm desktop:build --bundles nsis                                     # Windows: the -setup.exe installer
+rustup target add aarch64-apple-darwin x86_64-apple-darwin            # macOS, once
+pnpm desktop:build --target universal-apple-darwin --bundles dmg      # macOS: one .dmg for Apple Silicon and Intel
+```
+
+Neither is signed with a paid certificate (a Windows code signing certificate, or an Apple Developer ID),
+so both warn the first time they're opened:
+
+- **Windows:** SmartScreen says it protected your PC. Click **More info**, then **Run anyway**.
+- **macOS:** it says the app can't be opened. Open **System Settings → Privacy & Security**, and click
+  **Open Anyway** next to Mnemax.
+
+The macOS app has an ad-hoc signature (`signingIdentity: "-"` in `src-tauri/tauri.conf.json`). It isn't
+checked by Apple, but without it Apple Silicon Macs call an app downloaded from the internet damaged and
+refuse to open it at all.
+
+### iOS
+
+This should work with the standard Tauri commands, but it hasn't been tested (see
+[Platform support](#platform-support)). You need a Mac with Xcode. Run `pnpm tauri ios init` once, then
+`pnpm tauri ios dev` to try it or `pnpm tauri ios build` to build it.
 
 ## Data and privacy
 
