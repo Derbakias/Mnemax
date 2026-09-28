@@ -16,6 +16,8 @@ interface SettingsContextValue {
   setButtonLayout: (layout: ButtonLayout) => void;
   setDailyTargetMinutes: (minutes: number) => void;
   setShowTrialTimer: (show: boolean) => void;
+  /** Turns a tutorial aid on or off; turning off the only one left on turns the other one on instead. */
+  setTutorialAid: (aid: 'tutorialHistory' | 'tutorialSolution', on: boolean) => void;
   /** Assigns `key` to `stream`; a stream that already had that key takes over `stream`'s old one. */
   setKeyBinding: (stream: StreamId, key: string) => void;
   resetDefaults: () => void;
@@ -73,6 +75,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setButtonLayout: (layout) => applyPrefs(clampPrefs({ ...prefs, buttonLayout: layout })),
       setDailyTargetMinutes: (minutes) => applyPrefs(clampPrefs({ ...prefs, dailyTargetMinutes: minutes })),
       setShowTrialTimer: (show) => applyPrefs(clampPrefs({ ...prefs, showTrialTimer: show })),
+      setTutorialAid: (aid, on) => {
+        const next = { ...prefs, [aid]: on };
+        // One always stays on, so switching off the last one hands over to the other.
+        if (!next.tutorialHistory && !next.tutorialSolution) {
+          next[aid === 'tutorialHistory' ? 'tutorialSolution' : 'tutorialHistory'] = true;
+        }
+        applyPrefs(clampPrefs(next));
+      },
       setKeyBinding: (stream, key) => {
         const normalized = normalizeKey(key);
         const keyBindings = { ...prefs.keyBindings };

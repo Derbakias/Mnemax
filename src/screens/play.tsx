@@ -1,9 +1,9 @@
-// TODO: !IMPORTANT! This one also needs to be broken down
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+// TODO: !IMPORTANT! This one also needs to be broken down (the round view and the start screen)
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 import { Icon } from '@/components/icon';
 import { HudDropdown } from '@/components/hud-dropdown';
-import { ButtonRoomFiller, ResponseButtons, STREAM_ICONS } from '@/components/response-buttons';
+import { ResponseButtons, STREAM_ICONS } from '@/components/response-buttons';
 import { RoundDetailTable } from '@/components/round-detail-table';
 import { RoundHistoryList } from '@/components/round-history-list';
 import { RoundSummaryCard } from '@/components/round-summary-card';
@@ -12,7 +12,7 @@ import { StimulusGrid } from '@/components/stimulus-grid';
 import { TrialHistory } from '@/components/trial-history';
 import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedPresetFor } from '@/game/config';
 import { useGameEngine } from '@/game/engine';
-import type { RoundResult } from '@/game/types';
+import type { GameSettings, RoundResult } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
 import { normalizeKey } from '@/prefs';
 import { useSettings } from '@/settings-context';
@@ -27,15 +27,33 @@ import {
   saveRoundInProgress,
 } from '@/storage';
 
-/** `onReady` fires once the saved rounds (for the daily target) have loaded and are shown. */
-export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () => void }) {
+/** Where the Play screen is: the start screen, or a round (running or paused). */
+export type PlayStage = 'start' | 'playing' | 'paused';
+
+/**
+ * `onReady` fires once the saved rounds (for the daily target) have loaded and are shown. `onStageChange`
+ * tells the app when a round starts, pauses, resumes and ends, so it can hide the tab bar during a round.
+ */
+export function PlayScreen({
+  active,
+  onReady,
+  onStageChange,
+}: {
+  active: boolean;
+  onReady?: () => void;
+  onStageChange?: (stage: PlayStage) => void;
+}) {
   const { settings, prefs, setNLevel, setTrialDurationMs, toggleStream } = useSettings();
   const [sessionRounds, setSessionRounds] = useState<RoundResult[]>([]);
   // Null until the saved rounds have loaded, so the daily target doesn't flash 0% on start.
   const [savedRounds, setSavedRounds] = useState<RoundResult[] | null>(null);
   // The round just finished, until it shows up in savedRounds, so the daily target doesn't dip meanwhile.
   const [pendingRound, setPendingRound] = useState<RoundResult | null>(null);
-  const [practiceMode, setPracticeMode] = useState(false);
+  // Tutorial rounds aren't saved and don't count towards the daily target.
+  const [tutorial, setTutorial] = useState(false);
+  // The settings the round was started with: the Settings tab can still be opened while a round is paused,
+  // and a change there mustn't change the round on screen.
+  const [roundSettings, setRoundSettings] = useState<GameSettings>(settings);
   // Counts round starts, so the trial timer restarts even when a new round begins at the same trial index.
   const [roundCount, setRoundCount] = useState(0);
 
@@ -54,19 +72,19 @@ export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () 
   const handleFinish = useCallback(
     (result: RoundResult) => {
       setSessionRounds((prev) => [result, ...prev]);
-      if (!practiceMode) {
+      if (!tutorial) {
         setPendingRound(result);
         appendRound(result).then(clearRoundInProgress);
       }
     },
-    [practiceMode],
+    [tutorial],
   );
 
   const handleProgress = useCallback(
     (partial: RoundResult) => {
-      if (!practiceMode) saveRoundInProgress(partial);
+      if (!tutorial) saveRoundInProgress(partial);
     },
-    [practiceMode],
+    [tutorial],
   );
 
   const { state, startRound, stopRound, respond, pauseRound, resumeRound, currentPlayedMs } = useGameEngine(
@@ -74,27 +92,45 @@ export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () 
     handleProgress,
   );
 
-  const activeStreams = STREAM_IDS.filter((s) => settings.activeStreams[s]);
-  // Today's play counts the round in progress live (it re-renders every trial), unless it's practice,
+  const busy = state.phase === 'running';
+  const stage: PlayStage = busy ? (state.paused ? 'paused' : 'playing') : 'start';
+  useEffect(() => {
+    onStageChange?.(stage);
+  }, [stage, onStageChange]);
+
+  // Today's play counts the round in progress live (it re-renders every trial), unless it's a tutorial,
   // which isn't saved.
   const pendingMs =
     pendingRound && !savedRounds?.some((r) => r.id === pendingRound.id) ? roundDurationMs(pendingRound) : 0;
-  const liveMs = practiceMode ? 0 : currentPlayedMs();
+  const liveMs = tutorial ? 0 : currentPlayedMs();
   const todayMs = playedOnDayMs(savedRounds ?? [], new Date()) + pendingMs + liveMs;
-  const targetMs = prefs.dailyTargetMinutes * 60_000;
-  const targetPercent = Math.floor((todayMs / targetMs) * 100);
-  const targetReached = todayMs >= targetMs;
-  const busy = state.phase === 'running';
-  const showLatest = !busy && state.phase !== 'idle' && sessionRounds.length > 0;
-  // The first N trials have nothing N back to compare with, so they can't be answered (settings can't
-  // change mid-round, so settings.nLevel is the round's N).
-  const warmingUp = state.trialIndex < settings.nLevel;
+  const targetChip = (
+    <DailyTargetChip
+      loaded={savedRounds !== null}
+      todayMs={todayMs}
+      targetMs={prefs.dailyTargetMinutes * 60_000}
+      minutes={prefs.dailyTargetMinutes}
+    />
+  );
+  const showLatest = state.phase === 'finished' && sessionRounds.length > 0;
+
+  // During a round everything follows the settings it started with.
+  const shown = busy ? roundSettings : settings;
+  const activeStreams = STREAM_IDS.filter((s) => shown.activeStreams[s]);
+  const n = shown.nLevel;
+  // The first N trials have nothing N back to compare with, so they can't be answered.
+  const warmingUp = state.trialIndex < n;
   const respondDisabled = !busy || state.paused || warmingUp;
+  const showHistory = tutorial && prefs.tutorialHistory;
+  const showSolution = tutorial && prefs.tutorialSolution;
+  // Tutorial history: every trial from the one N back (the one to compare with) to the current one.
   const historyItems = (
     state.trialIndex >= state.history.length && state.stimulus
       ? [...state.history, { index: state.trialIndex, stimulus: state.stimulus }]
       : state.history
-  ).slice(-(settings.nLevel + 1));
+  ).filter((t) => t.index >= state.trialIndex - n && t.index <= state.trialIndex);
+  // Outlined only when it's a match with the current trial, on any stream in play.
+  const historyHighlight = STREAM_IDS.some((s) => state.match[s]) ? state.trialIndex - n : undefined;
 
   const onMain = () => {
     if (state.paused) resumeRound();
@@ -103,7 +139,8 @@ export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () 
       // A button left focused (e.g. by keyboard navigation) would react to the answer keys.
       if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
       primeSpeech();
-      setRoundCount((n) => n + 1);
+      setRoundCount((c) => c + 1);
+      setRoundSettings(settings);
       startRound(settings);
     }
   };
@@ -147,177 +184,196 @@ export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () 
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
 
+  if (busy) {
+    const trial = Math.max(0, state.trialIndex) + 1;
+    return (
+      <div className="content play in-round">
+        {/* The round fills the screen: the HUD and round progress at the top, the grid, and the answer
+            buttons sharing whatever height is left, in thumb reach. */}
+        <div className={`play-stage ${prefs.buttonLayout}${showHistory ? ' with-history' : ''}`}>
+          <div className="hud-row">
+            {/* Tutorial rounds don't count towards it. */}
+            {!tutorial && targetChip}
+            <Chip title={`N-back level: ${n}`}>
+              <span className="chip-icon-blue">
+                <Icon name="counter-clockwise" size={18} />
+              </span>
+              <span className="chip-text">{n}</span>
+            </Chip>
+            <Chip title={`Speed: ${speedPresetFor(shown.trialDurationMs).label}`}>
+              <SpeedBolts ms={speedPresetFor(shown.trialDurationMs).ms} />
+            </Chip>
+            <button
+              type="button"
+              className="hud-icon-button"
+              aria-label={state.paused ? 'Resume' : 'Pause'}
+              title={state.paused ? 'Resume (Space)' : 'Pause (Space)'}
+              onClick={onMain}>
+              <Icon name={state.paused ? 'play' : 'pause'} size={22} />
+            </button>
+            <button
+              type="button"
+              className="hud-icon-button stop"
+              aria-label="Stop"
+              title="Stop (Esc)"
+              onClick={stopRound}>
+              <Icon name="stop" size={20} />
+            </button>
+          </div>
+
+          {/* Under the HUD: the trial count, the round's progress and, under it, the trial timer. */}
+          <div className="round-status">
+            <span className="t-code round-count" aria-hidden>
+              <span className="current">{trial}</span>/{TRIALS_PER_ROUND}
+            </span>
+            <div className="round-bars">
+              <div
+                className="round-progress"
+                role="progressbar"
+                aria-label="Round progress"
+                aria-valuemin={0}
+                aria-valuemax={TRIALS_PER_ROUND}
+                aria-valuenow={trial}
+                aria-valuetext={`Trial ${trial} of ${TRIALS_PER_ROUND}`}>
+                <div className="round-progress-fill" style={{ width: `${(trial / TRIALS_PER_ROUND) * 100}%` }} />
+              </div>
+              {prefs.showTrialTimer && (
+                // Stays in the DOM so the layout doesn't shift, but the empty track is hidden until it counts.
+                <div className={`trial-timer${warmingUp ? ' idle' : ''}`} aria-hidden>
+                  {!warmingUp && (
+                    // Starts at the first trial that can be answered; re-keyed per trial so the fill animation
+                    // restarts, and it pauses with the round.
+                    <div
+                      key={`${roundCount}-${state.trialIndex}`}
+                      className="trial-timer-fill"
+                      style={{
+                        animationDuration: `${shown.trialDurationMs}ms`,
+                        animationPlayState: state.paused ? 'paused' : 'running',
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {showHistory && (
+            // A slot per trial from N back to the current one, so the chips keep their place as they fill in.
+            <div
+              className="tutorial-history"
+              aria-label="Last trials"
+              style={{ '--history-slots': n + 1 } as CSSProperties}>
+              <TrialHistory
+                trials={historyItems}
+                highlightIndex={historyHighlight}
+                showPosition={shown.activeStreams.position}
+                showColor={shown.activeStreams.color}
+                showNumbers={shown.activeStreams.number}
+                showLetters={shown.activeStreams.audio}
+              />
+            </div>
+          )}
+
+          <div className="grid-area">
+            <StimulusGrid
+              stimulus={state.stimulus}
+              visible={state.stimulusVisible}
+              varyColor={shown.activeStreams.color}
+              showNumbers={shown.activeStreams.number}
+              showPosition={shown.activeStreams.position}
+            />
+            {state.paused && (
+              <div className="blur-overlay">
+                <span className="t-title">Paused</span>
+              </div>
+            )}
+          </div>
+
+          <ResponseButtons
+            streams={activeStreams}
+            responded={state.responded}
+            match={state.match}
+            showSolution={showSolution}
+            disabled={respondDisabled}
+            layout={prefs.buttonLayout}
+            keys={prefs.keyBindings}
+            onPress={respond}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="content play">
-      {/* The game itself: on a phone it fills the screen, with the answer buttons and controls at the bottom
-          in thumb reach and the grid centred above them. The round details below scroll into view. */}
-      <div className={`play-stage ${prefs.buttonLayout}${practiceMode ? ' practice' : ''}`}>
-      {/* TODO: The hud should be outside of the dom on mobile and maybe use a drag down arrow 
-          to display and hide just to get more space for the grid box  */}
+      <div className="start-stage">
         <div className="hud-row">
+          {targetChip}
           <HudDropdown
-            label="Daily target"
-            title="Daily target"
-            chipClassName={targetReached ? 'good' : undefined}
-            chip={
-              <>
-                <Icon name="target" size={18} />
-                {savedRounds ? `${targetPercent}%` : '–%'}
-              </>
-            }>
-            <div className="target-panel">
-              <div className="row-between">
-                <span className="t-small secondary">Daily target</span>
-                <span className={targetReached ? 't-small good' : 't-small'}>{targetPercent}%</span>
-              </div>
-              <div
-                className="target-bar"
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.min(100, targetPercent)}>
-                <div
-                  className={targetReached ? 'target-fill reached' : 'target-fill'}
-                  style={{ width: `${Math.min(100, targetPercent)}%` }}
-                />
-              </div>
-              <div className="target-stats">
-                <TargetStat label="Played" value={formatDuration(todayMs)} />
-                <TargetStat
-                  label="Left"
-                  value={targetReached ? 'Done' : formatDuration(targetMs - todayMs)}
-                  good={targetReached}
-                />
-                <TargetStat label="Goal" value={`${prefs.dailyTargetMinutes}m`} />
-              </div>
-            </div>
-          </HudDropdown>
-          <HudDropdown
+            underChip
             label={`N-back level: ${settings.nLevel}`}
             title={`N-back level: ${settings.nLevel}`}
-            disabled={busy}
             chip={
               <>
-                <Icon name="counter-clockwise" size={18} />
-                {settings.nLevel}
+                <span className="chip-icon-blue">
+                  <Icon name="counter-clockwise" size={18} />
+                </span>
+                <span className="chip-text">{settings.nLevel}</span>
               </>
             }>
             <span className="t-small secondary">N-back level</span>
             <Stepper value={settings.nLevel} min={MIN_N} max={MAX_N} onChange={setNLevel} />
           </HudDropdown>
-          {busy ? (
-            <Chip>
-              Trial {state.trialIndex + 1}/{TRIALS_PER_ROUND}
-            </Chip>
-          ) : (
-            <SpeedChip ms={settings.trialDurationMs} onSelect={setTrialDurationMs} />
-          )}
-          <span className="hud-chip t-code" title="Streams: tap to turn on or off">
-            {STREAM_IDS.map((stream) => {
-              const on = settings.activeStreams[stream];
-              return (
-                <button
-                  key={stream}
-                  type="button"
-                  className={on ? 'hud-toggle on' : 'hud-toggle'}
-                  aria-label={STREAM_LABELS[stream]}
-                  aria-pressed={on}
-                  title={`${STREAM_LABELS[stream]}: ${on ? 'on' : 'off'}`}
-                  // Streams can't change mid-round, and at least one has to stay on.
-                  disabled={busy || (on && activeStreams.length === 1)}
-                  onClick={() => toggleStream(stream, !on)}>
-                  <Icon name={STREAM_ICONS[stream]} size={18} />
-                </button>
-              );
-            })}
-          </span>
-        </div>
-
-        {practiceMode && (
-          <div className="history-area">
-            {historyItems.length > 0 && (
-              <TrialHistory
-                trials={historyItems}
-                highlightIndex={state.trialIndex - settings.nLevel}
-                showPosition={settings.activeStreams.position}
-                showColor={settings.activeStreams.color}
-                showNumbers={settings.activeStreams.number}
-                showLetters={settings.activeStreams.audio}
-              />
-            )}
-          </div>
-        )}
-
-        <div className="grid-area">
-          <StimulusGrid
-            stimulus={state.stimulus}
-            visible={state.stimulusVisible}
-            varyColor={settings.activeStreams.color}
-            showNumbers={settings.activeStreams.number}
-            showPosition={settings.activeStreams.position}
-          />
-          {prefs.showTrialTimer && (
-            // Stays in the DOM so the layout doesn't shift, but the empty track is hidden until it counts.
-            <div className={`trial-timer${busy && !warmingUp ? '' : ' idle'}`} aria-hidden>
-              {busy && !warmingUp && (
-                // Starts at the first trial that can be answered; re-keyed per trial so the fill animation
-                // restarts, and it pauses with the round.
-                <div
-                  key={`${roundCount}-${state.trialIndex}`}
-                  className="trial-timer-fill"
-                  style={{
-                    animationDuration: `${settings.trialDurationMs}ms`,
-                    animationPlayState: state.paused ? 'paused' : 'running',
-                  }}
-                />
-              )}
-            </div>
-          )}
-          {state.paused && (
-            <div className="blur-overlay">
-              <span className="t-title">Paused</span>
-            </div>
-          )}
-        </div>
-
-        <ResponseButtons
-          streams={activeStreams}
-          responded={state.responded}
-          disabled={respondDisabled}
-          layout={prefs.buttonLayout}
-          keys={prefs.keyBindings}
-          onPress={respond}
-        />
-
-        <div className="main-row">
+          <SpeedChip ms={settings.trialDurationMs} onSelect={setTrialDurationMs} />
           <button
             type="button"
-            className={practiceMode ? 'control-button practice on' : 'control-button practice'}
-            aria-label="Practice mode"
-            title="Practice mode (rounds aren't saved)"
-            disabled={busy}
-            onClick={() => setPracticeMode((v) => !v)}>
-            <Icon name={practiceMode ? 'school' : 'school-outline'} size={22} />
-          </button>
-          <button
-            type="button"
-            className="control-button start"
-            aria-label={busy && !state.paused ? 'Pause' : 'Play'}
-            title={busy && !state.paused ? 'Pause (Space)' : 'Play (Space)'}
-            onClick={onMain}>
-            <Icon name={busy && !state.paused ? 'pause' : 'play'} size={22} />
-          </button>
-          <button
-            type="button"
-            className="control-button stop"
-            aria-label="Stop"
-            title="Stop (Esc)"
-            disabled={!busy}
-            onClick={stopRound}>
-            <Icon name="stop" size={22} />
+            className={tutorial ? 'hud-icon-button tutorial on' : 'hud-icon-button tutorial'}
+            aria-label="Tutorial mode"
+            aria-pressed={tutorial}
+            title="Tutorial mode (rounds aren't saved)"
+            onClick={() => setTutorial((v) => !v)}>
+            <Icon name={tutorial ? 'school' : 'school-outline'} size={22} />
           </button>
         </div>
-        <ButtonRoomFiller layout={prefs.buttonLayout} count={activeStreams.length} />
+
+        <p className="t-small start-label">Select active streams</p>
+        <div className="stream-picker">
+          {STREAM_IDS.map((stream) => {
+            const on = settings.activeStreams[stream];
+            return (
+              <button
+                key={stream}
+                type="button"
+                className={on ? 'stream-card on' : 'stream-card'}
+                aria-pressed={on}
+                // At least one stays on: turning off the last one does nothing (see toggleStream).
+                title={on && activeStreams.length === 1 ? 'At least one stream stays on' : undefined}
+                onClick={() => toggleStream(stream, !on)}>
+                {on && (
+                  <span className="stream-check">
+                    <Icon name="checkmark-circle" size={20} />
+                  </span>
+                )}
+                <span className="stream-icon">
+                  <Icon name={STREAM_ICONS[stream]} size={28} />
+                </span>
+                <span className="t-small">{STREAM_LABELS[stream]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <button type="button" className="start-button" aria-label="Play" title="Play (Space)" onClick={onMain}>
+          <Icon name="play" size={26} />
+        </button>
+        {/* One block, so the two lines sit together rather than getting the start screen's gap between them.
+            Always there, only invisible outside tutorial mode, so turning it on doesn't push the results down. */}
+        <div
+          className={tutorial ? 't-small secondary start-note' : 't-small secondary start-note off'}
+          aria-hidden={!tutorial}>
+          <p>Just for practice.</p>
+          <p>This round won&apos;t count in the stats.</p>
+        </div>
       </div>
 
       {showLatest && (
@@ -332,7 +388,7 @@ export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () 
         <section className="section">
           <h2 className="t-heading">This session</h2>
           <RoundHistoryList
-            rounds={busy ? [] : showLatest ? sessionRounds.slice(1) : sessionRounds}
+            rounds={showLatest ? sessionRounds.slice(1) : sessionRounds}
             emptyLabel="Earlier rounds from this session will appear here."
             // The last round's table just above already shows the key.
             legend={!showLatest}
@@ -340,6 +396,60 @@ export function PlayScreen({ active, onReady }: { active: boolean; onReady?: () 
         </section>
       )}
     </div>
+  );
+}
+
+// The daily target chip, with today's play against the goal in its panel.
+function DailyTargetChip({
+  loaded,
+  todayMs,
+  targetMs,
+  minutes,
+}: {
+  loaded: boolean;
+  todayMs: number;
+  targetMs: number;
+  minutes: number;
+}) {
+  const percent = Math.floor((todayMs / targetMs) * 100);
+  const reached = todayMs >= targetMs;
+  return (
+    <HudDropdown
+      underChip
+      label="Daily target"
+      title="Daily target"
+      chipClassName={reached ? 'good' : undefined}
+      chip={
+        <>
+          <span className="chip-icon-teal">
+            <Icon name="target" size={18} />
+          </span>
+          <span className="chip-text">{loaded ? `${percent}%` : '–%'}</span>
+        </>
+      }>
+      <div className="target-panel">
+        <div className="row-between">
+          <span className="t-small secondary">Daily target</span>
+          <span className={reached ? 't-small good' : 't-small'}>{percent}%</span>
+        </div>
+        <div
+          className="target-bar"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.min(100, percent)}>
+          <div
+            className={reached ? 'target-fill reached' : 'target-fill'}
+            style={{ width: `${Math.min(100, percent)}%` }}
+          />
+        </div>
+        <div className="target-stats">
+          <TargetStat label="Played" value={formatDuration(todayMs)} />
+          <TargetStat label="Left" value={reached ? 'Done' : formatDuration(targetMs - todayMs)} good={reached} />
+          <TargetStat label="Goal" value={`${minutes}m`} />
+        </div>
+      </div>
+    </HudDropdown>
   );
 }
 

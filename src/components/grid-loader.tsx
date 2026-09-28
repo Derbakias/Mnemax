@@ -8,7 +8,7 @@ const CLOCKWISE = [0, 1, 2, 5, 8, 7, 6, 3];
 const LAP_MS = 1600;
 
 /**
- * A loading indicator in the game's own look: a small 3×3 grid (centre empty, like the board) where a
+ * A loading indicator in the game's own look: a small 3×3 grid (centre empty) where a
  * lit box travels clockwise round the outer cells, taking on a new colour at each one.
  */
 export function GridLoader({ label = 'Loading', size = 'small' }: { label?: string; size?: 'small' | 'large' }) {

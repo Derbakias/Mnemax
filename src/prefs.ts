@@ -13,10 +13,16 @@ const BUTTON_LAYOUTS: ButtonLayout[] = ['grid', 'rows'];
 export interface AppPrefs {
   buttonLayout: ButtonLayout;
   dailyTargetMinutes: number;
-  /** A bar under the grid that fills over each trial. */
+  /** A bar under the round progress that fills over each trial. */
   showTrialTimer: boolean;
   /** The key that answers each stream: a character (stored upper-case) or an arrow key's name. */
   keyBindings: Record<StreamId, string>;
+  /**
+   * What tutorial mode shows: the trials from N back to the current one (the N-back one outlined when it matches), and
+   * the answer, by outlining the buttons of the streams that match. At least one is always on.
+   */
+  tutorialHistory: boolean;
+  tutorialSolution: boolean;
 }
 
 export const DEFAULT_KEY_BINDINGS: Record<StreamId, string> = { position: 'F', color: 'D', number: 'J', audio: 'K' };
@@ -64,6 +70,7 @@ export function clampPrefs(raw: Partial<AppPrefs> | null | undefined): AppPrefs 
     typeof minutes === 'number' && Number.isFinite(minutes)
       ? Math.min(MAX_DAILY_TARGET_MINUTES, Math.max(MIN_DAILY_TARGET_MINUTES, Math.round(minutes)))
       : 10;
+  const tutorialSolution = raw?.tutorialSolution === true;
   return {
     buttonLayout: BUTTON_LAYOUTS.includes(raw?.buttonLayout as ButtonLayout)
       ? (raw?.buttonLayout as ButtonLayout)
@@ -71,6 +78,8 @@ export function clampPrefs(raw: Partial<AppPrefs> | null | undefined): AppPrefs 
     dailyTargetMinutes,
     showTrialTimer: raw?.showTrialTimer !== false,
     keyBindings: clampKeyBindings(raw?.keyBindings),
+    tutorialHistory: raw?.tutorialHistory !== false || !tutorialSolution,
+    tutorialSolution,
   };
 }
 

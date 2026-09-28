@@ -40,6 +40,7 @@ export function SettingsScreen() {
     setButtonLayout,
     setDailyTargetMinutes,
     setShowTrialTimer,
+    setTutorialAid,
     setKeyBinding,
     resetDefaults,
   } = useSettings();
@@ -143,7 +144,7 @@ export function SettingsScreen() {
               one. Faster is harder.
             </p>
             <p>
-              <strong>Trial timer:</strong> a bar under the grid that fills up during each trial.
+              <strong>Trial timer:</strong> a bar at the top of the grid, under the progress, that fills up during each trial.
             </p>
           </>
         }>
@@ -194,7 +195,7 @@ export function SettingsScreen() {
       <Section
         title="Daily target"
         info={
-          <p>How long you want to play each day. It shows at the top of the Play screen. Practice doesn't count.</p>
+          <p>How long you want to play each day. It shows at the top of the Play screen. Tutorial rounds don't count.</p>
         }>
         <div className="inline-row">
           <Stepper
@@ -206,6 +207,45 @@ export function SettingsScreen() {
           />
           <span className="t-default secondary">minutes per day</span>
         </div>
+      </Section>
+
+      <Section
+        title="Tutorial"
+        info={
+          <>
+            <p>
+              Turn tutorial mode on with <Icon name="school-outline" size={16} /> on the Play screen. 
+              The round results aren't saved and don't count towards the daily target. One of the tutorial options shoulbe be always on.
+            </p>
+            <p>
+              <strong>History:</strong> every trial from the one N back to the current one, just above the grid. The one N
+              back is outlined when it matches the current trial.
+            </p>
+            <p>
+              <strong>Solution:</strong> the answer buttons of the streams that match are outlined.
+            </p>
+          </>
+        }>
+        <label className="row-between switch-row">
+          <span className="t-default">Show history</span>
+          <input
+            type="checkbox"
+            role="switch"
+            className="switch"
+            checked={prefs.tutorialHistory}
+            onChange={(e) => setTutorialAid('tutorialHistory', e.target.checked)}
+          />
+        </label>
+        <label className="row-between switch-row">
+          <span className="t-default">Show solution</span>
+          <input
+            type="checkbox"
+            role="switch"
+            className="switch"
+            checked={prefs.tutorialSolution}
+            onChange={(e) => setTutorialAid('tutorialSolution', e.target.checked)}
+          />
+        </label>
       </Section>
 
       <Section title="Button layout" info={<p>Where the answer buttons sit on the Play screen.</p>}>

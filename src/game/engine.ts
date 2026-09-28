@@ -15,6 +15,8 @@ export interface GameEngineState {
   stimulus: TrialStimulus | null;
   stimulusVisible: boolean;
   responded: Record<StreamId, boolean>;
+  /** Which streams the current trial is a match on (all false before the first N trials are past). */
+  match: Record<StreamId, boolean>;
   paused: boolean;
   history: TrialRecord[];
 }
@@ -33,6 +35,7 @@ const INITIAL_STATE: GameEngineState = {
   stimulus: null,
   stimulusVisible: false,
   responded: emptyResponses(),
+  match: emptyResponses(),
   paused: false,
   history: [],
 };
@@ -156,12 +159,15 @@ export function useGameEngine(
     trialStartRef.current = now();
     remainingVisibleMsRef.current = 0;
     remainingTrialMsRef.current = 0;
+    const match = emptyResponses();
+    for (const stream of STREAM_IDS) match[stream] = round.settings.activeStreams[stream] && round.isMatch[stream][index];
     setState({
       phase: 'running',
       trialIndex: index,
       stimulus: round.stimuli[index],
       stimulusVisible: true,
       responded: emptyResponses(),
+      match,
       paused: false,
       history: [...recordsRef.current],
     });

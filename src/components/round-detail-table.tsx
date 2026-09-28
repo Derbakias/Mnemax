@@ -22,62 +22,66 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
   const showNumberCol = s.activeStreams.number;
   const showColorCol = s.activeStreams.color;
   const activeCols = STREAM_IDS.filter((stream) => s.activeStreams[stream]);
+  // A round stopped before its first trial has no rows: the table (and its key) would be headings only.
+  const played = result.trials.length > 0;
 
   return (
     <div className="detail-table">
-      <div className="h-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th className="c-idx">#</th>
-              <th className="c-pos">Cell</th>
-              {showColorCol && <th className="c-color">Color</th>}
-              {showNumberCol && <th className="c-num">Digit</th>}
-              {s.activeStreams.audio && <th className="c-letter">Ltr</th>}
-              {activeCols.map((stream) => (
-                <th key={stream} className="c-outcome">
-                  {OUTCOME_COL_LABEL[stream]}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {result.trials.map((trial) => {
-              const color = showColorCol ? COLOR_PALETTE[trial.stimulus.color % COLOR_PALETTE.length] : NEUTRAL_COLOR;
-              return (
-                <tr key={trial.index}>
-                  <td>{String(trial.index + 1).padStart(2, '0')}</td>
-                  <td>{trial.stimulus.position + 1}</td>
-                  {showColorCol && (
-                    <td>
-                      <span className="table-swatch" style={{ backgroundColor: color }} />
-                    </td>
-                  )}
-                  {showNumberCol && <td>{trial.stimulus.number}</td>}
-                  {s.activeStreams.audio && <td>{trial.stimulus.letter}</td>}
-                  {activeCols.map((stream) => {
-                    const outcome = trial.outcome[stream];
-                    const rt = trial.responseTimesMs?.[stream];
-                    return (
-                      <td key={stream}>
-                        <div className={outcome ? OUTCOME_CLASS[outcome] : undefined}>
-                          {outcome ? OUTCOME_GLYPHS[outcome] : ''}
-                        </div>
-                        {rt != null && <div className="rt">{Math.round(rt)}</div>}
+      {played && (
+        <div className="h-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th className="c-idx">#</th>
+                <th className="c-pos">Cell</th>
+                {showColorCol && <th className="c-color">Color</th>}
+                {showNumberCol && <th className="c-num">Digit</th>}
+                {s.activeStreams.audio && <th className="c-letter">Ltr</th>}
+                {activeCols.map((stream) => (
+                  <th key={stream} className="c-outcome">
+                    {OUTCOME_COL_LABEL[stream]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {result.trials.map((trial) => {
+                const color = showColorCol ? COLOR_PALETTE[trial.stimulus.color % COLOR_PALETTE.length] : NEUTRAL_COLOR;
+                return (
+                  <tr key={trial.index}>
+                    <td>{String(trial.index + 1).padStart(2, '0')}</td>
+                    <td>{trial.stimulus.position + 1}</td>
+                    {showColorCol && (
+                      <td>
+                        <span className="table-swatch" style={{ backgroundColor: color }} />
                       </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    )}
+                    {showNumberCol && <td>{trial.stimulus.number}</td>}
+                    {s.activeStreams.audio && <td>{trial.stimulus.letter}</td>}
+                    {activeCols.map((stream) => {
+                      const outcome = trial.outcome[stream];
+                      const rt = trial.responseTimesMs?.[stream];
+                      return (
+                        <td key={stream}>
+                          <div className={outcome ? OUTCOME_CLASS[outcome] : undefined}>
+                            {outcome ? OUTCOME_GLYPHS[outcome] : ''}
+                          </div>
+                          {rt != null && <div className="rt">{Math.round(rt)}</div>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
       <p className="t-small secondary">
         {result.stopped ? `Stopped after ${result.trials.length} of ${TRIALS_PER_ROUND}` : TRIALS_PER_ROUND} trials ·
         N={s.nLevel} · {Math.round(s.trialDurationMs)} ms per trial
       </p>
-      {legend && <OutcomeLegend />}
+      {legend && played && <OutcomeLegend />}
     </div>
   );
 }
