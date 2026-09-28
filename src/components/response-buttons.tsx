@@ -15,6 +15,10 @@ export const STREAM_ICONS: Record<StreamId, IconName> = {
 interface ResponseButtonsProps {
   streams: StreamId[];
   responded: Record<StreamId, boolean>;
+  /** The current trial's matches: an answered button turns blue when right, red when wrong. */
+  match: Record<StreamId, boolean>;
+  /** Tutorial: outline the buttons that should be pressed this trial. */
+  showSolution?: boolean;
   disabled: boolean;
   layout: ButtonLayout;
   /** The key that answers each stream (shown as a hint; holding it lights the button). */
@@ -22,8 +26,18 @@ interface ResponseButtonsProps {
   onPress: (stream: StreamId) => void;
 }
 
-export function ResponseButtons({ streams, responded, disabled, layout, keys, onPress }: ResponseButtonsProps) {
-  const compact = layout === 'grid' && streams.length > 3;
+export function ResponseButtons({
+  streams,
+  responded,
+  match,
+  showSolution = false,
+  disabled,
+  layout,
+  keys,
+  onPress,
+}: ResponseButtonsProps) {
+  // The buttons share the room left under the grid, so with one or two they're big enough for a bigger label.
+  const large = streams.length <= 2;
   // Buttons stay lit while held (pointer or the stream's key). Tracked by hand because `:active` doesn't
   // fire reliably once pointerdown is cancelled, which it is to respond on press-down.
   const [held, setHeld] = useState<ReadonlySet<StreamId>>(new Set());
@@ -79,7 +93,15 @@ export function ResponseButtons({ streams, responded, disabled, layout, keys, on
     <button
       key={stream}
       type="button"
-      className={`response-button${held.has(stream) ? ' held' : ''}${compact ? ' compact' : ''}`}
+      className={[
+        'response-button',
+        // Stays until the trial ends, so even a quick tap shows whether it was right.
+        responded[stream] ? (match[stream] ? 'correct' : 'wrong') : '',
+        showSolution && match[stream] ? 'solution' : '',
+        held.has(stream) ? 'held' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       disabled={disabled}
       // Answers come from the assigned keys, so these never need focus (a focused button would keep its ring).
       tabIndex={-1}
@@ -108,29 +130,11 @@ export function ResponseButtons({ streams, responded, disabled, layout, keys, on
         if (!answeredOnDown.current && !responded[stream]) onPress(stream);
         answeredOnDown.current = false;
       }}>
-      <Icon name={STREAM_ICONS[stream]} size={compact ? 20 : 22} />
-      <span className="t-small">{STREAM_LABELS[stream]}</span>
+      <Icon name={STREAM_ICONS[stream]} />
+      <span className={large ? 't-default response-label' : 't-small response-label'}>{STREAM_LABELS[stream]}</span>
       <kbd className="key-hint">{keyLabel(keys[stream])}</kbd>
     </button>
   );
 
   return <div className={`response-buttons ${layout}`}>{streams.map(renderButton)}</div>;
-}
-
-/**
- * On a phone, sits under the controls and takes the height of the answer buttons that aren't shown (fewer
- * than four streams), so the grid stays where it is with four and the spare room ends up at the bottom.
- * Hidden and empty; its boxes are sized like the buttons by the phone styles.
- */
-export function ButtonRoomFiller({ layout, count }: { layout: ButtonLayout; count: number }) {
-  const missingRows = layout === 'rows' ? 4 - count : 2 - Math.ceil(count / 2);
-  if (missingRows <= 0) return null;
-  const boxes = layout === 'rows' ? missingRows : missingRows * 2;
-  return (
-    <div className={`response-buttons ${layout} stage-filler`} aria-hidden>
-      {Array.from({ length: boxes }, (_, i) => (
-        <div key={i} className="response-button" />
-      ))}
-    </div>
-  );
 }

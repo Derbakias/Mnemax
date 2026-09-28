@@ -30,3 +30,27 @@ describe('clampPrefs key bindings', () => {
     ).toEqual(DEFAULT_KEY_BINDINGS);
   });
 });
+
+describe('clampPrefs tutorial', () => {
+  it('shows the history by default', () => {
+    expect(clampPrefs(null)).toMatchObject({ tutorialHistory: true, tutorialSolution: false });
+  });
+
+  it('keeps either one or both on', () => {
+    expect(clampPrefs({ tutorialHistory: false, tutorialSolution: true })).toMatchObject({
+      tutorialHistory: false,
+      tutorialSolution: true,
+    });
+    expect(clampPrefs({ tutorialHistory: true, tutorialSolution: true })).toMatchObject({
+      tutorialHistory: true,
+      tutorialSolution: true,
+    });
+  });
+
+  it('never turns both off', () => {
+    expect(clampPrefs({ tutorialHistory: false, tutorialSolution: false })).toMatchObject({
+      tutorialHistory: true,
+      tutorialSolution: false,
+    });
+  });
+});

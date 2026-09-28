@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { GridLoader } from '@/components/grid-loader';
 import { Icon, type IconName } from '@/components/icon';
-import { PlayScreen } from '@/screens/play';
+import { PlayScreen, type PlayStage } from '@/screens/play';
 import { SettingsScreen } from '@/screens/settings';
 import { StatsScreen } from '@/screens/stats';
 import { SettingsProvider, useSettings } from '@/settings-context';
@@ -38,6 +38,11 @@ type SplashState = 'showing' | 'fading' | 'gone';
 
 function AppShell() {
   const [tab, setTab] = useState<Tab>('play');
+  // A round takes the whole screen: no tab bar while it runs. When it's paused the tab bar comes back over
+  // the bottom of the screen, without moving the game under it.
+  const [playStage, setPlayStage] = useState<PlayStage>('start');
+  const tabBarHidden = tab === 'play' && playStage === 'playing';
+  const tabBarOverlay = tab === 'play' && playStage === 'paused';
   const { ready: settingsReady } = useSettings();
   const [splash, setSplash] = useState<SplashState>('showing');
   const [minTimeDone, setMinTimeDone] = useState(false);
@@ -82,9 +87,9 @@ function AppShell() {
       onMouseDown={(e) => {
         if ((e.target as HTMLElement).closest('button')) e.preventDefault();
       }}>
-      <main className="screen" hidden={tab !== 'play'}>
+      <main className="screen play-screen" hidden={tab !== 'play'}>
         {/* Keyboard shortcuts stay off under the startup screen, so Space can't start a round behind it. */}
-        <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} />
+        <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} onStageChange={setPlayStage} />
       </main>
       <main className="screen" hidden={tab !== 'stats'}>
         <StatsScreen onReady={onStatsReady} />
@@ -92,7 +97,7 @@ function AppShell() {
       <main className="screen" hidden={tab !== 'settings'}>
         <SettingsScreen />
       </main>
-      <nav className="tab-bar">
+      <nav className={tabBarOverlay ? 'tab-bar overlay' : 'tab-bar'} hidden={tabBarHidden}>
         {TABS.map((t) => (
           <button
             key={t.id}

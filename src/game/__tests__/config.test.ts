@@ -1,4 +1,4 @@
-import { clampSettings, defaultSettings, maxMatchesFor, stimulusVisibleMs } from '../config';
+import { COLOR_PALETTE, COLOR_SHADES, clampSettings, defaultSettings, maxMatchesFor, stimulusVisibleMs } from '../config';
 
 describe('stimulusVisibleMs', () => {
   it('shows the box for all of a trial except a fixed 500 ms blank', () => {
@@ -39,5 +39,11 @@ describe('clampSettings', () => {
     const s = clampSettings({ nLevel: 15, matchCounts: { position: 18, color: 6, number: 6, audio: 6 } });
     expect(s.matchCounts.position).toBe(maxMatchesFor(10));
     expect(s.matchCounts.color).toBe(6);
+  });
+});
+
+describe('COLOR_SHADES', () => {
+  it('has a shade for every palette colour', () => {
+    expect(COLOR_SHADES).toHaveLength(COLOR_PALETTE.length);
   });
 });

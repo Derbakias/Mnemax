@@ -8,12 +8,14 @@ export const MIN_N = 1;
 export const MAX_N = 10;
 export const GRID_CELLS = 9;
 export const GRID_CENTER_INDEX = 4;
-export const POSITION_CELLS = [0, 1, 2, 3, 5, 6, 7, 8];
+// All nine boxes, the centre one too.
+export const POSITION_CELLS = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 export const POSITION_ARROWS: Record<number, string> = {
   0: '↖',
   1: '↑',
   2: '↗',
   3: '←',
+  4: '•',
   5: '→',
   6: '↙',
   7: '↓',
@@ -30,6 +32,13 @@ export function stimulusVisibleMs(trialDurationMs: number): number {
 
 // TODO: Find better colour combinations
 export const COLOR_PALETTE = ['#E53935', '#1E88E5', '#43A047', '#FDD835', '#8E24AA', '#FB8C00'];
+/**
+ * A deeper shade of each palette colour (and of the neutral one), for the lit box's 3D edge and the digit's
+ * shadow. Hand-picked rather than the colour darkened with black, which turns yellow a muddy olive: yellow
+ * gets amber instead.
+ */
+export const COLOR_SHADES = ['#B71C1C', '#1565C0', '#2E7D32', '#F9A825', '#6A1B9A', '#E65100'];
+export const NEUTRAL_SHADE = '#1976D2';
 
 export const LETTERS = ['C', 'H', 'K', 'L', 'Q', 'R', 'S', 'T'];
 export const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
