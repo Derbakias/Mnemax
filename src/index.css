@@ -45,6 +45,12 @@
   /* The faint washes of colour behind the Play screen. */
   --wash-blue: rgba(30, 136, 229, 0.09);
   --wash-orange: rgba(251, 140, 0, 0.07);
+  /* Raised panels on the Stats screen: a white surface over the screen's colour wash, a hairline edge and a
+     soft shadow under it. --accent-ink is blue text on a light blue fill (the picked filter chip). */
+  --surface: #ffffff;
+  --surface-border: rgba(15, 23, 42, 0.07);
+  --surface-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -14px rgba(15, 23, 42, 0.16);
+  --accent-ink: #1565c0;
   --success: #43a047;
   --warning: #fb8c00;
   --danger: #e53935;
@@ -90,6 +96,10 @@
     --progress: #1e88e5;
     --wash-blue: rgba(100, 181, 246, 0.12);
     --wash-orange: rgba(255, 167, 38, 0.08);
+    --surface: #141518;
+    --surface-border: rgba(255, 255, 255, 0.07);
+    --surface-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+    --accent-ink: #64b5f6;
     --success: #66bb6a;
     --warning: #ffa726;
     --danger: #ef5350;
@@ -284,7 +294,7 @@ p {
   gap: 24px;
 }
 .content.stats {
-  gap: 20px;
+  gap: 28px;
 }
 
 .section {
@@ -298,7 +308,8 @@ p {
 }
 /* A faint blue glow from the top left and orange from the bottom right, so the screen isn't flat white or
    black; faint enough that the grid's colours still stand out. */
-.screen.play-screen {
+.screen.play-screen,
+.screen.stats-screen {
   background:
     radial-gradient(120% 55% at 0% 0%, var(--wash-blue), transparent 70%),
     radial-gradient(110% 50% at 100% 100%, var(--wash-orange), transparent 70%),
@@ -1240,6 +1251,49 @@ p {
   gap: 8px;
   padding: 14px;
 }
+/* The last round's stream table: five number columns, so a little narrower, and its headings are symbols
+   only until there's room for the words too. It sits in the card, lined up with the card's edges. */
+.stream-table.five {
+  --stat-count: 5;
+  --stat-col: 44px;
+  padding: 0;
+}
+.stream-table.five .stream-table-row {
+  padding-inline: 0;
+}
+/* Wide enough for "〇 No match" on one line. */
+@media (min-width: 600px) {
+  .stream-table.five {
+    --stat-col: 72px;
+  }
+}
+@media (max-width: 599.98px) {
+  .stream-table.five .stream-table-row.header .heading-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+@media (max-width: 399.98px) {
+  .stream-table.five {
+    --stat-col: 36px;
+  }
+}
+/* The smallest phones: the stream icons alone, which are the answer buttons' own (the names stay for
+   screen readers). */
+@media (max-width: 359.98px) {
+  .stream-table.five .stream-name-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
 .overall-row {
   display: flex;
   align-items: baseline;
@@ -1294,18 +1348,21 @@ p {
   width: 38px;
   padding-left: 4px;
 }
-.detail-table .c-pos,
-.detail-table .c-num {
-  width: 46px;
+/* A stream's column: its icon and short name over cells of what the trial showed beside how it was answered. */
+.detail-table .c-stream {
+  width: 64px;
 }
-.detail-table .c-color {
-  width: 48px;
+.detail-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
-.detail-table .c-letter {
-  width: 42px;
-}
-.detail-table .c-outcome {
-  width: 44px;
+.detail-table .trial-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 16px;
 }
 .detail-table .rt {
   font-size: 9px;
@@ -1363,14 +1420,48 @@ p {
 .history-list::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+.history-entry + .history-entry {
+  border-top: 1px solid var(--surface-border);
+}
 .history-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  padding: 10px 0;
+  padding: 12px 4px;
+  border-radius: 8px;
   text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+@media (hover: hover) {
+  .history-row:hover {
+    background: var(--background-element);
+  }
+}
+.history-row-title {
+  min-width: 0;
+}
+.history-row-end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+/* Points down when closed and up when open. */
+.history-chevron {
+  display: inline-flex;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+.history-entry.open .history-chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .history-chevron {
+    transition: none;
+  }
 }
 .history-detail {
   padding-bottom: 12px;
@@ -1481,26 +1572,100 @@ p {
 .summary-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 @media (min-width: 700px) {
   .summary-row {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px;
-  gap: 2px;
-  text-align: center;
+
+/* A raised panel: the Stats screen's cards, tables and charts. */
+.panel {
+  border-radius: 16px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  box-shadow: var(--surface-shadow);
+}
+.panel-pad {
+  padding: 14px;
+}
+@media (max-width: 399.98px) {
+  .panel-pad {
+    padding: 12px 10px;
+  }
 }
 
+/* A headline number: its icon in a blue bubble, the label under it, then the value. The label gets the tile's
+   whole width, so "Rounds played" fits even four tiles to a row or on a small phone. All four tiles are blue:
+   the icons and labels tell them apart, since four colours in bubbles this small were hard to tell apart,
+   especially with colour blindness. */
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+}
+.stat-tile-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.stat-tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.stat-tile-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stat-tile-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Four to a row the tiles are narrow: a size down, so a long time played ("123h 45m") still fits. */
+@media (min-width: 700px) {
+  .stat-tile-value {
+    font-size: 24px;
+  }
+}
+/* Every tile keeps a line for the note under the value, so the four stay the same height. A size down from the
+   label, so "▲ +0.06 in 7 days" stays on one line four tiles to a row. */
+.stat-tile-sub {
+  min-height: 18px;
+  margin-top: -4px;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+@media (max-width: 399.98px) {
+  .stat-tile {
+    padding: 12px;
+  }
+  .stat-tile-value {
+    font-size: 24px;
+  }
+}
 
 .mode-table {
   display: flex;
   flex-direction: column;
+  gap: 2px;
   padding: 6px;
 }
 /* Every number column in the modes and stream tables is this wide, so the two tables line up alike. */
@@ -1512,6 +1677,14 @@ p {
   .mode-table,
   .stream-table {
     --stat-col: 56px;
+  }
+}
+/* Small phones: the stream table's headings shrink to their symbols (below), so the columns can too, leaving
+   the stream names room. */
+@media (max-width: 399.98px) {
+  .mode-table,
+  .stream-table {
+    --stat-col: 42px;
   }
 }
 /* Column headings a size down, so "Accuracy" fits a narrow column. */
@@ -1551,11 +1724,16 @@ p {
   width: 55px;
 }
 .mode-row.header {
-  opacity: 0.6;
-  padding-block: 4px;
+  color: var(--text-secondary);
+  padding-block: 6px;
 }
+/* The mode shown in By mode: tinted blue. */
 .mode-row.on {
-  background: var(--background-selected);
+  background: var(--accent-soft);
+}
+.mode-row:not(.header) {
+  cursor: pointer;
+  transition: background-color 0.15s;
 }
 /* Phones: drop the Best column so a four-stream mode still fits. */
 @media (max-width: 479.98px) {
@@ -1665,19 +1843,21 @@ p {
   padding: 10px;
   border-radius: 10px;
 }
-.mode-option.on,
+.mode-option.on {
+  background: var(--accent-soft);
+}
 .mode-picker .hud-chip {
-  background: var(--background-element);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  box-shadow: var(--chip-shadow);
 }
 @media (hover: hover) {
   .mode-option:not(.on):hover {
     background: var(--background-element);
   }
-  /* The table sits on a card already in --background-element: hover shows half of the selected shade,
-     and the selected row keeps its own. */
+  /* The selected row keeps its own tint. */
   .mode-row:not(.header):not(.on):hover {
-    background: var(--background-selected);
-    background: color-mix(in srgb, var(--background-selected) 50%, var(--background-element));
+    background: var(--background-element);
   }
 }
 
@@ -1688,12 +1868,23 @@ p {
 }
 .stream-table-row {
   display: grid;
-  /* Stream | Accuracy | Matched | Missed | False */
-  grid-template-columns: 1fr repeat(4, var(--stat-col));
+  /* Stream | Accuracy | Matched | Missed | False (and No match, in the last round's table). The name column
+     never grows past its share (a long name is cut short instead), so the numbers line up from row to row:
+     each row is its own grid. */
+  grid-template-columns: minmax(0, 1fr) repeat(var(--stat-count, 4), var(--stat-col));
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 8px;
   text-align: center;
+}
+/* Every stream has a row, so the table keeps its height from mode to mode; the ones the mode doesn't use are
+   dashed out. */
+.stream-table-row + .stream-table-row:not(.header) {
+  border-top: 1px solid var(--surface-border);
+}
+.stream-table-row.off {
+  color: var(--text-secondary);
+  opacity: 0.5;
 }
 /* A shortened count (1.2K): hovering or tapping it opens the exact number under it, growing to the left
    (these counts sit in the right-hand columns). */
@@ -1723,23 +1914,61 @@ p {
   justify-content: center;
   align-items: center;
   gap: 2px;
+  white-space: nowrap;
+}
+/* The headings' symbols: 14px icons, bigger than the headings' small type so they read at a glance. All the
+   same even size, so centred in their columns they land on whole pixels and stay sharp, and share a middle.
+   The accuracy pie is blue: green and red mean good and bad here, and accuracy is neither. */
+.outcome-mark {
+  display: inline-flex;
+}
+.outcome-mark.accuracy {
+  color: var(--accent);
 }
 .stream-table-row > :first-child {
   justify-self: start;
 }
+.stream-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+}
+.stream-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Grey words rather than a faded row, so the symbols keep their full colour. */
 .stream-table-row.header {
-  opacity: 0.6;
-  padding-block: 4px;
+  color: var(--text-secondary);
+  padding-block: 6px;
 }
-@media (max-width: 479.98px) {
-  .stream-table-row {
-    column-gap: 10px;
-  }
-}
-/* Phones: the stream names need the room back. */
+/* Small phones: the stream names need the room. */
 @media (max-width: 399.98px) {
   .stream-table-row {
     column-gap: 4px;
+  }
+}
+@media (max-width: 339.98px) {
+  .stream-table-row {
+    padding-inline: 4px;
+  }
+  .stream-name {
+    gap: 6px;
+  }
+}
+/* Small phones: the headings shrink to their symbols (a pie chart for accuracy, ✓ ✕ ■ for the outcomes). The
+   words stay for screen readers. */
+@media (max-width: 399.98px) {
+  .stream-table-row.header .heading-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }
 
@@ -1760,12 +1989,22 @@ p {
   font-size: 11px;
   border-radius: 8px;
   padding: 5px 10px;
+  border: 1px solid transparent;
   background: var(--background-element);
-  color: var(--text);
+  color: var(--text-secondary);
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 .filter-chip.on {
-  background: var(--text);
-  color: var(--background);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+@media (hover: hover) {
+  .filter-chip:not(.on):hover {
+    color: var(--text);
+  }
 }
 
 /* uPlot charts: its legend (values at the cursor; tap a series to hide it) in the app's type. */
@@ -1816,6 +2055,18 @@ p {
 }
 .uplot-box .u-legend .u-series {
   cursor: pointer;
+}
+/* The By mode legend has a line per stream's key too, so on phones it takes one line or two depending on the
+   mode: room is kept for two, so picking another mode doesn't move what's below. */
+.progress-legend {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (max-width: 599.98px) {
+  .progress-legend {
+    min-height: 44px;
+  }
 }
 .chart-legend {
   display: flex;
@@ -1903,6 +2154,11 @@ p {
   /* Pinches and sideways drags go to the chart (crosshair, zoom; see chartInteraction); vertical swipes still scroll. */
   touch-action: pan-y;
 }
+/* Zoomed in, a finger moves the chart up and down as well, so vertical swipes on it no longer scroll the
+   page (swiping beside it still does, and a double tap resets it). */
+.uplot-box .u-over.pannable.zoomed {
+  touch-action: none;
+}
 .uplot-box .u-over.pannable.dragging {
   cursor: grabbing;
 }
@@ -1918,11 +2174,16 @@ p {
   width: 44px;
   cursor: ns-resize;
 }
-/* Only mouse and pen drive these; touch keeps scrolling the page. */
+/* A finger drags them too. Along the x axis, sideways drags stretch it and vertical swipes still scroll the
+   page; a y axis takes every drag that starts on it, as it's stretched up and down, the way the page
+   scrolls. */
+.axis-handle.x {
+  touch-action: pan-y;
+}
+.axis-handle.y {
+  touch-action: none;
+}
 @media (hover: none) {
-  .axis-handle {
-    display: none;
-  }
   .uplot-box .u-over.pannable {
     cursor: default;
   }
@@ -1974,6 +2235,8 @@ p {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  /* A line kept even when there's no estimate to show, so picking another mode doesn't move what's below. */
+  min-height: 20px;
   text-align: center;
 }
 

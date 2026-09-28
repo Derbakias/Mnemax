@@ -52,12 +52,15 @@ export function UPlotChart({ options, data, height, plotRef: externalRef, zoom }
     if (!crosshair) plotRef.current?.setCursor({ left: -10, top: -10 });
   }, [crosshair]);
 
-  if (!zoom) return <div ref={boxRef} className="uplot-box" />;
+  // The box holds the chart's height before uPlot has drawn into it (a new chart waits a render for its
+  // width), so rebuilding one, like picking another mode, doesn't move the page under it.
+  const box = <div ref={boxRef} className="uplot-box" style={{ minHeight: height }} />;
+  if (!zoom) return box;
   // The touch gestures read the switch from `data-crosshair` (see chartInteraction), so flipping it
   // doesn't rebuild the chart.
   return (
     <div className="uplot-frame" data-crosshair={crosshair ? 'on' : 'off'}>
-      <div ref={boxRef} className="uplot-box" />
+      {box}
     </div>
   );
 }
@@ -150,6 +153,25 @@ export function axisStyle(theme: Theme, extra: Partial<uPlot.Axis> = {}): uPlot.
   };
 }
 
+/** Room between an axis's widest value and its title (or the chart's edge), in CSS pixels. */
+const AXIS_VALUE_PAD = 6;
+let measureContext: CanvasRenderingContext2D | null = null;
+
+/**
+ * An axis `size` just wide enough for its widest value, so the axis title sits close to the numbers
+ * however many digits they have (a fixed size left a wide gap beside short ones).
+ */
+export function fitAxisSize(min = 16): uPlot.Axis.Size {
+  return (_u, values) => {
+    if (!values?.length) return min;
+    measureContext ??= document.createElement('canvas').getContext('2d');
+    if (!measureContext) return min;
+    measureContext.font = AXIS_FONT;
+    const widest = Math.max(...values.map((v) => measureContext!.measureText(String(v)).width));
+    return Math.max(min, Math.ceil(widest) + 4 + AXIS_VALUE_PAD);
+  };
+}
+
 /** Minimum room per date label on a round axis, in CSS pixels. */
 const DATE_LABEL_SPACE = 64;
 
@@ -195,6 +217,41 @@ export function roundDateAxis(theme: Theme, times: number[]): uPlot.Axis {
           : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       });
     },
+  });
+}
+
+/**
+ * X axis for charts with one x step per calendar day (x in seconds, each day's value at its midnight): labels
+ * days in the same format as `roundDateAxis` ("27 Aug" in the reader's language, not uPlot's own "8/27"),
+ * thinned to fit the width the same way.
+ */
+export function dayDateAxis(theme: Theme): uPlot.Axis {
+  return axisStyle(theme, {
+    grid: { show: false },
+    splits: (u, _axis, min, max) => {
+      const days: number[] = [];
+      const day = new Date(min * 1000);
+      day.setHours(0, 0, 0, 0);
+      if (day.getTime() / 1000 < min) day.setDate(day.getDate() + 1);
+      for (; day.getTime() / 1000 <= max; day.setDate(day.getDate() + 1)) days.push(day.getTime() / 1000);
+      // As on the round axis: from the newest day back, so the latest has a label, and none sticking out
+      // past the plot's left end.
+      const plotWidth = u.bbox.width / uPlot.pxRatio;
+      const pos = (x: number) => ((x - min) / (max - min || 1)) * plotWidth;
+      const kept: number[] = [];
+      let lastPos = Infinity;
+      for (let j = days.length - 1; j >= 0; j--) {
+        const p = pos(days[j]);
+        if (p < DATE_LABEL_SPACE / 2) break;
+        if (lastPos - p >= DATE_LABEL_SPACE) {
+          kept.unshift(days[j]);
+          lastPos = p;
+        }
+      }
+      return kept;
+    },
+    values: (_u, splits) =>
+      splits.map((x) => new Date(x * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
   });
 }
 
@@ -378,15 +435,27 @@ export function chartInteraction({
     min = Math.max(floor, Math.min(min, ceiling - span));
     u.setScale(y.key, { min, max: min + span });
   };
+  // The chart's plot area, once uPlot has made it.
+  let overEl: HTMLElement | null = null;
   // uPlot applies scale changes in a microtask, so this reads the zoom from `state`, not `u.scales`.
-  const notify = () => onZoomed(state.xWindow != null || state.manualY);
+  const notify = () => {
+    const zoomed = state.xWindow != null || state.manualY;
+    onZoomed(zoomed);
+    // A zoomed-in chart takes vertical touch drags too (`.zoomed` in CSS), so a finger can move it up and
+    // down; until then they scroll the page. Only where panning moves the y axes.
+    if (panZoomY) overEl?.classList.toggle('zoomed', zoomed);
+  };
   const range = (u: uPlot, key: string) => [u.scales[key].min ?? 0, u.scales[key].max ?? 1] as const;
   const xRange = () => state.xWindow ?? ([fullMin, fullMax] as const);
 
-  /** Drags an element with the primary button (mouse or pen), calling `move` with the offset so far. */
-  const onDrag = (el: HTMLElement, move: (dx: number, dy: number) => void) => {
+  /**
+   * Drags an element with the primary button (mouse or pen), calling `move` with the offset so far. With
+   * `touch`, a finger drags it too: the axis handles, where the element's `touch-action` leaves the drag's
+   * direction to it. The chart itself handles touch on its own (below).
+   */
+  const onDrag = (el: HTMLElement, move: (dx: number, dy: number) => void, touch = false) => {
     el.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0 || e.pointerType === 'touch') return;
+      if (e.button !== 0 || (e.pointerType === 'touch' && !touch)) return;
       e.preventDefault();
       el.setPointerCapture(e.pointerId);
       const startX = e.clientX;
@@ -412,6 +481,7 @@ export function chartInteraction({
       setSize: () => placeHandles?.(),
       ready: (u) => {
         const over = u.over;
+        overEl = over;
         over.classList.add('pannable');
 
         // Scroll: zoom all axes around the pointer. Zooming all the way out restores the fitted y axes.
@@ -465,15 +535,22 @@ export function chartInteraction({
         over.addEventListener('dblclick', onReset);
 
         // Touch (the mouse controls above skip it). One finger moves the crosshair and tooltip when the
-        // chart's crosshair switch is on (see UPlotChart), and otherwise drags a zoomed-in chart sideways.
-        // Two fingers pinch to zoom the x axis around them and move it as they move. A double tap resets.
-        // Vertical swipes stay with the page (`touch-action: pan-y` in CSS), so a chart never traps the
-        // scroll. The y axes keep fitting the data in view.
+        // chart's crosshair switch is on (see UPlotChart), and otherwise drags a zoomed-in chart about, as
+        // the mouse does: sideways, and up and down too once it has moved a little that way (where panning
+        // moves the y axes). Two fingers pinch to zoom the x axis around them and move it as they move. A
+        // double tap resets. Until the chart is zoomed, vertical swipes stay with the page (`touch-action`
+        // in CSS), so an untouched chart never traps the scroll. The y axes keep fitting the data in view
+        // until moved.
         const touches = new Map<number, { x: number; y: number }>();
         // done: a pinch lost a finger; the one left does nothing until it lifts too, so nothing jumps to it.
         let mode: 'scrub' | 'pan' | 'pinch' | 'done' = 'pan';
         let pinch = { dist: 1, at: 0 };
-        let pan = { x: 0, range: [0, 0] as readonly [number, number] };
+        let pan = {
+          x: 0,
+          y: 0,
+          range: [0, 0] as readonly [number, number],
+          yRanges: new Map<string, readonly [number, number]>(),
+        };
         let lastTap = { time: 0, x: 0, y: 0 };
         // A touch counts as a tap (for the double tap) only if it was one finger that barely moved.
         let tap: { x: number; y: number } | null = null;
@@ -497,7 +574,7 @@ export function chartInteraction({
               u.setCursor(local(a));
             } else {
               mode = 'pan';
-              pan = { x: a.x, range: xRange() };
+              pan = { x: a.x, y: a.y, range: xRange(), yRanges: new Map(yScales.map((y) => [y.key, range(u, y.key)])) };
             }
           } else if (b) {
             mode = 'pinch';
@@ -513,11 +590,21 @@ export function chartInteraction({
           const [a, b] = [...touches.values()];
           if (mode === 'scrub') {
             u.setCursor(local(a));
-          } else if (mode === 'pan' && state.xWindow) {
-            const [x0, x1] = pan.range;
-            const shift = (-(a.x - pan.x) / over.clientWidth) * (x1 - x0);
-            const lo = Math.min(Math.max(fullMin, x0 + shift), fullMax - (x1 - x0));
-            setXScale(u, lo, lo + (x1 - x0));
+          } else if (mode === 'pan' && (state.xWindow || state.manualY)) {
+            if (state.xWindow) {
+              const [x0, x1] = pan.range;
+              const shift = (-(a.x - pan.x) / over.clientWidth) * (x1 - x0);
+              const lo = Math.min(Math.max(fullMin, x0 + shift), fullMax - (x1 - x0));
+              setXScale(u, lo, lo + (x1 - x0));
+            }
+            const dy = a.y - pan.y;
+            if (panZoomY && (state.manualY || Math.abs(dy) > PAN_Y_THRESHOLD)) {
+              setYs(u, (y) => {
+                const [y0, y1] = pan.yRanges.get(y.key) ?? range(u, y.key);
+                const shiftY = (dy / over.clientHeight) * (y1 - y0);
+                return [y0 + shiftY, y1 + shiftY];
+              });
+            }
             notify();
           } else if (mode === 'pinch' && b) {
             const [x0, x1] = xRange();
@@ -560,13 +647,17 @@ export function chartInteraction({
         let xStart: readonly [number, number] = [0, 0];
         xHandle.addEventListener('pointerdown', () => (xStart = xRange()));
         // Right or up zooms in; left or down zooms out, around the middle of the axis.
-        onDrag(xHandle, (dx) => {
-          const [x0, x1] = xStart;
-          const width = (x1 - x0) * Math.exp(-dx / AXIS_DRAG_SCALE);
-          const mid = (x0 + x1) / 2;
-          setX(u, mid - width / 2, mid + width / 2);
-          notify();
-        });
+        onDrag(
+          xHandle,
+          (dx) => {
+            const [x0, x1] = xStart;
+            const width = (x1 - x0) * Math.exp(-dx / AXIS_DRAG_SCALE);
+            const mid = (x0 + x1) / 2;
+            setX(u, mid - width / 2, mid + width / 2);
+            notify();
+          },
+          true,
+        );
 
         // One handle per y axis; stretching one moves only that axis.
         const yHandles = yScales.map((y) => {
@@ -576,13 +667,17 @@ export function chartInteraction({
           over.parentElement?.append(handle);
           let yStart: readonly [number, number] = [0, 0];
           handle.addEventListener('pointerdown', () => (yStart = range(u, y.key)));
-          onDrag(handle, (_dx, dy) => {
-            const [y0, y1] = yStart;
-            const height = (y1 - y0) * Math.exp(dy / AXIS_DRAG_SCALE);
-            const mid = (y0 + y1) / 2;
-            setYs(u, (other) => (other.key === y.key ? [mid - height / 2, mid + height / 2] : range(u, other.key)));
-            notify();
-          });
+          onDrag(
+            handle,
+            (_dx, dy) => {
+              const [y0, y1] = yStart;
+              const height = (y1 - y0) * Math.exp(dy / AXIS_DRAG_SCALE);
+              const mid = (y0 + y1) / 2;
+              setYs(u, (other) => (other.key === y.key ? [mid - height / 2, mid + height / 2] : range(u, other.key)));
+              notify();
+            },
+            true,
+          );
           return { y, handle };
         });
 

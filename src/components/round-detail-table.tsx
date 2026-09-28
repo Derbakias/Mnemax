@@ -1,27 +1,37 @@
-import { COLOR_PALETTE, NEUTRAL_COLOR, OUTCOME_GLYPHS, TRIALS_PER_ROUND } from '@/game/config';
-import type { RoundResult, StreamOutcome } from '@/game/types';
+import { Icon } from './icon';
+import { STREAM_ICONS } from './response-buttons';
+import { OutcomeIcon } from './stream-table';
+import { COLOR_PALETTE, TRIALS_PER_ROUND } from '@/game/config';
+import type { RoundResult, StreamId, StreamOutcome, TrialRecord } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
 
-const OUTCOME_CLASS: Record<StreamOutcome, string> = {
-  hit: 'good',
-  falseAlarm: 'bad',
-  miss: 'bad',
-  correctRejection: 'good',
-};
-
-const OUTCOME_COL_LABEL: Record<string, string> = {
+const COLUMN_LABEL: Record<StreamId, string> = {
   position: 'Pos',
   color: 'Col',
   number: 'Num',
   audio: 'Ltr',
 };
 
-/** `legend`: show the key to the outcome symbols; lists of rounds turn it off and show `OutcomeLegend` once. */
+/** What a trial showed in a stream: the cell, a colour swatch, the digit or the letter. */
+function Shown({ stream, trial }: { stream: StreamId; trial: TrialRecord }) {
+  const { stimulus } = trial;
+  if (stream === 'position') return <span>{stimulus.position + 1}</span>;
+  if (stream === 'number') return <span>{stimulus.number}</span>;
+  if (stream === 'audio') return <span>{stimulus.letter}</span>;
+  const color = COLOR_PALETTE[stimulus.color % COLOR_PALETTE.length];
+  return <span className="table-swatch" style={{ backgroundColor: color }} />;
+}
+
+/**
+ * A round, trial by trial: a column per stream, each cell with what the trial showed beside how it was
+ * answered (and the reaction time under it). The position always has a column, as a cell lights up every
+ * trial; the other streams only when they were on.
+ *
+ * `legend`: show the key to the outcome symbols; lists of rounds turn it off and show `OutcomeLegend` once.
+ */
 export function RoundDetailTable({ result, legend = true }: { result: RoundResult; legend?: boolean }) {
   const s = result.settings;
-  const showNumberCol = s.activeStreams.number;
-  const showColorCol = s.activeStreams.color;
-  const activeCols = STREAM_IDS.filter((stream) => s.activeStreams[stream]);
+  const columns = STREAM_IDS.filter((stream) => stream === 'position' || s.activeStreams[stream]);
   // A round stopped before its first trial has no rows: the table (and its key) would be headings only.
   const played = result.trials.length > 0;
 
@@ -33,46 +43,35 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
             <thead>
               <tr>
                 <th className="c-idx">#</th>
-                <th className="c-pos">Cell</th>
-                {showColorCol && <th className="c-color">Color</th>}
-                {showNumberCol && <th className="c-num">Digit</th>}
-                {s.activeStreams.audio && <th className="c-letter">Ltr</th>}
-                {activeCols.map((stream) => (
-                  <th key={stream} className="c-outcome">
-                    {OUTCOME_COL_LABEL[stream]}
+                {columns.map((stream) => (
+                  <th key={stream} className="c-stream">
+                    <span className="detail-heading">
+                      <Icon name={STREAM_ICONS[stream]} size={14} />
+                      {COLUMN_LABEL[stream]}
+                    </span>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {result.trials.map((trial) => {
-                const color = showColorCol ? COLOR_PALETTE[trial.stimulus.color % COLOR_PALETTE.length] : NEUTRAL_COLOR;
-                return (
-                  <tr key={trial.index}>
-                    <td>{String(trial.index + 1).padStart(2, '0')}</td>
-                    <td>{trial.stimulus.position + 1}</td>
-                    {showColorCol && (
-                      <td>
-                        <span className="table-swatch" style={{ backgroundColor: color }} />
+              {result.trials.map((trial) => (
+                <tr key={trial.index}>
+                  <td>{String(trial.index + 1).padStart(2, '0')}</td>
+                  {columns.map((stream) => {
+                    const outcome = s.activeStreams[stream] ? trial.outcome[stream] : undefined;
+                    const rt = trial.responseTimesMs?.[stream];
+                    return (
+                      <td key={stream}>
+                        <div className="trial-cell">
+                          <Shown stream={stream} trial={trial} />
+                          {outcome && <OutcomeIcon outcome={outcome} />}
+                        </div>
+                        {rt != null && <div className="rt">{Math.round(rt)} ms</div>}
                       </td>
-                    )}
-                    {showNumberCol && <td>{trial.stimulus.number}</td>}
-                    {s.activeStreams.audio && <td>{trial.stimulus.letter}</td>}
-                    {activeCols.map((stream) => {
-                      const outcome = trial.outcome[stream];
-                      const rt = trial.responseTimesMs?.[stream];
-                      return (
-                        <td key={stream}>
-                          <div className={outcome ? OUTCOME_CLASS[outcome] : undefined}>
-                            {outcome ? OUTCOME_GLYPHS[outcome] : ''}
-                          </div>
-                          {rt != null && <div className="rt">{Math.round(rt)}</div>}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
+                    );
+                  })}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -90,19 +89,19 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
 export function OutcomeLegend({ inline = false }: { inline?: boolean }) {
   return (
     <div className={inline ? 'legend-list inline' : 'legend-list'}>
-      <LegendItem glyph="✓" label="matched" good />
-      <LegendItem glyph="〇" label="no match" good />
-      <LegendItem glyph="✕" label="missed" />
-      <LegendItem glyph="■" label="false match" />
-      <span className="t-small secondary legend-note">Small numbers are reaction times in ms</span>
+      <LegendItem outcome="hit" label="matched" />
+      <LegendItem outcome="correctRejection" label="no match" />
+      <LegendItem outcome="miss" label="missed" />
+      <LegendItem outcome="falseAlarm" label="false match" />
+      <span className="t-small secondary legend-note">Small numbers are reaction times</span>
     </div>
   );
 }
 
-function LegendItem({ glyph, label, good = false }: { glyph: string; label: string; good?: boolean }) {
+function LegendItem({ outcome, label }: { outcome: StreamOutcome; label: string }) {
   return (
     <div className="legend-item">
-      <span className={`t-code ${good ? 'good' : 'bad'}`}>{glyph}</span>
+      <OutcomeIcon outcome={outcome} />
       <span className="t-small secondary">{label}</span>
     </div>
   );
