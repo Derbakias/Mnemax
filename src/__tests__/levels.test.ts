@@ -6,16 +6,18 @@ import {
   modeDifficulty,
   modeOf,
   roundLevel,
+  roundMode,
   speedFactor,
   streamFactor,
   summarizeModes,
 } from '../levels';
-import type { GameSettings, RoundResult, StreamId, TrialRecord } from '../game/types';
+import { speedPreset } from '../game/config';
+import type { GameSettings, RoundResult, SpeedId, StreamId, TrialRecord } from '../game/types';
 
 const DAY = 86400000;
 const NOW = new Date(2026, 8, 25, 12).getTime();
 
-function settings(nLevel: number, streams: StreamId[], trialDurationMs: number): GameSettings {
+function settings(nLevel: number, streams: StreamId[], speed: SpeedId): GameSettings {
   return {
     activeStreams: {
       position: streams.includes('position'),
@@ -24,7 +26,8 @@ function settings(nLevel: number, streams: StreamId[], trialDurationMs: number):
       audio: streams.includes('audio'),
     },
     nLevel,
-    trialDurationMs,
+    speed,
+    trialDurationMs: speedPreset(speed).ms,
     matchCounts: { position: 6, color: 6, number: 6, audio: 6 },
   };
 }
@@ -56,32 +59,41 @@ function round(s: GameSettings, accuracy: number, finishedAt: number): RoundResu
 }
 
 describe('modes', () => {
-  it('groups by N, active streams and speed preset', () => {
-    const a = modeOf(settings(1, ['position', 'color'], 2000));
-    expect(a.key).toBe('1|position+color|2000');
-    // An old free-form duration snaps to its nearest preset.
-    expect(modeOf(settings(1, ['position', 'color'], 1900)).key).toBe(a.key);
-    expect(modeOf(settings(1, ['position', 'audio'], 2000)).key).not.toBe(a.key);
-    expect(modeOf(settings(2, ['position', 'color'], 2000)).key).not.toBe(a.key);
+  it('groups by N, active streams and speed level', () => {
+    const a = modeOf(settings(1, ['position', 'color'], 'fast'));
+    expect(a.key).toBe('1|position+color|fast');
+    expect(modeOf(settings(1, ['position', 'audio'], 'fast')).key).not.toBe(a.key);
+    expect(modeOf(settings(2, ['position', 'color'], 'fast')).key).not.toBe(a.key);
+    expect(modeOf(settings(1, ['position', 'color'], 'slow')).key).not.toBe(a.key);
+  });
+
+  it("keeps a round at its level when the level's timing changes", () => {
+    const earlier = { ...settings(1, ['position', 'color'], 'fast'), trialDurationMs: 9999 };
+    expect(roundMode(round(earlier, 1, NOW)).speed).toBe('fast');
+  });
+
+  it('places settings saved without a level by their trial length', () => {
+    const { speed: _, ...saved } = settings(1, ['position', 'color'], 'slow');
+    expect(modeOf(saved as GameSettings).speed).toBe('slow');
   });
 });
 
 describe('difficulty', () => {
   it('uses dual N-back at Normal speed as the unit', () => {
     expect(streamFactor(2)).toBe(1);
-    expect(speedFactor(1200)).toBe(1);
-    expect(modeDifficulty(modeOf(settings(2, ['position', 'audio'], 1200)))).toBeCloseTo(2);
+    expect(speedFactor('normal')).toBe(1);
+    expect(modeDifficulty(modeOf(settings(2, ['position', 'audio'], 'normal')))).toBeCloseTo(2);
   });
 
-  it('rises with more streams and faster trials', () => {
+  it('rises with more streams and less time to answer', () => {
     expect(streamFactor(1)).toBeLessThan(streamFactor(2));
     expect(streamFactor(4)).toBeGreaterThan(streamFactor(3));
-    expect(speedFactor(800)).toBeGreaterThan(speedFactor(1200));
-    expect(speedFactor(3000)).toBeLessThan(speedFactor(2000));
+    expect(speedFactor('veryFast')).toBeGreaterThan(speedFactor('normal'));
+    expect(speedFactor('verySlow')).toBeLessThan(speedFactor('normal'));
   });
 
   it('scales a round by its accuracy', () => {
-    const s = settings(2, ['position', 'audio'], 1200);
+    const s = settings(2, ['position', 'audio'], 'normal');
     expect(roundLevel(round(s, 1, NOW))).toBeCloseTo(2);
     expect(roundLevel(round(s, 0.6, NOW))).toBeCloseTo(1.2);
     expect(roundLevel(round(s, 0, NOW))).toBeCloseTo(0);
@@ -89,7 +101,7 @@ describe('difficulty', () => {
 });
 
 describe('levelHistory / levelSummary', () => {
-  const s = settings(2, ['position', 'audio'], 1200);
+  const s = settings(2, ['position', 'audio'], 'normal');
 
   it('averages the last LEVEL_WINDOW rounds, oldest first', () => {
     // Stored newest first: 12 rounds, the older 6 perfect, the newer 6 at 60%.
@@ -125,8 +137,8 @@ describe('levelHistory / levelSummary', () => {
 
 describe('summarizeModes', () => {
   it('summarizes each mode, most recently played first', () => {
-    const easy = settings(1, ['position', 'color'], 2000);
-    const hard = settings(2, ['position', 'audio'], 1200);
+    const easy = settings(1, ['position', 'color'], 'slow');
+    const hard = settings(2, ['position', 'audio'], 'veryFast');
     const rounds = [
       round(hard, 0.4, NOW - 1000),
       round(easy, 0.8, NOW - 2000),
@@ -145,8 +157,8 @@ describe('summarizeModes', () => {
 
 describe('dailyStats', () => {
   it('totals each local day, oldest first', () => {
-    const dual = settings(2, ['position', 'audio'], 1200);
-    const single = settings(1, ['position'], 1200);
+    const dual = settings(2, ['position', 'audio'], 'normal');
+    const single = settings(1, ['position'], 'normal');
     const today = new Date(2026, 8, 25, 9).getTime();
     const rounds = [
       { ...round(dual, 1, today + 2 * 3600000), durationMs: 60_000 },

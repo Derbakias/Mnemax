@@ -1,11 +1,11 @@
 // Difficulty-aware stats. Rounds are only comparable when they were played with the same setup, so every
-// round belongs to a *mode* (N + active streams + speed preset). Across modes, a *level score* puts
-// rounds on one scale: difficulty × accuracy, in "dual N-back at Normal speed" units.
+// round belongs to a *mode* (N + active streams + speed). Across modes, a *level score* puts rounds on one
+// scale: difficulty × accuracy, in "dual N-back at Normal speed" units.
 
-import { DEFAULT_TRIAL_MS, speedPresetFor } from './game/config';
+import { DEFAULT_SPEED, speedOf, speedPreset } from './game/config';
 import { summarizeRound } from './game/scoring';
 import { roundDurationMs } from './stats';
-import type { GameSettings, RoundResult, StreamId } from './game/types';
+import type { GameSettings, RoundResult, SpeedId, StreamId } from './game/types';
 import { STREAM_IDS } from './game/types';
 
 // ---------------------------------------------------------------------------
@@ -16,14 +16,14 @@ export interface Mode {
   key: string;
   nLevel: number;
   streams: StreamId[];
-  /** Speed preset (older rounds with other durations snap to the nearest preset). */
-  speedMs: number;
+  /** The speed level, whatever its timing was: rounds stay comparable when a level's timing changes. */
+  speed: SpeedId;
 }
 
 export function modeOf(settings: GameSettings): Mode {
   const streams = STREAM_IDS.filter((s) => settings.activeStreams[s]);
-  const speedMs = speedPresetFor(settings.trialDurationMs).ms;
-  return { key: `${settings.nLevel}|${streams.join('+')}|${speedMs}`, nLevel: settings.nLevel, streams, speedMs };
+  const speed = speedOf(settings).id;
+  return { key: `${settings.nLevel}|${streams.join('+')}|${speed}`, nLevel: settings.nLevel, streams, speed };
 }
 
 export function roundMode(round: RoundResult): Mode {
@@ -44,14 +44,15 @@ export function streamFactor(streamCount: number): number {
   return load(streamCount) / load(REFERENCE_STREAMS);
 }
 
-/** Normal speed is the reference (1); faster trials count for more, slower for less (square-root scale). */
-export function speedFactor(trialMs: number): number {
-  return Math.sqrt(DEFAULT_TRIAL_MS / trialMs);
+/** Normal speed is the reference (1); less time to answer counts for more, more for less (square-root scale).
+ *  From the level's current timing, so a level is worth the same in every round. */
+export function speedFactor(speed: SpeedId): number {
+  return Math.sqrt(speedPreset(DEFAULT_SPEED).answerMs / speedPreset(speed).answerMs);
 }
 
 /** Difficulty of a mode in "dual N-back at Normal speed" units: dual 2-back at Normal is 2. */
 export function modeDifficulty(mode: Mode): number {
-  return mode.nLevel * streamFactor(mode.streams.length) * speedFactor(mode.speedMs);
+  return mode.nLevel * streamFactor(mode.streams.length) * speedFactor(mode.speed);
 }
 
 /**

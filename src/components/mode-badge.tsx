@@ -1,6 +1,6 @@
 import { Icon } from './icon';
 import { STREAM_ICONS } from './response-buttons';
-import { SPEED_PRESETS, speedPresetFor } from '@/game/config';
+import { SPEED_PRESETS, speedPreset } from '@/game/config';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
 import type { Mode } from '@/levels';
 
@@ -9,7 +9,7 @@ import type { Mode } from '@/levels';
  * `aligned` (for lists) gives every stream a fixed slot, left empty when it's off, so rows line up.
  */
 export function ModeBadge({ mode, aligned = false }: { mode: Mode; aligned?: boolean }) {
-  const level = SPEED_PRESETS.length - SPEED_PRESETS.findIndex((p) => p.ms === mode.speedMs);
+  const level = SPEED_PRESETS.length - SPEED_PRESETS.findIndex((p) => p.id === mode.speed);
   return (
     <span className={aligned ? 'mode-badge t-code aligned' : 'mode-badge t-code'} title={modeLabel(mode)}>
       <span className="mode-badge-part n">
@@ -44,5 +44,5 @@ export function ModeBadge({ mode, aligned = false }: { mode: Mode; aligned?: boo
 /** The same mode in words, for tooltips and chart legends. */
 export function modeLabel(mode: Mode): string {
   const streams = mode.streams.map((s) => STREAM_LABELS[s]).join(' + ');
-  return `N=${mode.nLevel} · ${streams} · ${speedPresetFor(mode.speedMs).label}`;
+  return `N=${mode.nLevel} · ${streams} · ${speedPreset(mode.speed).label}`;
 }

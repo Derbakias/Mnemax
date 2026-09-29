@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { clampSettings, defaultSettings } from './game/config';
-import type { GameSettings, StreamId } from './game/types';
+import type { GameSettings, SpeedId, StreamId } from './game/types';
 import { clampPrefs, defaultPrefs, normalizeKey, type AppPrefs, type ButtonLayout } from './prefs';
 import { loadPrefs, loadSettings, savePrefs, saveSettings } from './storage';
 
@@ -11,7 +11,7 @@ interface SettingsContextValue {
   ready: boolean;
   toggleStream: (stream: StreamId, active: boolean) => void;
   setNLevel: (n: number) => void;
-  setTrialDurationMs: (ms: number) => void;
+  setSpeed: (speed: SpeedId) => void;
   setMatchCount: (stream: StreamId, count: number) => void;
   setButtonLayout: (layout: ButtonLayout) => void;
   setDailyTargetMinutes: (minutes: number) => void;
@@ -64,7 +64,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         apply(clampSettings({ ...settings, activeStreams: streams }));
       },
       setNLevel: (n) => apply(clampSettings({ ...settings, nLevel: n })),
-      setTrialDurationMs: (ms) => apply(clampSettings({ ...settings, trialDurationMs: ms })),
+      setSpeed: (speed) => apply(clampSettings({ ...settings, speed })),
       setMatchCount: (stream, count) =>
         apply(
           clampSettings({

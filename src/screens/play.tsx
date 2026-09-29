@@ -10,9 +10,9 @@ import { RoundSummaryCard } from '@/components/round-summary-card';
 import { Stepper } from '@/components/stepper';
 import { StimulusGrid } from '@/components/stimulus-grid';
 import { TrialHistory } from '@/components/trial-history';
-import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedPresetFor, stimulusVisibleMs } from '@/game/config';
+import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedOf, speedPreset, stimulusVisibleMs } from '@/game/config';
 import { useGameEngine } from '@/game/engine';
-import type { GameSettings, RoundResult } from '@/game/types';
+import type { GameSettings, RoundResult, SpeedId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
 import { normalizeKey } from '@/prefs';
 import { useSettings } from '@/settings-context';
@@ -43,7 +43,7 @@ export function PlayScreen({
   onReady?: () => void;
   onStageChange?: (stage: PlayStage) => void;
 }) {
-  const { settings, prefs, setNLevel, setTrialDurationMs, toggleStream } = useSettings();
+  const { settings, prefs, setNLevel, setSpeed, toggleStream } = useSettings();
   const [sessionRounds, setSessionRounds] = useState<RoundResult[]>([]);
   // Null until the saved rounds have loaded, so the daily target doesn't flash 0% on start.
   const [savedRounds, setSavedRounds] = useState<RoundResult[] | null>(null);
@@ -200,8 +200,8 @@ export function PlayScreen({
               </span>
               <span className="chip-text">{n}</span>
             </Chip>
-            <Chip title={`Speed: ${speedPresetFor(shown.trialDurationMs).label}`}>
-              <SpeedBolts ms={speedPresetFor(shown.trialDurationMs).ms} />
+            <Chip title={`Speed: ${speedOf(shown).label}`}>
+              <SpeedBolts speed={speedOf(shown).id} />
             </Chip>
             <button
               type="button"
@@ -242,18 +242,15 @@ export function PlayScreen({
                 <div className={`trial-timer${warmingUp ? ' idle' : ''}`} aria-hidden>
                   {!warmingUp && (
                     // Starts at the first trial that can be answered; re-keyed per trial so the fill animation
-                    // restarts, and it pauses with the round. --lit-end is where the fill is when the box goes
-                    // off: the fade from light orange reaches dark orange there, and stays dark for the blank.
+                    // restarts, and it pauses with the round. Fills while answers are open (the box is lit) and
+                    // stays full through the blank.
                     <div
                       key={`${roundCount}-${state.trialIndex}`}
                       className="trial-timer-fill"
-                      style={
-                        {
-                          '--lit-end': `${(stimulusVisibleMs(shown.trialDurationMs) / shown.trialDurationMs) * 100}%`,
-                          animationDuration: `${shown.trialDurationMs}ms`,
-                          animationPlayState: state.paused ? 'paused' : 'running',
-                        } as CSSProperties
-                      }
+                      style={{
+                        animationDuration: `${stimulusVisibleMs(shown.trialDurationMs)}ms`,
+                        animationPlayState: state.paused ? 'paused' : 'running',
+                      }}
                     />
                   )}
                 </div>
@@ -329,7 +326,7 @@ export function PlayScreen({
             <span className="t-small secondary">N-back level</span>
             <Stepper value={settings.nLevel} min={MIN_N} max={MAX_N} onChange={setNLevel} />
           </HudDropdown>
-          <SpeedChip ms={settings.trialDurationMs} onSelect={setTrialDurationMs} />
+          <SpeedChip speed={settings.speed} onSelect={setSpeed} />
           <button
             type="button"
             className={tutorial ? 'hud-icon-button tutorial on' : 'hud-icon-button tutorial'}
@@ -461,19 +458,19 @@ function DailyTargetChip({
 // The speed chip. With a mouse, each bolt picks its speed. On a touch screen the bolts are too small to aim
 // at, so the whole chip is one button: each tap goes one speed faster, and after the fastest it starts over
 // from the slowest.
-function SpeedChip({ ms, onSelect }: { ms: number; onSelect: (ms: number) => void }) {
+function SpeedChip({ speed: id, onSelect }: { speed: SpeedId; onSelect: (speed: SpeedId) => void }) {
   const touch = useMemo(() => window.matchMedia?.('(hover: none)').matches ?? false, []);
-  const speed = speedPresetFor(ms);
-  const title = `Speed: ${speed.label} (${speed.ms} ms per trial)`;
+  const speed = speedPreset(id);
+  const title = `Speed: ${speed.label} (${speed.answerMs} ms to answer)`;
   if (!touch) {
     return (
       <span className="hud-chip t-code" title={title}>
-        <SpeedBolts ms={speed.ms} onSelect={onSelect} />
+        <SpeedBolts speed={speed.id} onSelect={onSelect} />
       </span>
     );
   }
   // Presets run fastest first, so one faster is the one before; before the fastest comes the slowest.
-  const index = SPEED_PRESETS.findIndex((p) => p.ms === speed.ms);
+  const index = SPEED_PRESETS.findIndex((p) => p.id === speed.id);
   const next = SPEED_PRESETS[index === 0 ? SPEED_PRESETS.length - 1 : index - 1];
   return (
     <button
@@ -481,16 +478,16 @@ function SpeedChip({ ms, onSelect }: { ms: number; onSelect: (ms: number) => voi
       className="hud-chip t-code interactive"
       aria-label={`Speed: ${speed.label}. Tap for ${next.label.toLowerCase()}.`}
       title={title}
-      onClick={() => onSelect(next.ms)}>
-      <SpeedBolts ms={speed.ms} />
+      onClick={() => onSelect(next.id)}>
+      <SpeedBolts speed={speed.id} />
     </button>
   );
 }
 
 // Five bolts, lit from the left: all five for the fastest preset, one for the slowest. With `onSelect`,
 // tapping a bolt sets the speed to that level; without, they only show it.
-function SpeedBolts({ ms, onSelect }: { ms: number; onSelect?: (ms: number) => void }) {
-  const level = SPEED_PRESETS.length - SPEED_PRESETS.findIndex((p) => p.ms === ms);
+function SpeedBolts({ speed, onSelect }: { speed: SpeedId; onSelect?: (speed: SpeedId) => void }) {
+  const level = SPEED_PRESETS.length - SPEED_PRESETS.findIndex((p) => p.id === speed);
   return (
     <span className="speed-bolts">
       {SPEED_PRESETS.map((_, i) => {
@@ -498,20 +495,20 @@ function SpeedBolts({ ms, onSelect }: { ms: number; onSelect?: (ms: number) => v
         const className = i < level ? 'hud-toggle speed-bolt on' : 'hud-toggle speed-bolt';
         if (!onSelect) {
           return (
-            <span key={preset.ms} className={className}>
+            <span key={preset.id} className={className}>
               <Icon name="flash" size={16} />
             </span>
           );
         }
         return (
           <button
-            key={preset.ms}
+            key={preset.id}
             type="button"
             className={className}
             aria-label={`Speed: ${preset.label}`}
-            aria-pressed={preset.ms === ms}
-            title={`${preset.label} (${preset.ms} ms)`}
-            onClick={() => onSelect(preset.ms)}>
+            aria-pressed={preset.id === speed}
+            title={`${preset.label} (${preset.answerMs} ms to answer)`}
+            onClick={() => onSelect(preset.id)}>
             <Icon name="flash" size={16} />
           </button>
         );

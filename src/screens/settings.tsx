@@ -35,7 +35,7 @@ export function SettingsScreen() {
     prefs,
     toggleStream,
     setNLevel,
-    setTrialDurationMs,
+    setSpeed,
     setMatchCount,
     setButtonLayout,
     setDailyTargetMinutes,
@@ -140,11 +140,12 @@ export function SettingsScreen() {
         info={
           <>
             <p>
-              How long each trial lasts. The box shows, then the grid is blank for {BLANK_MS / 1000} s before the next
-              one. Faster is harder.
+              How long the box shows, which is the time you have to answer. Then the grid is blank for{' '}
+              {BLANK_MS / 1000} s before the next one. Faster is harder.
             </p>
             <p>
-              <strong>Trial timer:</strong> a bar at the top of the grid, under the progress, that fills up during each trial.
+              <strong>Trial timer:</strong> a bar at the top of the grid, under the progress, that fills up while you can
+              answer.
             </p>
           </>
         }>
@@ -152,12 +153,12 @@ export function SettingsScreen() {
           {/* Slowest first, reading left to right towards faster. */}
           {[...SPEED_PRESETS].reverse().map((preset) => (
             <button
-              key={preset.ms}
+              key={preset.id}
               type="button"
-              className={settings.trialDurationMs === preset.ms ? 'preset-chip on' : 'preset-chip'}
-              onClick={() => setTrialDurationMs(preset.ms)}>
+              className={settings.speed === preset.id ? 'preset-chip on' : 'preset-chip'}
+              onClick={() => setSpeed(preset.id)}>
               <span className="t-small">{preset.label}</span>
-              <span className="t-code preset-sub">{preset.ms} ms</span>
+              <span className="t-code preset-sub">{preset.answerMs} ms</span>
             </button>
           ))}
         </div>

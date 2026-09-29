@@ -26,9 +26,14 @@ export interface TrialRecord {
   responseTimesMs?: Partial<Record<StreamId, number>>;
 }
 
+/** A speed level. Saved by name, so a round keeps its level when the level's timing changes. */
+export type SpeedId = 'veryFast' | 'fast' | 'normal' | 'slow' | 'verySlow';
+
 export interface GameSettings {
   activeStreams: Record<StreamId, boolean>;
   nLevel: number;
+  speed: SpeedId;
+  /** The speed's trial length (time to answer and the blank) when saved: what a round was played at. */
   trialDurationMs: number;
   matchCounts: Record<StreamId, number>;
 }
