@@ -14,6 +14,9 @@ export interface GameEngineState {
   trialIndex: number;
   stimulus: TrialStimulus | null;
   stimulusVisible: boolean;
+  /** Which answer buttons show their colour: only while the box is lit. Cleared when it goes off, and a press
+   *  in the blank before the next box still counts for this trial but shows none, so no colour is seen
+   *  without the box it belongs to. */
   responded: Record<StreamId, boolean>;
   /** Which streams the current trial is a match on (all false before the first N trials are past). */
   match: Record<StreamId, boolean>;
@@ -150,6 +153,12 @@ export function useGameEngine(
     }
   }
 
+  function hideStimulus(index: number) {
+    setState((prev) =>
+      prev.trialIndex === index ? { ...prev, stimulusVisible: false, responded: emptyResponses() } : prev,
+    );
+  }
+
   function runTrial(index: number) {
     const round = roundRef.current;
     if (!round) return;
@@ -177,9 +186,7 @@ export function useGameEngine(
       speakLetter(round.stimuli[index].letter);
     }
 
-    later(() => {
-      setState((prev) => (prev.trialIndex === index ? { ...prev, stimulusVisible: false } : prev));
-    }, stimulusVisibleMs(round.settings.trialDurationMs));
+    later(() => hideStimulus(index), stimulusVisibleMs(round.settings.trialDurationMs));
 
     later(() => endTrial(index), round.settings.trialDurationMs);
   }
@@ -235,9 +242,7 @@ export function useGameEngine(
         stopSpeech();
         speakLetter(round.stimuli[index].letter);
       }
-      later(() => {
-        setState((prev) => (prev.trialIndex === index ? { ...prev, stimulusVisible: false } : prev));
-      }, remainingVisibleMsRef.current);
+      later(() => hideStimulus(index), remainingVisibleMsRef.current);
     }
     later(() => endTrial(index), Math.max(0, remainingTrialMsRef.current));
     remainingVisibleMsRef.current = 0;
@@ -279,7 +284,9 @@ export function useGameEngine(
     if (respondedRef.current.has(stream)) return;
     respondedRef.current.add(stream);
     trialRtsRef.current[stream] = Math.max(0, now() - trialStartRef.current);
-    setState((prev) => ({ ...prev, responded: { ...prev.responded, [stream]: true } }));
+    setState((prev) =>
+      prev.stimulusVisible ? { ...prev, responded: { ...prev.responded, [stream]: true } } : prev,
+    );
   }
 
   /** Play time of the running round so far (0 when none), counted like the durationMs it's saved with. */

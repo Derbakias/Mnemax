@@ -10,7 +10,7 @@ import { RoundSummaryCard } from '@/components/round-summary-card';
 import { Stepper } from '@/components/stepper';
 import { StimulusGrid } from '@/components/stimulus-grid';
 import { TrialHistory } from '@/components/trial-history';
-import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedPresetFor } from '@/game/config';
+import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedPresetFor, stimulusVisibleMs } from '@/game/config';
 import { useGameEngine } from '@/game/engine';
 import type { GameSettings, RoundResult } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
@@ -242,14 +242,18 @@ export function PlayScreen({
                 <div className={`trial-timer${warmingUp ? ' idle' : ''}`} aria-hidden>
                   {!warmingUp && (
                     // Starts at the first trial that can be answered; re-keyed per trial so the fill animation
-                    // restarts, and it pauses with the round.
+                    // restarts, and it pauses with the round. --lit-end is where the fill is when the box goes
+                    // off: the fade from light orange reaches dark orange there, and stays dark for the blank.
                     <div
                       key={`${roundCount}-${state.trialIndex}`}
                       className="trial-timer-fill"
-                      style={{
-                        animationDuration: `${shown.trialDurationMs}ms`,
-                        animationPlayState: state.paused ? 'paused' : 'running',
-                      }}
+                      style={
+                        {
+                          '--lit-end': `${(stimulusVisibleMs(shown.trialDurationMs) / shown.trialDurationMs) * 100}%`,
+                          animationDuration: `${shown.trialDurationMs}ms`,
+                          animationPlayState: state.paused ? 'paused' : 'running',
+                        } as CSSProperties
+                      }
                     />
                   )}
                 </div>
@@ -293,7 +297,8 @@ export function PlayScreen({
             streams={activeStreams}
             responded={state.responded}
             match={state.match}
-            showSolution={showSolution}
+            // Only while the box is lit, like the answer colours: the outline belongs to this box, not the blank.
+            showSolution={showSolution && state.stimulusVisible}
             disabled={respondDisabled}
             layout={prefs.buttonLayout}
             keys={prefs.keyBindings}

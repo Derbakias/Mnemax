@@ -19,6 +19,10 @@
   --orange: #fb8c00;
   --orange-ink: #e8590c;
   --orange-soft: rgba(251, 140, 0, 0.14);
+  /* The trial timer: a smooth fade from light orange to dark orange, reached as the box goes off, and dark
+     orange through the blank before the next trial. */
+  --timer-start: #ffcc80;
+  --timer-blank: #e65100;
   /* Accents for the HUD's other chips, so each has its own: gold speed bolts, a teal daily target. */
   --gold: #d49a00;
   --teal: #00897b;
@@ -1050,19 +1054,21 @@ p {
 .trial-timer-fill {
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, var(--orange), var(--orange-ink));
-  transform-origin: left;
+  /* Laid out over the whole track and uncovered from the left, so each part of the bar keeps its colour as it
+     fills: fading from light to dark while the box is lit, fully dark from --lit-end (set per trial). */
+  background: linear-gradient(90deg, var(--timer-start), var(--timer-blank) var(--lit-end));
   animation-name: trial-timer;
   animation-timing-function: linear;
   animation-fill-mode: both;
 }
-/* Scaling rather than width, so each frame only repaints the bar instead of re-laying out the page. */
+/* Clipping rather than width, so each frame only repaints the bar instead of re-laying out the page, and
+   rather than scaling, which would squeeze the gradient into the filled part. */
 @keyframes trial-timer {
   from {
-    transform: scaleX(0);
+    clip-path: inset(0 100% 0 0);
   }
   to {
-    transform: scaleX(1);
+    clip-path: inset(0 0 0 0);
   }
 }
 
@@ -1118,9 +1124,9 @@ p {
   min-height: 0;
   padding: 10px 12px;
   border-radius: 14px;
-  /* Like the grid: at rest the buttons lie almost flat, as the empty tiles do, and an answered one rises out
-     of them in blue or red, as the lit tile does (see .correct / .wrong). --key-ring is the tutorial
-     outline, kept in every state's shadow list. */
+  /* Like the grid: at rest the buttons lie almost flat, as the empty tiles do. An answered one turns blue or
+     red in place, so it doesn't pull the eye from the grid (see .correct / .wrong).
+     --key-ring is the tutorial outline, kept in every state's shadow list. */
   --key-ring: 0 0 0 0 transparent;
   border: none;
   background: linear-gradient(160deg, var(--tile-top) 20%, var(--tile-bottom));
@@ -1156,49 +1162,33 @@ p {
 .response-button:disabled {
   opacity: 0.4;
 }
-/* Held down (see ResponseButtons): a slight give. An answer's rise below takes over. */
+/* Held down (see ResponseButtons): a slight give. */
 .response-button.held {
   transform: scale(0.99);
 }
-/* Once pressed, until the trial ends: blue when it was a match, red when it wasn't. The button rises out of
-   the others like the grid's lit tile: lifted and a touch bigger, a face from a lighter tint at the top left
-   to the colour's deeper shade, soft light and shade inside, and a deep shadow tinted with the colour. */
+/* Once pressed, until the trial ends: blue when it was a match, red when it wasn't. The colour changes in
+   place, with no rise or deep shadow, which drew the eye away from the grid on every press. */
 .response-button.correct,
 .response-button.wrong {
-  transform: translateY(-3px) scale(1.02);
   color: #ffffff;
-  /* A slight overshoot as it comes up, as the grid's tile does. */
-  transition:
-    transform 0.16s cubic-bezier(0.34, 1.3, 0.64, 1),
-    box-shadow 0.16s ease-out;
 }
 .response-button.correct {
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--accent-fill) 72%, #ffffff) 0%,
-    var(--accent-fill) 50%,
-    color-mix(in srgb, var(--accent-fill) 70%, var(--accent-strong)) 100%
+    color-mix(in srgb, var(--accent-fill) 80%, #ffffff) 0%,
+    var(--accent-fill) 60%
   );
   box-shadow:
     var(--key-ring),
-    inset 0 6px 12px -6px rgba(255, 255, 255, 0.5),
-    inset 0 -10px 16px -8px color-mix(in srgb, var(--accent-strong) 70%, transparent),
-    0 4px 8px -2px rgba(15, 23, 42, 0.16),
-    0 16px 28px -10px var(--accent-strong);
+    inset 0 -6px 10px -8px var(--accent-strong),
+    var(--tile-rest);
 }
 .response-button.wrong {
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, #e53935 72%, #ffffff) 0%,
-    #e53935 50%,
-    color-mix(in srgb, #e53935 70%, #b71c1c) 100%
-  );
+  background: linear-gradient(160deg, color-mix(in srgb, #e53935 80%, #ffffff) 0%, #e53935 60%);
   box-shadow:
     var(--key-ring),
-    inset 0 6px 12px -6px rgba(255, 255, 255, 0.5),
-    inset 0 -10px 16px -8px color-mix(in srgb, #b71c1c 70%, transparent),
-    0 4px 8px -2px rgba(15, 23, 42, 0.16),
-    0 16px 28px -10px #b71c1c;
+    inset 0 -6px 10px -8px #b71c1c,
+    var(--tile-rest);
 }
 .response-button.correct .icon,
 .response-button.wrong .icon {
