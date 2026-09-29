@@ -8,6 +8,7 @@ function makeSettings(overrides: Partial<GameSettings> = {}): GameSettings {
   return {
     activeStreams: { position: true, color: true, number: false, audio: true },
     nLevel: 2,
+    speed: 'normal',
     trialDurationMs: 2000,
     matchCounts: { position: 6, color: 6, number: 6, audio: 6 },
     ...overrides,

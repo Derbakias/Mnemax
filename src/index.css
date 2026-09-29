@@ -19,10 +19,10 @@
   --orange: #fb8c00;
   --orange-ink: #e8590c;
   --orange-soft: rgba(251, 140, 0, 0.14);
-  /* The trial timer: a smooth fade from light orange to dark orange, reached as the box goes off, and dark
-     orange through the blank before the next trial. */
+  /* The trial timer: a smooth fade from light orange to dark orange, reached as the box goes off and answers
+     close. */
   --timer-start: #ffcc80;
-  --timer-blank: #e65100;
+  --timer-end: #e65100;
   /* Accents for the HUD's other chips, so each has its own: gold speed bolts, a teal daily target. */
   --gold: #d49a00;
   --teal: #00897b;
@@ -1055,8 +1055,8 @@ p {
   height: 100%;
   width: 100%;
   /* Laid out over the whole track and uncovered from the left, so each part of the bar keeps its colour as it
-     fills: fading from light to dark while the box is lit, fully dark from --lit-end (set per trial). */
-  background: linear-gradient(90deg, var(--timer-start), var(--timer-blank) var(--lit-end));
+     fills: light at the start of the answer time, dark at its end. */
+  background: linear-gradient(90deg, var(--timer-start), var(--timer-end));
   animation-name: trial-timer;
   animation-timing-function: linear;
   animation-fill-mode: both;

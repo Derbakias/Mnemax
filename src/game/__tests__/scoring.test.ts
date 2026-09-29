@@ -95,6 +95,7 @@ describe('summarizeRound', () => {
       settings: {
         activeStreams: { position: true, color: true, number: false, audio: false },
         nLevel: 2,
+        speed: 'normal',
         trialDurationMs: 2000,
         matchCounts: { position: 5, color: 5, number: 5, audio: 5 },
       },
@@ -115,6 +116,7 @@ describe('summarizeRound', () => {
       settings: {
         activeStreams: { position: true, color: false, number: false, audio: false },
         nLevel: 2,
+        speed: 'normal',
         trialDurationMs: 2000,
         matchCounts: { position: 5, color: 5, number: 5, audio: 5 },
       },

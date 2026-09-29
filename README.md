@@ -57,8 +57,8 @@ On desktop, `Space` starts, pauses and resumes a round, and `Esc` stops it. You 
 
 - **Pick your streams:** any combination of Position, Color, Number and Letter. Position + Letter is
   classic dual n-back.
-- **Adjust the difficulty:** N from 1 to 10, five speeds (from Very slow, 3 seconds per trial, to Very fast,
-  0.8 seconds and how many matches each stream has per round).
+- **Adjust the difficulty:** N from 1 to 10, five speeds (the box shows, and you can answer, for 4 seconds
+  at Very slow down to 1 second at Very fast) and how many matches each stream has per round.
   > **_Tip:_** You can do that in the settings or in the play view from the quick settings HUD at the top.
 - **Scoring:** accuracy counts both the matches you caught and the non-matches you correctly left
   alone. Pressing randomly scores 0.

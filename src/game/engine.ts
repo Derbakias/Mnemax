@@ -14,9 +14,8 @@ export interface GameEngineState {
   trialIndex: number;
   stimulus: TrialStimulus | null;
   stimulusVisible: boolean;
-  /** Which answer buttons show their colour: only while the box is lit. Cleared when it goes off, and a press
-   *  in the blank before the next box still counts for this trial but shows none, so no colour is seen
-   *  without the box it belongs to. */
+  /** Which answer buttons show their colour. Cleared when the box goes off, so an answer's colour doesn't
+   *  carry through the blank into the next trial. */
   responded: Record<StreamId, boolean>;
   /** Which streams the current trial is a match on (all false before the first N trials are past). */
   match: Record<StreamId, boolean>;
@@ -66,6 +65,7 @@ export function useGameEngine(
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const respondedRef = useRef<Set<StreamId>>(new Set());
   const trialRtsRef = useRef<Partial<Record<StreamId, number>>>({});
+  /** Whether a press counts: only while the box is lit, not in the blank before the next trial. */
   const trialActiveRef = useRef(false);
   const pausedRef = useRef(false);
   const trialStartRef = useRef(0);
@@ -154,6 +154,8 @@ export function useGameEngine(
   }
 
   function hideStimulus(index: number) {
+    // The answer window closes with the box: a press in the blank would be a guess at a box no longer shown.
+    trialActiveRef.current = false;
     setState((prev) =>
       prev.trialIndex === index ? { ...prev, stimulusVisible: false, responded: emptyResponses() } : prev,
     );
@@ -232,7 +234,8 @@ export function useGameEngine(
     pauseSnapshotRef.current = null;
 
     const index = snapshot.trialIndex;
-    trialActiveRef.current = true;
+    // Paused in the blank: answers stay closed until the next trial.
+    trialActiveRef.current = remainingVisibleMsRef.current > 0;
     trialStartRef.current = now();
     segmentStartRef.current = now();
     setState((prev) => ({ ...prev, paused: false }));
@@ -284,9 +287,7 @@ export function useGameEngine(
     if (respondedRef.current.has(stream)) return;
     respondedRef.current.add(stream);
     trialRtsRef.current[stream] = Math.max(0, now() - trialStartRef.current);
-    setState((prev) =>
-      prev.stimulusVisible ? { ...prev, responded: { ...prev.responded, [stream]: true } } : prev,
-    );
+    setState((prev) => ({ ...prev, responded: { ...prev.responded, [stream]: true } }));
   }
 
   /** Play time of the running round so far (0 when none), counted like the durationMs it's saved with. */
