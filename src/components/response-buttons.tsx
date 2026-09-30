@@ -19,6 +19,8 @@ export const STREAM_ICONS: Record<StreamId, IconName> = {
  * button, so a slide through the middle only answers the button it comes out in.
  */
 const SWIPE_DEAD_ZONE = 0.3;
+/** Swipe: a fast slide is checked every 4 px along its path, so it can't skip past a button. */
+const SWIPE_STEP = 4;
 /** How long the swipe trail takes to fade once the finger lifts, in ms. */
 const TRAIL_FADE_MS = 250;
 /** The trail's width, in CSS px. */
@@ -34,6 +36,8 @@ interface SwipeGesture {
   current: StreamId | null;
   /** Lit until the swipe ends. */
   visited: Set<StreamId>;
+  /** The last pointer sample, where the line to the next one starts. */
+  last: { x: number; y: number };
 }
 
 /** The points where the rows of two per row meet the middle column gap. */
@@ -134,6 +138,8 @@ interface ResponseButtonsProps {
   layout: ButtonLayout;
   /** Press a button and slide over the others to answer them too (two per row only, two or more buttons). */
   swipe?: boolean;
+  /** The current trial. When the next box appears, a swipe still in progress ends, so it can't answer the new trial. */
+  trial?: number;
   /** The key that answers each stream (shown as a hint; holding it lights the button). */
   keys: Record<StreamId, string>;
   onPress: (stream: StreamId) => void;
@@ -147,6 +153,7 @@ export function ResponseButtons({
   disabled,
   layout,
   swipe = false,
+  trial,
   keys,
   onPress,
 }: ResponseButtonsProps) {
@@ -224,6 +231,7 @@ export function ResponseButtons({
       deadZone: minSide * SWIPE_DEAD_ZONE,
       current: stream,
       visited: new Set([stream]),
+      last: { x: e.clientX, y: e.clientY },
     };
     trail.start();
     trail.add(e.clientX, e.clientY);
@@ -236,10 +244,11 @@ export function ResponseButtons({
     return true;
   };
 
-  const swipeTo = (x: number, y: number) => {
-    const g = gesture.current;
-    if (!g) return;
-    trail.add(x, y);
+  /**
+   * Looks at one spot the finger passed through. If it's in a new button, that button is answered. If it's in the
+   * same button as before, or between buttons, nothing happens.
+   */
+  const swipeAt = (g: SwipeGesture, x: number, y: number) => {
     const inside = (r: DOMRect) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
     // Leaving the current button's box frees it; an edge wobble doesn't count as a new entry.
     if (g.current) {
@@ -256,13 +265,34 @@ export function ResponseButtons({
     if (!responded[hit]) onPress(hit);
   };
 
-  const endSwipe = (pointerId: number) => {
+  const swipeTo = (x: number, y: number) => {
     const g = gesture.current;
-    if (!g || g.pointerId !== pointerId) return;
+    if (!g) return;
+    trail.add(x, y);
+    // On a fast slide the finger can jump over a button between two positions, so check every few px of the line
+    // from the last position to this one.
+    const { x: x0, y: y0 } = g.last;
+    const steps = Math.max(1, Math.ceil(Math.hypot(x - x0, y - y0) / SWIPE_STEP));
+    //TODO: Check the whole codebase for statements like this and wrap in curly braces 
+    for (let i = 1; i <= steps; i++) swipeAt(g, x0 + ((x - x0) * i) / steps, y0 + ((y - y0) * i) / steps);
+    g.last = { x, y };
+  };
+
+  /** Ends the swipe; with a pointer, only if it's the one swiping. */
+  const endSwipe = (pointerId?: number) => {
+    const g = gesture.current;
+    if (!g || (pointerId !== undefined && g.pointerId !== pointerId)) return;
     gesture.current = null;
     g.visited.forEach((s) => hold(s, false));
     trail.end();
   };
+
+  // A swipe only answers one box: end it when the next box appears.
+  const endSwipeRef = useRef(endSwipe);
+  endSwipeRef.current = endSwipe;
+  useEffect(() => {
+    endSwipeRef.current();
+  }, [trial]);
 
   const renderButton = (stream: StreamId) => (
     <button
@@ -323,7 +353,7 @@ export function ResponseButtons({
       className={`response-buttons ${layout}${swipeOn ? ' swipe' : ''}`}
       onPointerMove={(e) => {
         if (gesture.current?.pointerId !== e.pointerId) return;
-        // Every point since the last event, so a quick slide can't skip a button (or the dead zone).
+        // Every point since the last event, so the trail follows the finger closely.
         const moves = e.nativeEvent.getCoalescedEvents?.() ?? [];
         for (const m of moves.length ? moves : [e.nativeEvent]) swipeTo(m.clientX, m.clientY);
       }}

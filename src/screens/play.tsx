@@ -299,6 +299,7 @@ export function PlayScreen({
             disabled={respondDisabled}
             layout={prefs.buttonLayout}
             swipe={prefs.buttonLayout === 'grid' && prefs.swipeAnswers}
+            trial={state.trialIndex}
             keys={prefs.keyBindings}
             onPress={respond}
           />
