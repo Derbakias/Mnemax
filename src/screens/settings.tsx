@@ -5,6 +5,7 @@ import { Icon } from '@/components/icon';
 import { Section } from '@/components/section';
 import { STREAM_ICONS } from '@/components/response-buttons';
 import { Stepper } from '@/components/stepper';
+import { SyncSection } from '@/components/sync-section';
 import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, maxMatchesFor } from '@/game/config';
 import type { StreamId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
@@ -29,7 +30,8 @@ const BUTTON_LAYOUTS: { id: ButtonLayout; label: string }[] = [
   { id: 'rows', label: 'One per row' },
 ];
 
-export function SettingsScreen() {
+/** `active`: the Settings tab is showing (the screen stays mounted behind the other tabs). */
+export function SettingsScreen({ active }: { active: boolean }) {
   const {
     settings,
     prefs,
@@ -321,6 +323,8 @@ export function SettingsScreen() {
         </div>
         {dataStatus && <p className="t-small secondary">{dataStatus}</p>}
       </Section>
+
+      <SyncSection active={active} />
 
       <button type="button" className="outline-button danger reset-button" onClick={onResetDefaults}>
         Reset to defaults

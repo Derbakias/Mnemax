@@ -3,6 +3,8 @@ use std::path::Path;
 
 use tauri::Manager;
 
+mod sync;
+
 /// Where earlier builds kept their data, newest first: as Mnemax under `com.mnemax.app` (renamed because
 /// an ID ending in `.app` clashes with macOS app bundles), and before that as `com.givenback.app`, with
 /// keys starting `dualnback.`.
@@ -44,6 +46,20 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(sync::plugin())
+        .invoke_handler(tauri::generate_handler![
+            sync::sync_status,
+            sync::sync_rename,
+            sync::sync_forget,
+            sync::pair_start,
+            sync::pair_join,
+            sync::pair_answer,
+            sync::pair_cancel,
+            sync::sync_listen,
+            sync::sync_rounds,
+            sync::sync_stop,
+            sync::sync_now,
+        ])
         // Runs before the page loads (and so before the store is first read).
         .setup(|app| {
             if let Ok(dir) = app.path().app_data_dir() {

@@ -95,7 +95,7 @@ function AppShell() {
         <StatsScreen onReady={onStatsReady} />
       </main>
       <main className="screen" hidden={tab !== 'settings'}>
-        <SettingsScreen />
+        <SettingsScreen active={tab === 'settings'} />
       </main>
       <nav className={tabBarOverlay ? 'tab-bar overlay' : 'tab-bar'} hidden={tabBarHidden}>
         {TABS.map((t) => (

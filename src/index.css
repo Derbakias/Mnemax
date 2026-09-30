@@ -2502,6 +2502,66 @@ p {
   border-color: var(--danger);
   color: var(--danger);
 }
+/* Sync (Settings): the paired devices, the pairing steps and the code. */
+.text-field {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--background-selected);
+  background: var(--background-element);
+  font-size: 16px;
+  line-height: 24px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.sync-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sync-form-row {
+  display: flex;
+  gap: 10px;
+}
+.outline-button.sync-small-button {
+  flex: none;
+  padding: 6px 16px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.sync-peer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sync-pairing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+}
+.sync-pairing .text-button,
+.sync-close {
+  align-self: flex-start;
+}
+.sync-code {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.sync-code-field {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
 /* The tick sits at the right edge so the label stays centred. */
 .reset-button {
   position: relative;

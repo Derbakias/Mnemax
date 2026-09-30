@@ -68,6 +68,10 @@ On desktop, `Space` starts, pauses and resumes a round, and `Esc` stops it. You 
   against level, and every past round trial by trial.
 - **Daily target:** set how many minutes you want to play each day and see if you reached it.
 - **Backup:** export your rounds to a JSON file and import them again, for example on another device.
+- **Sync:** swap rounds between your own devices on the same Wi-Fi, from Settings → Sync. Pair two devices
+  once by typing a code shown on one into the other; after that, each can give the other the rounds it's
+  missing. Only paired devices can sync, sync only ever adds rounds, and a device can only be reached while
+  its Sync section is open. The first time, Windows and macOS ask whether Mnemax may use the network.
 - **Keeps timing accurate:** buttons respond the moment you press them rather than when you let go, and
   a round pauses by itself when you switch away from the app.
 
@@ -116,6 +120,7 @@ Mnemax/
 │   ├── levels.ts              # Difficulty and level score
 │   ├── stats.ts               # Stats calculations
 │   ├── stats-io.ts            # JSON import and export
+│   ├── sync.ts                # Sync with your other devices (the network part is in src-tauri/src/sync)
 │   ├── prefs.ts               # App preferences (keys, button layout, daily target)
 │   ├── settings-context.tsx   # Shares settings across the app
 │   ├── storage.ts, kv.ts      # Saving data (Tauri store, or localStorage in a browser)
@@ -124,6 +129,7 @@ Mnemax/
 │   └── __tests__/
 ├── src-tauri/                 # Native part of the app (Rust)
 │   ├── src/lib.rs             # Plugin setup, moves data over from older versions of the app
+│   ├── src/sync/              # Sync: pairing, encryption, finding devices, swapping rounds
 │   ├── tauri.conf.json        # Window, packaging and security settings
 │   ├── capabilities/          # What the interface is allowed to access
 │   ├── icons/                 # App icons for every platform
@@ -163,6 +169,7 @@ pnpm install
 pnpm test                      # game logic, stats and storage tests
 pnpm typecheck                 # checks the TypeScript types
 (cd src-tauri && cargo test)   # Rust tests
+(cd src-tauri && cargo test -- --ignored)   # sync over the real network (needs Wi-Fi or Ethernet)
 ```
 
 ### Run the app in development mode
@@ -176,7 +183,8 @@ straight away. When you change the Rust code, the app rebuilds and restarts by i
 
 To work on the interface in a normal web browser instead, run `pnpm dev` and open
 `http://localhost:1420`. In the browser, data is saved in `localStorage`, and export/import use the
-browser's download and file picker instead of the native dialogs.
+browser's download and file picker instead of the native dialogs. Sync needs the app: it isn't shown in
+the browser.
 
 ## Android
 

@@ -25,6 +25,12 @@ serde_json = "1"
 tauri-plugin-store = "2.4.5"
 tauri-plugin-dialog = "2.7.3"
 tauri-plugin-fs = "2.5.2"
+snow = { version = "0.10", default-features = false, features = ["use-chacha20poly1305", "use-blake2", "use-curve25519", "use-getrandom"] }
+spake2 = "0.4"
+tokio = { version = "1", features = ["net", "io-util", "time", "sync", "macros", "rt"] }
+getrandom = "0.2"
+blake2 = "0.10"
+mdns-sd = "0.21"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
@@ -34,3 +40,6 @@ lto = true
 opt-level = 3
 panic = "abort"
 strip = true
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread"] }
