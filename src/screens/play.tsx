@@ -298,6 +298,7 @@ export function PlayScreen({
             showSolution={showSolution && state.stimulusVisible}
             disabled={respondDisabled}
             layout={prefs.buttonLayout}
+            swipe={prefs.buttonLayout === 'grid' && prefs.swipeAnswers}
             keys={prefs.keyBindings}
             onPress={respond}
           />

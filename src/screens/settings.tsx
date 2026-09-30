@@ -38,6 +38,7 @@ export function SettingsScreen() {
     setSpeed,
     setMatchCount,
     setButtonLayout,
+    setSwipeAnswers,
     setDailyTargetMinutes,
     setShowTrialTimer,
     setTutorialAid,
@@ -249,7 +250,17 @@ export function SettingsScreen() {
         </label>
       </Section>
 
-      <Section title="Button layout" info={<p>Where the answer buttons sit on the Play screen.</p>}>
+      <Section
+        title="Button layout"
+        info={
+          <>
+            <p>Where the answer buttons sit on the Play screen.</p>
+            <p>
+              With two per row you can also swipe: press a button and slide over the others to answer them too. To
+              answer two buttons corner to corner, slide straight through the middle.
+            </p>
+          </>
+        }>
         <div className="layout-options">
           {BUTTON_LAYOUTS.map((layout) => (
             <button
@@ -262,6 +273,18 @@ export function SettingsScreen() {
             </button>
           ))}
         </div>
+        {prefs.buttonLayout === 'grid' && (
+          <label className="switch-row inline">
+            <span className="t-default">Swipe</span>
+            <input
+              type="checkbox"
+              role="switch"
+              className="switch"
+              checked={prefs.swipeAnswers}
+              onChange={(e) => setSwipeAnswers(e.target.checked)}
+            />
+          </label>
+        )}
       </Section>
 
       {hasKeyboard && (
