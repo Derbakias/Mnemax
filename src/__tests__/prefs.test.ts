@@ -54,3 +54,14 @@ describe('clampPrefs tutorial', () => {
     });
   });
 });
+
+describe('clampPrefs swipe answers', () => {
+  it('is off by default', () => {
+    expect(clampPrefs(null).swipeAnswers).toBe(false);
+  });
+
+  it('only turns on for true', () => {
+    expect(clampPrefs({ swipeAnswers: true }).swipeAnswers).toBe(true);
+    expect(clampPrefs({ swipeAnswers: 'yes' as unknown as boolean }).swipeAnswers).toBe(false);
+  });
+});

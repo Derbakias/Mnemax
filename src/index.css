@@ -1105,8 +1105,24 @@ p {
 .response-buttons.rows {
   grid-template-columns: 1fr;
 }
-.response-buttons.grid .response-button:last-child:nth-child(odd) {
+.response-buttons.grid .response-button:last-of-type:nth-of-type(odd) {
   grid-column: 1 / -1;
+}
+/* Swipe to answer: the page doesn't scroll under the finger, and the path is drawn over the buttons in light
+   blue (the canvas's CSS colour; see ResponseButtons). */
+.response-buttons.swipe {
+  position: relative;
+  touch-action: none;
+}
+.swipe-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  color: #90caf9;
+  opacity: 0.85;
 }
 /* Big windows: the buttons stop growing at a comfortable size, the spare height left at the bottom. */
 @media (min-width: 600px) {

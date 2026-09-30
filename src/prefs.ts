@@ -12,6 +12,8 @@ const BUTTON_LAYOUTS: ButtonLayout[] = ['grid', 'rows'];
 
 export interface AppPrefs {
   buttonLayout: ButtonLayout;
+  /** Two per row only: press a button and slide over others to answer them too. */
+  swipeAnswers: boolean;
   dailyTargetMinutes: number;
   /** A bar under the round progress that fills over each trial. */
   showTrialTimer: boolean;
@@ -75,6 +77,7 @@ export function clampPrefs(raw: Partial<AppPrefs> | null | undefined): AppPrefs 
     buttonLayout: BUTTON_LAYOUTS.includes(raw?.buttonLayout as ButtonLayout)
       ? (raw?.buttonLayout as ButtonLayout)
       : 'grid',
+    swipeAnswers: raw?.swipeAnswers === true,
     dailyTargetMinutes,
     showTrialTimer: raw?.showTrialTimer !== false,
     keyBindings: clampKeyBindings(raw?.keyBindings),

@@ -14,6 +14,7 @@ interface SettingsContextValue {
   setSpeed: (speed: SpeedId) => void;
   setMatchCount: (stream: StreamId, count: number) => void;
   setButtonLayout: (layout: ButtonLayout) => void;
+  setSwipeAnswers: (on: boolean) => void;
   setDailyTargetMinutes: (minutes: number) => void;
   setShowTrialTimer: (show: boolean) => void;
   /** Turns a tutorial aid on or off; turning off the only one left on turns the other one on instead. */
@@ -73,6 +74,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           }),
         ),
       setButtonLayout: (layout) => applyPrefs(clampPrefs({ ...prefs, buttonLayout: layout })),
+      setSwipeAnswers: (on) => applyPrefs(clampPrefs({ ...prefs, swipeAnswers: on })),
       setDailyTargetMinutes: (minutes) => applyPrefs(clampPrefs({ ...prefs, dailyTargetMinutes: minutes })),
       setShowTrialTimer: (show) => applyPrefs(clampPrefs({ ...prefs, showTrialTimer: show })),
       setTutorialAid: (aid, on) => {
