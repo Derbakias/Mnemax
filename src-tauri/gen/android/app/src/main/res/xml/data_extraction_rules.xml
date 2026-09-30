@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 and newer: as backup_rules.xml, for backups and for moving to a new phone. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="sync.json" />
+        <exclude domain="root" path="sync.json.tmp" />
+        <exclude domain="root" path="sync.json.broken" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="sync.json" />
+        <exclude domain="root" path="sync.json.tmp" />
+        <exclude domain="root" path="sync.json.broken" />
+    </device-transfer>
+</data-extraction-rules>

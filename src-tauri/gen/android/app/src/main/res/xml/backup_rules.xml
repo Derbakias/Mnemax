@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. The sync key (sync.json) stays on this phone: a copy restored elsewhere would be this
+     phone to its paired devices. Everything else, the rounds included, is backed up as usual. -->
+<full-backup-content>
+    <exclude domain="root" path="sync.json" />
+    <exclude domain="root" path="sync.json.tmp" />
+    <exclude domain="root" path="sync.json.broken" />
+</full-backup-content>

@@ -17,6 +17,7 @@ interface SettingsContextValue {
   setSwipeAnswers: (on: boolean) => void;
   setDailyTargetMinutes: (minutes: number) => void;
   setShowTrialTimer: (show: boolean) => void;
+  setAutoSync: (on: boolean) => void;
   /** Turns a tutorial aid on or off; turning off the only one left on turns the other one on instead. */
   setTutorialAid: (aid: 'tutorialHistory' | 'tutorialSolution', on: boolean) => void;
   /** Assigns `key` to `stream`; a stream that already had that key takes over `stream`'s old one. */
@@ -77,6 +78,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setSwipeAnswers: (on) => applyPrefs(clampPrefs({ ...prefs, swipeAnswers: on })),
       setDailyTargetMinutes: (minutes) => applyPrefs(clampPrefs({ ...prefs, dailyTargetMinutes: minutes })),
       setShowTrialTimer: (show) => applyPrefs(clampPrefs({ ...prefs, showTrialTimer: show })),
+      setAutoSync: (on) => applyPrefs(clampPrefs({ ...prefs, autoSync: on })),
       setTutorialAid: (aid, on) => {
         const next = { ...prefs, [aid]: on };
         // One always stays on, so switching off the last one hands over to the other.

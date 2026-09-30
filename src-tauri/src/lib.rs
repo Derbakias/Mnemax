@@ -42,7 +42,11 @@ fn migrate_from_old_name(new_data_dir: &Path) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // Phones scan the QR code another device shows to pair with it.
+    #[cfg(mobile)]
+    let builder = builder.plugin(tauri_plugin_barcode_scanner::init());
+    builder
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -51,6 +55,7 @@ pub fn run() {
             sync::sync_status,
             sync::sync_rename,
             sync::sync_forget,
+            sync::sync_forget_here,
             sync::pair_start,
             sync::pair_join,
             sync::pair_answer,

@@ -65,3 +65,15 @@ describe('clampPrefs swipe answers', () => {
     expect(clampPrefs({ swipeAnswers: 'yes' as unknown as boolean }).swipeAnswers).toBe(false);
   });
 });
+
+describe('clampPrefs auto sync', () => {
+  it('is on by default', () => {
+    expect(clampPrefs(null).autoSync).toBe(true);
+    expect(clampPrefs({}).autoSync).toBe(true);
+  });
+
+  it('only turns off for false', () => {
+    expect(clampPrefs({ autoSync: false }).autoSync).toBe(false);
+    expect(clampPrefs({ autoSync: 'no' as unknown as boolean }).autoSync).toBe(true);
+  });
+});

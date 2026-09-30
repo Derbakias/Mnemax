@@ -2552,14 +2552,116 @@ p {
   font-size: 30px;
   line-height: 40px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.2em;
   text-align: center;
   user-select: text;
   -webkit-user-select: text;
 }
 .sync-code-field {
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.2em;
+}
+.sync-or,
+.sync-countdown {
+  text-align: center;
+}
+/* White behind the QR code in dark mode too: scanners look for dark modules on a light ground. */
+.sync-qr {
+  align-self: center;
+  width: min(220px, 70vw);
+  height: auto;
+  border-radius: 8px;
+}
+
+/* A failed pairing or sync: labelled, not only red. */
+.sync-error {
+  color: var(--danger);
+}
+/* A message under the section, with a small Dismiss at its bottom right. */
+.sync-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sync-dismiss {
+  align-self: flex-end;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* Offered when the other device can't remove this one: forgetting it on this side only. */
+.sync-forget-here {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* Every step of the latest attempt, to find out why one failed. */
+.sync-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sync-log-lines {
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--background-element);
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.sync-log-time {
+  color: var(--text-secondary);
+}
+
+/* Scanning (phones): the camera shows behind the page, so while it's open the page clears its background,
+   hides the app, and shows only a frame to aim with and a Cancel button. */
+html.scanning,
+html.scanning body {
+  background: transparent;
+}
+html.scanning #root {
+  visibility: hidden;
+}
+.scan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: calc(var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 24px);
+  color: #fff;
+}
+.scan-hint {
+  max-width: 280px;
+  text-align: center;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.scan-frame {
+  width: min(260px, 70vw);
+  aspect-ratio: 1;
+  border: 3px solid #fff;
+  border-radius: 20px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+}
+.outline-button.scan-cancel {
+  flex: none;
+  padding: 10px 32px;
+  border-color: #fff;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
 }
 
 /* The tick sits at the right edge so the label stays centred. */

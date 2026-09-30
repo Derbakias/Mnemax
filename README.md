@@ -68,10 +68,17 @@ On desktop, `Space` starts, pauses and resumes a round, and `Esc` stops it. You 
   against level, and every past round trial by trial.
 - **Daily target:** set how many minutes you want to play each day and see if you reached it.
 - **Backup:** export your rounds to a JSON file and import them again, for example on another device.
-- **Sync:** swap rounds between your own devices on the same Wi-Fi, from Settings → Sync. Pair two devices
-  once by typing a code shown on one into the other; after that, each can give the other the rounds it's
-  missing. Only paired devices can sync, sync only ever adds rounds, and a device can only be reached while
-  its Sync section is open. The first time, Windows and macOS ask whether Mnemax may use the network.
+- **Sync:** swap rounds between your own devices on the same Wi-Fi. Pair two devices once in Settings →
+  Sync: one shows a 6-digit code and a QR code, and the other scans it (on a phone) or types the code. A
+  code works once, for 30 seconds. After that they sync by themselves whenever Mnemax is open on both (on a
+  phone, while it's on screen): when it opens, after each round, and every few minutes; or turn Sync
+  automatically off and tap Sync. Only paired devices can sync, and sync only ever adds rounds. Other
+  devices on the network can only see Mnemax while a code is shown or entered: paired devices find each
+  other under names that only they can work out, new every hour, and anything else that connects gets
+  nothing back. It works even when one of the two blocks incoming connections (a computer's firewall, say):
+  that one connects out instead. Forgetting a device unpairs it on both sides (a lost device can be
+  forgotten on one side only). The first time, Windows and macOS ask whether Mnemax may use the network, and
+  a phone asks for the camera when you first scan.
 - **Keeps timing accurate:** buttons respond the moment you press them rather than when you let go, and
   a round pauses by itself when you switch away from the app.
 

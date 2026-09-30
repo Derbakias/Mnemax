@@ -19,6 +19,18 @@ function notifyRoundsChanged() {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUNDS_CHANGED_EVENT));
 }
 
+/**
+ * Fired on `window` when a round played on this device is saved (not when rounds come from a file or another
+ * device), so sync can pass it on without syncing again over rounds it just got.
+ */
+export const ROUND_PLAYED_EVENT = 'mnemax:round-played';
+
+/** Calls `onPlayed` after a round played on this device is saved; returns the unsubscribe function. */
+export function onRoundPlayed(onPlayed: () => void): () => void {
+  window.addEventListener(ROUND_PLAYED_EVENT, onPlayed);
+  return () => window.removeEventListener(ROUND_PLAYED_EVENT, onPlayed);
+}
+
 /** Calls `onChange` after every change to the saved rounds; returns the unsubscribe function. */
 export function onRoundsChanged(onChange: () => void): () => void {
   window.addEventListener(ROUNDS_CHANGED_EVENT, onChange);
@@ -80,6 +92,7 @@ export async function appendRound(round: RoundResult): Promise<RoundResult[]> {
     // persistence failure is non-fatal
   }
   notifyRoundsChanged();
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUND_PLAYED_EVENT));
   return next;
 }
 
