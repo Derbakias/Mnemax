@@ -2,6 +2,7 @@
 
 import { isTauri } from '@tauri-apps/api/core';
 
+import { checkRound } from '@/game/round-check';
 import type { RoundResult } from '@/game/types';
 
 export function statsFilename(): string {
@@ -82,8 +83,14 @@ function pickWebFileText(): Promise<string | null> {
   });
 }
 
-// TODO: needs better sanitisation
-export function parseStatsPayload(text: string): RoundResult[] {
+/** Far above what 500 rounds take (8 MB at most); a bigger file isn't an export, and reading it could stall the app. */
+const MAX_FILE_CHARS = 32 * 1024 * 1024;
+
+/** The file's rounds that pass every check, and how many didn't. */
+export function parseStatsPayload(text: string): { rounds: RoundResult[]; skipped: number } {
+  if (text.length > MAX_FILE_CHARS) {
+    throw new Error('That file is too big to be a stats export.');
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -98,26 +105,12 @@ export function parseStatsPayload(text: string): RoundResult[] {
   if (!candidate) {
     throw new Error('No "rounds" array found in that file.');
   }
-  const rounds = candidate.filter(isValidRound);
+  const now = Date.now();
+  const rounds = candidate.flatMap((value) => checkRound(value, now) ?? []);
   if (rounds.length === 0) {
     throw new Error('No valid rounds found in that file.');
   }
-  return rounds;
-}
-
-function isValidRound(value: unknown): value is RoundResult {
-  // TODO: only check if it's an object, not what it's inside
-  if (typeof value !== 'object' || value == null) return false;
-  const round = value as Partial<RoundResult>;
-  return (
-    typeof round.id === 'string' &&
-    round.id.length > 0 &&
-    typeof round.finishedAt === 'number' &&
-    Number.isFinite(round.finishedAt) &&
-    Array.isArray(round.trials) &&
-    typeof round.settings === 'object' &&
-    round.settings != null
-  );
+  return { rounds, skipped: candidate.length - rounds.length };
 }
 
 // TODO: feature idea -> add also local sync on the same network for the stats to make it easier

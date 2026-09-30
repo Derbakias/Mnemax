@@ -337,14 +337,19 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
 
       <Section
         title="Round history"
-        info={<p>Every round, newest first. Tap one to see each trial and how you answered it.</p>}
+        info={
+          <p>
+            Every round, newest first. Tap one to see each trial and how you answered it. Clearing deletes the rounds
+            on this device only.
+          </p>
+        }
         action={
           <button
             type="button"
             className="text-button t-small"
             style={{ color: confirmClear ? theme.danger : theme.textSecondary }}
             onClick={onClear}>
-            {confirmClear ? 'Tap again to delete all' : 'Clear history'}
+            {confirmClear ? 'Tap again to clear this device' : 'Clear history'}
           </button>
         }>
         <div className="panel panel-pad">

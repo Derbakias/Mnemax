@@ -90,9 +90,10 @@ export function SettingsScreen() {
     try {
       const text = await pickStatsFileText();
       if (text == null) return;
-      const rounds = parseStatsPayload(text);
+      const { rounds, skipped } = parseStatsPayload(text);
       const { added } = await mergeRounds(rounds);
-      setDataStatus(added > 0 ? `Imported ${added} new round${added === 1 ? '' : 's'}.` : 'No new rounds found.');
+      const status = added > 0 ? `Imported ${added} new round${added === 1 ? '' : 's'}.` : 'No new rounds found.';
+      setDataStatus(skipped > 0 ? `${status} Skipped ${skipped} broken round${skipped === 1 ? '' : 's'}.` : status);
     } catch (error) {
       setDataStatus(errorMessage(error, 'Import failed.'));
     } finally {
