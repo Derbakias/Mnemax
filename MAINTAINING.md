@@ -51,7 +51,7 @@ The commits on the branch can be messy ("wip", "fix typo"). Only the pull reques
 off on Android", not "fixes" or "update play.tsx". `gh pr create --fill` uses the first commit's message
 as the title. Change it with `gh pr edit --title "..."` or on GitHub if it doesn't read well.
 
-The git hooks run the typecheck and tests before each commit, and `cargo test` before a push that
+The git hooks run the lint, format check, typecheck and tests before each commit, and `cargo test` before a push that
 changes Rust code (see Contributing in the README). On GitHub, the **CI** workflow runs the same checks
 on the pull request. Once they pass, merge it:
 
@@ -242,7 +242,7 @@ For reference, and in case something needs to be set up again.
 
 | File                            | What it does                                                           |
 | ------------------------------- | ---------------------------------------------------------------------- |
-| `workflows/ci.yml`              | Branch name check, typecheck, tests and Rust tests on every pull request and push to main |
+| `workflows/ci.yml`              | Branch name check, lint, format check, typecheck, tests and Rust tests on every pull request and push to main |
 | `workflows/release.yml`         | Builds the release files and drafts the release when a `v*` tag is pushed |
 | `release.yml`                   | The release notes sections, by label                                   |
 | `dependabot.yml`                | Which dependencies Dependabot updates, and how often                   |
