@@ -6,7 +6,8 @@ import { Section } from '@/components/ui/section';
 import { STREAM_ICONS } from '@/play/response-buttons';
 import { Stepper } from '@/components/ui/stepper';
 import { SyncSection } from '@/sync/sync-section';
-import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, maxMatchesFor } from '@/game/config';
+import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND } from '@/config/game';
+import { maxMatchesFor } from '@/game/rules';
 import type { StreamId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
 import {

@@ -1,4 +1,4 @@
-import { TRIALS_PER_ROUND } from '../config';
+import { TRIALS_PER_ROUND } from '@/config/game';
 import { generateRound } from '../generator';
 import { computeStreamScore, evaluateTrial, summarizeRound } from '../scoring';
 import type { GameSettings, RoundResult, StreamId, TrialRecord } from '../types';

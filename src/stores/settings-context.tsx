@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { clampSettings, defaultSettings } from '../game/config';
+import { clampSettings, defaultSettings } from '@/game/rules';
 import type { GameSettings, SpeedId, StreamId } from '../game/types';
 import { clampPrefs, defaultPrefs, normalizeKey, type AppPrefs, type ButtonLayout } from '../lib/prefs';
 import { loadPrefs, loadSettings, savePrefs, saveSettings } from '../lib/storage';

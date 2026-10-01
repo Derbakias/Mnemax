@@ -43,19 +43,8 @@ import {
   type SyncPeer,
   type SyncStatus,
 } from '@/sync/sync';
+import { AUTO_FAILURES_SHOWN, AUTO_PEER_FAILURES, RECONNECT_FAILURES, RESULT_SHOWN_MS } from '@/config/sync';
 import { errorText, syncedText, useSyncMessages, type LogLine, type Notice, type PeerNote } from '@/sync/sync-messages';
-
-/** Failures an automatic sync shows. The rest (like the other device not being open) only go in the log. */
-const AUTO_FAILURES_SHOWN = ['storage', 'keyStore'];
-/** Failures where pairing again may help: its address changed, or it forgot this device. */
-const RECONNECT_FAILURES = ['unreachable', 'refused'];
-/**
- * Failures an automatic sync shows under the device: trying again won't help, the person has to do something (pair
- * again, or update the app). Other ones, like the device not being open, only go in the log.
- */
-const AUTO_PEER_FAILURES = ['refused'];
-/** How long a sync result stays under its device. An error stays until the next try. */
-const RESULT_SHOWN_MS = 30_000;
 
 interface SyncContextValue {
   /** In the app, where sync works (not a browser). */

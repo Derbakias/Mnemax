@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { GameSettings, RoundResult, StreamId, TrialRecord, TrialStimulus } from './types';
-import { TRIALS_PER_ROUND, stimulusVisibleMs } from './config';
+import { TRIALS_PER_ROUND } from '@/config/game';
+import { stimulusVisibleMs } from './rules';
 import { generateRound } from './generator';
 import { evaluateTrial } from './scoring';
 import { speakLetter, stopSpeech } from '@/lib/speech';

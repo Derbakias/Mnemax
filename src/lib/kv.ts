@@ -1,10 +1,10 @@
 import { isTauri } from '@tauri-apps/api/core';
 import type { Store } from '@tauri-apps/plugin-store';
 
+import { STORE_FILE } from '@/config/storage';
+
 // Key-value persistence: a JSON file in the app data dir under Tauri,
 // localStorage when running in a plain browser (vite dev).
-
-const STORE_FILE = 'mnemax.json';
 
 const storePromises = new Map<string, Promise<Store>>();
 

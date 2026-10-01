@@ -30,6 +30,15 @@ export interface TrialRecord {
 /** A speed level. Saved by name, so a round keeps its level when the level's timing changes. */
 export type SpeedId = 'veryFast' | 'fast' | 'normal' | 'slow' | 'verySlow';
 
+export interface SpeedPreset {
+  id: SpeedId;
+  label: string;
+  /** How long the box shows, which is the time to answer. */
+  answerMs: number;
+  /** The whole trial: the answer time and the blank after it. */
+  ms: number;
+}
+
 export interface GameSettings {
   activeStreams: Record<StreamId, boolean>;
   nLevel: number;

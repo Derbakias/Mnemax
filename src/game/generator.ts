@@ -1,4 +1,5 @@
-import { COLOR_PALETTE, DIGITS, LETTERS, POSITION_CELLS, TRIALS_PER_ROUND, maxMatchesFor } from './config';
+import { COLOR_PALETTE, DIGITS, LETTERS, POSITION_CELLS, TRIALS_PER_ROUND } from '@/config/game';
+import { maxMatchesFor } from './rules';
 import type { GameSettings, StreamId, TrialStimulus } from './types';
 import { STREAM_IDS } from './types';
 

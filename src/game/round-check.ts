@@ -1,4 +1,4 @@
-import { COLOR_PALETTE, DIGITS, GRID_CELLS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND } from './config';
+import { COLOR_PALETTE, DIGITS, GRID_CELLS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND } from '@/config/game';
 import type { GameSettings, RoundResult, SpeedId, StreamId, StreamOutcome, TrialRecord, TrialStimulus } from './types';
 import { STREAM_IDS } from './types';
 

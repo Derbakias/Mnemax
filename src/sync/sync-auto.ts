@@ -4,14 +4,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { onRoundPlayed } from '@/lib/storage';
+import { AUTO_SYNC_DELAY_MS, AUTO_SYNC_MS } from '@/config/sync';
 import { syncStatus, type SyncPeer } from '@/sync/sync';
 import { errorText } from '@/sync/sync-messages';
-
-// TODO: move to a config
-/** How often the app syncs by itself while it's open. */
-const AUTO_SYNC_MS = 3 * 60 * 1000;
-/** After the app opens or a round is played, a short wait before syncing, so the app isn't slowed down. */
-const AUTO_SYNC_DELAY_MS = 1500;
 
 export function useAutoSync(
   on: boolean,

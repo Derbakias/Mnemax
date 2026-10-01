@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import { COLOR_PALETTE, COLOR_SHADES, GRID_CELLS, NEUTRAL_COLOR, NEUTRAL_SHADE } from '@/game/config';
+import { COLOR_PALETTE, COLOR_SHADES, GRID_CELLS, NEUTRAL_COLOR, NEUTRAL_SHADE } from '@/config/game';
 import type { TrialStimulus } from '@/game/types';
 
 interface TrialGridProps {
