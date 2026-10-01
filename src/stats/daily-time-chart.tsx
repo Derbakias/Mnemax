@@ -13,9 +13,9 @@ import {
   tooltipPlugin,
   withAlpha,
   type ChartZoom,
-} from './uplot-chart';
+} from '../components/charts/uplot-chart';
 import type { RoundResult } from '@/game/types';
-import { dailyStats, startOfDay, type DayStats } from '@/levels';
+import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
 import { DATE_LOCALE, formatDuration } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
 

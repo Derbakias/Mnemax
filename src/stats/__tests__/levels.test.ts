@@ -11,8 +11,8 @@ import {
   streamFactor,
   summarizeModes,
 } from '../levels';
-import { speedPreset } from '../game/config';
-import type { GameSettings, RoundResult, SpeedId, StreamId, TrialRecord } from '../game/types';
+import { speedPreset } from '../../game/config';
+import type { GameSettings, RoundResult, SpeedId, StreamId, TrialRecord } from '../../game/types';
 
 const DAY = 86400000;
 const NOW = new Date(2026, 8, 25, 12).getTime();

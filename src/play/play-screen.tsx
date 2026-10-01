@@ -3,13 +3,13 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
 
 import { Icon } from '@/components/ui/icon';
 import { HudDropdown } from '@/components/ui/hud-dropdown';
-import { ResponseButtons, STREAM_ICONS } from '@/components/response-buttons';
-import { RoundDetailTable } from '@/components/round-detail-table';
-import { RoundHistoryList } from '@/components/round-history-list';
-import { RoundSummaryCard } from '@/components/round-summary-card';
+import { ResponseButtons, STREAM_ICONS } from '@/play/response-buttons';
+import { RoundDetailTable } from '@/components/rounds/round-detail-table';
+import { RoundHistoryList } from '@/components/rounds/round-history-list';
+import { RoundSummaryCard } from '@/components/rounds/round-summary-card';
 import { Stepper } from '@/components/ui/stepper';
-import { StimulusGrid } from '@/components/stimulus-grid';
-import { TrialHistory } from '@/components/trial-history';
+import { StimulusGrid } from '@/play/stimulus-grid';
+import { TrialHistory } from '@/play/trial-history';
 import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedOf, speedPreset, stimulusVisibleMs } from '@/game/config';
 import { useGameEngine } from '@/game/engine';
 import type { GameSettings, RoundResult, SpeedId } from '@/game/types';

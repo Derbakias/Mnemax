@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Icon } from '@/components/ui/icon';
 import { Section } from '@/components/ui/section';
-import { STREAM_ICONS } from '@/components/response-buttons';
+import { STREAM_ICONS } from '@/play/response-buttons';
 import { Stepper } from '@/components/ui/stepper';
 import { SyncSection } from '@/sync/sync-section';
 import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, maxMatchesFor } from '@/game/config';
