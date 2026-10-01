@@ -26,7 +26,7 @@ import {
 } from 'react';
 
 import { useSettings } from '@/stores/settings-context';
-import { useAutoSync } from '@/sync-auto';
+import { useAutoSync } from '@/sync/sync-auto';
 import { onRoundsChanged } from '@/lib/storage';
 import {
   apiMismatch,
@@ -42,8 +42,8 @@ import {
   type ListenEvent,
   type SyncPeer,
   type SyncStatus,
-} from '@/sync';
-import { errorText, syncedText, useSyncMessages, type LogLine, type Notice, type PeerNote } from '@/sync-messages';
+} from '@/sync/sync';
+import { errorText, syncedText, useSyncMessages, type LogLine, type Notice, type PeerNote } from '@/sync/sync-messages';
 
 /** Failures an automatic sync shows. The rest (like the other device not being open) only go in the log. */
 const AUTO_FAILURES_SHOWN = ['storage', 'keyStore'];

@@ -1,4 +1,4 @@
-import { loadRounds } from '../lib/storage';
+import { loadRounds } from '../../lib/storage';
 import {
   SYNC_API,
   apiMismatch,
@@ -9,7 +9,7 @@ import {
   typeAddress,
   typeCode,
 } from '../sync';
-import type { RoundResult } from '../game/types';
+import type { RoundResult } from '../../game/types';
 
 const mockMemory = new Map<string, string>();
 const mockInvoke = vi.fn();
@@ -22,7 +22,7 @@ vi.mock('@tauri-apps/api/core', () => ({
   },
 }));
 
-vi.mock('../lib/kv', () => ({
+vi.mock('../../lib/kv', () => ({
   getItem: async (key: string) => mockMemory.get(key) ?? null,
   setItem: async (key: string, value: string) => {
     mockMemory.set(key, value);

@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { GridLoader } from '@/components/ui/grid-loader';
 import { Icon, type IconName } from '@/components/ui/icon';
-import { PlayScreen, type PlayStage } from '@/screens/play';
-import { SettingsScreen } from '@/screens/settings';
-import { StatsScreen } from '@/screens/stats';
+import { PlayScreen, type PlayStage } from '@/play/play-screen';
+import { SettingsScreen } from '@/settings/settings-screen';
+import { StatsScreen } from '@/stats/stats-screen';
 import { SettingsProvider, useSettings } from '@/stores/settings-context';
-import { SyncProvider } from '@/sync-context';
+import { SyncProvider } from '@/stores/sync-context';
 import { preloadSpeech } from '@/lib/speech';
 
 type Tab = 'play' | 'stats' | 'settings';

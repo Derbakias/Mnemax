@@ -1,11 +1,11 @@
 // Syncing by itself: with each device this one connects to, when the app opens or comes back on screen, after a
-// round is played, and every few minutes, while `on` (see src/sync-context.tsx for when that is).
+// round is played, and every few minutes, while `on` (see src/stores/sync-context.tsx for when that is).
 
 import { useCallback, useEffect, useRef } from 'react';
 
 import { onRoundPlayed } from '@/lib/storage';
-import { syncStatus, type SyncPeer } from '@/sync';
-import { errorText } from '@/sync-messages';
+import { syncStatus, type SyncPeer } from '@/sync/sync';
+import { errorText } from '@/sync/sync-messages';
 
 // TODO: move to a config
 /** How often the app syncs by itself while it's open. */

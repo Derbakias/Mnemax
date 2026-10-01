@@ -15,8 +15,8 @@ import {
   tooltipPlugin,
   withAlpha,
   type ChartZoom,
-} from './uplot-chart';
-import { LEVEL_WINDOW, roundMode, type LevelPoint } from '@/levels';
+} from '../components/charts/uplot-chart';
+import { LEVEL_WINDOW, roundMode, type LevelPoint } from '@/stats/levels';
 import { DATE_LOCALE, exponentialAverage } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
 

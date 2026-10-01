@@ -2,11 +2,11 @@
 // round belongs to a *mode* (N + active streams + speed). Across modes, a *level score* puts rounds on one
 // scale: difficulty × accuracy, in "dual N-back at Normal speed" units.
 
-import { DEFAULT_SPEED, speedOf, speedPreset } from './game/config';
-import { summarizeRound } from './game/scoring';
-import { roundDurationMs } from './lib/stats';
-import type { GameSettings, RoundResult, SpeedId, StreamId } from './game/types';
-import { STREAM_IDS } from './game/types';
+import { DEFAULT_SPEED, speedOf, speedPreset } from '../game/config';
+import { summarizeRound } from '../game/scoring';
+import { roundDurationMs } from '../lib/stats';
+import type { GameSettings, RoundResult, SpeedId, StreamId } from '../game/types';
+import { STREAM_IDS } from '../game/types';
 
 // ---------------------------------------------------------------------------
 // Modes

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type SubmitEvent } from 'react';
 
-import { Icon } from './ui/icon';
+import { Icon } from '../components/ui/icon';
 import { CameraScan, ScanOverlay } from './sync-scan';
 import { ShowCode } from './sync-show-code';
-import { useSync } from '@/sync-context';
-import { errorText } from '@/sync-messages';
+import { useSync } from '@/stores/sync-context';
+import { errorText } from '@/sync/sync-messages';
 import {
   cancelPairing,
   cancelScan,
@@ -18,7 +18,7 @@ import {
   typeCode,
   type PairEvent,
   type ShownCode,
-} from '@/sync';
+} from '@/sync/sync';
 
 /** After pressing Pair, how long until it can be pressed again, even when the answer comes back at once. */
 const RETRY_AFTER_MS = 1000;

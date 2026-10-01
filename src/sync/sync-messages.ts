@@ -3,7 +3,7 @@
 
 import { useCallback, useState } from 'react';
 
-import type { SyncResult } from '@/sync';
+import type { SyncResult } from '@/sync/sync';
 
 /** The log keeps this many steps, the latest. */
 const MAX_LOG_LINES = 300;

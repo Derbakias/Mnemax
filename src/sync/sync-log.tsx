@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { LogLine } from '@/sync-messages';
+import type { LogLine } from '@/sync/sync-messages';
 
 /** The steps of the latest pairing or sync, hidden until asked for, with a way to copy them. */
 export function SyncLog({ start, lines, deviceName }: { start: number; lines: LogLine[]; deviceName?: string }) {

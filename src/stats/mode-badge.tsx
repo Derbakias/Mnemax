@@ -1,8 +1,8 @@
-import { Icon } from './ui/icon';
-import { STREAM_ICONS } from './response-buttons';
+import { Icon } from '../components/ui/icon';
+import { STREAM_ICONS } from '../play/response-buttons';
 import { SPEED_PRESETS, speedPreset } from '@/game/config';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
-import type { Mode } from '@/levels';
+import type { Mode } from '@/stats/levels';
 
 /**
  * A mode in the same symbols as the Play screen chips: ↺N, the active stream icons, the speed bolts.

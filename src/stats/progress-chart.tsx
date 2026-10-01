@@ -14,7 +14,7 @@ import {
   tooltipPlugin,
   withAlpha,
   type ChartZoom,
-} from './uplot-chart';
+} from '../components/charts/uplot-chart';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
 import {

@@ -1,20 +1,20 @@
 // TODO: All the info text should be in one place maybe in a state to have everything together
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { ActivityCalendar } from '@/components/activity-calendar';
-import { Count } from '@/components/count';
-import { DailyTimeChart } from '@/components/daily-time-chart';
+import { ActivityCalendar } from '@/stats/activity-calendar';
+import { Count } from '@/stats/count';
+import { DailyTimeChart } from '@/stats/daily-time-chart';
 import { GridLoader } from '@/components/ui/grid-loader';
 import { HudDropdown } from '@/components/ui/hud-dropdown';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { ChartControlsTip } from '@/components/ui/info-tip';
-import { LevelChart } from '@/components/level-chart';
-import { ModeBadge } from '@/components/mode-badge';
-import { ProgressChart } from '@/components/progress-chart';
-import { RoundHistoryList } from '@/components/round-history-list';
+import { LevelChart } from '@/stats/level-chart';
+import { ModeBadge } from '@/stats/mode-badge';
+import { ProgressChart } from '@/stats/progress-chart';
+import { RoundHistoryList } from '@/components/rounds/round-history-list';
 import { Section } from '@/components/ui/section';
-import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/stream-table';
-import { ChartZoomActions, useChartZoom } from '@/components/uplot-chart';
+import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/rounds/stream-table';
+import { ChartZoomActions, useChartZoom } from '@/components/charts/uplot-chart';
 import type { RoundResult } from '@/game/types';
 import {
   LEVEL_WINDOW,
@@ -25,11 +25,11 @@ import {
   modeOf,
   summarizeModes,
   type ModeSummary,
-} from '@/levels';
+} from '@/stats/levels';
 import { useSettings } from '@/stores/settings-context';
 import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/lib/stats';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
-import { useSync } from '@/sync-context';
+import { useSync } from '@/stores/sync-context';
 import { accuracyColor, useTheme, type Theme } from '@/lib/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
