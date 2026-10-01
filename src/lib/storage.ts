@@ -1,16 +1,16 @@
 import * as AsyncStorage from './kv';
 
+import {
+  MAX_ROUNDS,
+  PREFS_KEY,
+  ROUNDS_KEY,
+  ROUND_IN_PROGRESS_FILE,
+  ROUND_IN_PROGRESS_KEY,
+  SETTINGS_KEY,
+} from '@/config/storage';
 import { clampSettings } from '@/game/rules';
 import type { GameSettings, RoundResult } from '../game/types';
 import { clampPrefs, type AppPrefs } from './prefs';
-
-// TODO: move to a config
-const SETTINGS_KEY = 'mnemax.settings.v1';
-const PREFS_KEY = 'mnemax.prefs.v1';
-const ROUNDS_KEY = 'mnemax.rounds.v1';
-const ROUND_IN_PROGRESS_KEY = 'mnemax.round-in-progress.v1';
-const ROUND_IN_PROGRESS_FILE = 'round-in-progress.json';
-const MAX_ROUNDS = 500;
 
 /** Fired on `window` whenever the saved rounds change (a round saved, an import, a clear). */
 export const ROUNDS_CHANGED_EVENT = 'mnemax:rounds-changed';
