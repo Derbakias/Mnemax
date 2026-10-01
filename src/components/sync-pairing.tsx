@@ -83,13 +83,17 @@ export function Pairing({
 
   const end = useCallback(() => {
     scanId.current++;
-    if (scanningRef.current && isPhone()) void cancelScan().catch(() => {});
+    if (scanningRef.current && isPhone()) {
+      void cancelScan().catch(() => {});
+    }
     void cancelPairing().catch(() => {});
     onEnd();
   }, [onEnd]);
   // Leaving the Settings tab ends the pairing. (The Sync section also ends any pairing when it goes away.)
   useEffect(() => {
-    if (!active) end();
+    if (!active) {
+      end();
+    }
   }, [active, end]);
 
   const onPair = useCallback(
@@ -150,14 +154,20 @@ export function Pairing({
   const onScan = () => {
     restart('Opening the camera…');
     setStep({ step: 'scanning' });
-    if (!isPhone()) return;
+    if (!isPhone()) {
+      return;
+    }
     const id = ++scanId.current;
     scanQr().then(
       (text) => {
-        if (id === scanId.current) void onScanned(text);
+        if (id === scanId.current) {
+          void onScanned(text);
+        }
       },
       (e) => {
-        if (id === scanId.current) onScanFailed(e);
+        if (id === scanId.current) {
+          onScanFailed(e);
+        }
       },
     );
   };
@@ -222,7 +232,9 @@ export function Pairing({
     </button>
   );
 
-  if (step.step === 'showing') return <ShowCode showing={step} onNewCode={showCode} cancel={cancel} />;
+  if (step.step === 'showing') {
+    return <ShowCode showing={step} onNewCode={showCode} cancel={cancel} />;
+  }
   const joining = step.step === 'joining';
   return (
     <form className="card sync-pairing" onSubmit={onSubmit}>

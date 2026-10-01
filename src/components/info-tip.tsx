@@ -30,24 +30,36 @@ export function useHoverOrTap<T extends HTMLElement>() {
 
   // Opening closes whichever other one is open, whatever becomes of the press that opened this one.
   useEffect(() => {
-    if (!open) return;
-    if (closeOpenPopup !== close) closeOpenPopup?.();
+    if (!open) {
+      return;
+    }
+    if (closeOpenPopup !== close) {
+      closeOpenPopup?.();
+    }
     closeOpenPopup = close;
     return () => {
-      if (closeOpenPopup === close) closeOpenPopup = null;
+      if (closeOpenPopup === close) {
+        closeOpenPopup = null;
+      }
     };
   }, [open, close]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     // A click, not a press: a finger scrolling the page presses outside too, but a scroll or a drag never
     // ends in a click, so only a real tap or click elsewhere closes it. Captured, so it's seen before
     // anything on the page can stop it.
     const onClick = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) close();
+      if (!rootRef.current?.contains(e.target as Node)) {
+        close();
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') {
+        close();
+      }
     };
     document.addEventListener('click', onClick, true);
     document.addEventListener('keydown', onKey);

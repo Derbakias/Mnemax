@@ -83,7 +83,9 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
         interaction.plugin,
         tooltipPlugin((idx) => {
           const point = history[idx];
-          if (!point) return null;
+          if (!point) {
+            return null;
+          }
           const title = new Date(point.finishedAt).toLocaleString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',

@@ -24,7 +24,9 @@ function SyncPanel({ active }: { active: boolean }) {
   // Any pairing ends when the Sync section goes away.
   useEffect(() => () => void cancelPairing().catch(() => {}), []);
   useEffect(() => {
-    if (!active) setNameDraft(null);
+    if (!active) {
+      setNameDraft(null);
+    }
   }, [active]);
 
   const startPairing = (how: 'show' | 'enter', hint?: string) => {
@@ -34,7 +36,9 @@ function SyncPanel({ active }: { active: boolean }) {
 
   const onRename = async (e: SubmitEvent) => {
     e.preventDefault();
-    if (nameDraft == null) return;
+    if (nameDraft == null) {
+      return;
+    }
     try {
       setStatus(await renameDevice(nameDraft));
       setNameDraft(null);
@@ -215,6 +219,8 @@ function SyncPanel({ active }: { active: boolean }) {
 
 /** Whether paired devices can sync with this one now. */
 function reachText(listening: boolean, auto: boolean): string {
-  if (auto) return 'Syncs by itself while Mnemax is open on both devices.';
+  if (auto) {
+    return 'Syncs by itself while Mnemax is open on both devices.';
+  }
   return listening ? 'Paired devices can sync with this one while Settings is open.' : 'Open Settings on both to sync.';
 }

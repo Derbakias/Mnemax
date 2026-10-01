@@ -20,7 +20,9 @@ function simulateRound(settings: GameSettings, pressProbability: number): RoundR
   const trials: TrialRecord[] = [];
   for (let i = 0; i < TRIALS_PER_ROUND; i++) {
     const row = {} as Record<StreamId, boolean>;
-    for (const stream of STREAM_IDS) row[stream] = isMatch[stream][i];
+    for (const stream of STREAM_IDS) {
+      row[stream] = isMatch[stream][i];
+    }
     const responded: Partial<Record<StreamId, boolean>> = {};
     for (const stream of STREAM_IDS) {
       if (settings.activeStreams[stream] && Math.random() < pressProbability) {
@@ -70,7 +72,9 @@ describe('full round simulation', () => {
       const result = simulateRound(makeSettings(), 0.9);
       for (const trial of result.trials) {
         for (const stream of STREAM_IDS) {
-          if (!result.settings.activeStreams[stream]) continue;
+          if (!result.settings.activeStreams[stream]) {
+            continue;
+          }
           if (trial.isMatch[stream]) {
             expect(trial.outcome[stream]).not.toBe('falseAlarm');
           } else {

@@ -23,7 +23,9 @@ function randomValue(stream: StreamId): Cell {
 
 function shuffledCandidates(n: number): number[] {
   const indices: number[] = [];
-  for (let i = n; i < TRIALS_PER_ROUND; i++) indices.push(i);
+  for (let i = n; i < TRIALS_PER_ROUND; i++) {
+    indices.push(i);
+  }
   for (let i = indices.length - 1; i > 0; i--) {
     const j = rand(i + 1);
     [indices[i], indices[j]] = [indices[j], indices[i]];

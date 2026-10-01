@@ -53,7 +53,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
     let cancelled = false;
     const reload = () =>
       loadRounds().then((r) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setRounds(r);
         setLoaded(true);
       });
@@ -67,7 +69,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
 
   // Effects run after the render is on screen, so this fires once the loaded stats are drawn.
   useEffect(() => {
-    if (loaded) onReady?.();
+    if (loaded) {
+      onReady?.();
+    }
   }, [loaded, onReady]);
 
   const history = useMemo(() => levelHistory(rounds), [rounds]);

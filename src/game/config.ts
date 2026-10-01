@@ -77,7 +77,9 @@ export function speedPreset(id: SpeedId): SpeedPreset {
 function speedPresetFor(ms: number): SpeedPreset {
   let best = SPEED_PRESETS[0];
   for (const preset of SPEED_PRESETS) {
-    if (Math.abs(preset.ms - ms) < Math.abs(best.ms - ms)) best = preset;
+    if (Math.abs(preset.ms - ms) < Math.abs(best.ms - ms)) {
+      best = preset;
+    }
   }
   return best;
 }
@@ -89,7 +91,9 @@ function isSpeedId(value: unknown): value is SpeedId {
 /** The speed of saved settings (a round's too): their level, or for ones saved before the level was, the
  *  level nearest their trial length. */
 export function speedOf(settings: Partial<Pick<GameSettings, 'speed' | 'trialDurationMs'>>): SpeedPreset {
-  if (isSpeedId(settings.speed)) return speedPreset(settings.speed);
+  if (isSpeedId(settings.speed)) {
+    return speedPreset(settings.speed);
+  }
   const ms = settings.trialDurationMs;
   return typeof ms === 'number' && Number.isFinite(ms) ? speedPresetFor(ms) : speedPreset(DEFAULT_SPEED);
 }
@@ -118,7 +122,9 @@ export function clampSettings(raw: Partial<GameSettings> | null | undefined): Ga
     activeStreams[stream] = raw?.activeStreams
       ? raw.activeStreams[stream] === true
       : stream === 'position' || stream === 'audio';
-    if (activeStreams[stream]) anyActive = true;
+    if (activeStreams[stream]) {
+      anyActive = true;
+    }
   }
   if (!anyActive) {
     activeStreams.position = true;

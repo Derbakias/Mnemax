@@ -66,21 +66,31 @@ export function CameraScan({
 
     void (async () => {
       try {
-        if (!navigator.mediaDevices?.getUserMedia) throw new Error("This device can't open its camera here.");
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("This device can't open its camera here.");
+        }
         // The QR reader first: if it can't load, the camera is never turned on.
         const { default: jsQR } = await import('jsqr');
-        if (closed) return;
+        if (closed) {
+          return;
+        }
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
         const view = video.current;
-        if (closed || !view) return close();
+        if (closed || !view) {
+          return close();
+        }
         view.srcObject = stream;
         await view.play();
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d', { willReadFrequently: true });
-        if (!context) throw new Error("Couldn't read the camera picture.");
+        if (!context) {
+          throw new Error("Couldn't read the camera picture.");
+        }
         timer = setInterval(() => {
-          if (closed || view.readyState < view.HAVE_CURRENT_DATA || view.videoWidth === 0) return;
+          if (closed || view.readyState < view.HAVE_CURRENT_DATA || view.videoWidth === 0) {
+            return;
+          }
           const scale = Math.min(1, LOOK_WIDTH / view.videoWidth);
           canvas.width = Math.round(view.videoWidth * scale);
           canvas.height = Math.round(view.videoHeight * scale);
@@ -93,7 +103,9 @@ export function CameraScan({
           }
         }, LOOK_EVERY_MS);
       } catch (error) {
-        if (closed) return;
+        if (closed) {
+          return;
+        }
         close();
         handlers.current.onFail(cameraError(error));
       }
@@ -114,7 +126,11 @@ function cameraError(error: unknown): unknown {
   if (name === 'NotAllowedError') {
     return new Error("Mnemax isn't allowed to use the camera. Allow it in the system's settings, or type the code.");
   }
-  if (name === 'NotFoundError' || name === 'OverconstrainedError') return new Error('No camera found.');
-  if (name === 'NotReadableError') return new Error('The camera is busy: another app may be using it.');
+  if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+    return new Error('No camera found.');
+  }
+  if (name === 'NotReadableError') {
+    return new Error('The camera is busy: another app may be using it.');
+  }
   return error;
 }

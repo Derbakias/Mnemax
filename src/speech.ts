@@ -22,17 +22,25 @@ let current: AudioBufferSourceNode | null = null;
 let requestId = 0;
 
 function getContext(): AudioContext | null {
-  if (context) return context;
+  if (context) {
+    return context;
+  }
   const Ctor = window.AudioContext ?? (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!Ctor) return null;
+  if (!Ctor) {
+    return null;
+  }
   context = new Ctor();
   return context;
 }
 
 function loadClips(): Promise<void> {
-  if (loading) return loading;
+  if (loading) {
+    return loading;
+  }
   const ctx = getContext();
-  if (!ctx) return Promise.resolve();
+  if (!ctx) {
+    return Promise.resolve();
+  }
   loading = Promise.all(
     Object.entries(CLIP_URLS).map(async ([path, url]) => {
       const data = await (await fetch(url)).arrayBuffer();
@@ -59,7 +67,9 @@ export function preloadSpeech(): Promise<void> {
 /** Call from a user gesture (e.g. pressing Play) so audio is allowed to start. */
 export function primeSpeech(): void {
   const ctx = getContext();
-  if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
   loadClips();
 }
 
@@ -68,7 +78,9 @@ export function speakLetter(letter: string): void {
   if (!buffers) {
     // Still loading: play once ready, unless the trial has moved on (another letter, or stopped) by then.
     loadClips().then(() => {
-      if (id === requestId) play(letter);
+      if (id === requestId) {
+        play(letter);
+      }
     });
     return;
   }
@@ -79,7 +91,9 @@ function play(letter: string): void {
   try {
     const ctx = getContext();
     const buffer = buffers?.get(letter);
-    if (!ctx || !buffer) return;
+    if (!ctx || !buffer) {
+      return;
+    }
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);

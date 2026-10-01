@@ -103,7 +103,9 @@ export interface LevelSummary {
 const WEEK_MS = 7 * 86400000;
 
 export function levelSummary(history: LevelPoint[], now = Date.now()): LevelSummary | null {
-  if (history.length === 0) return null;
+  if (history.length === 0) {
+    return null;
+  }
   const current = history[history.length - 1].level;
   const weekAgo = [...history].reverse().find((p) => p.finishedAt <= now - WEEK_MS);
   const fullWindow = Math.min(LEVEL_WINDOW, history.length);

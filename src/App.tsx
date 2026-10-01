@@ -70,10 +70,14 @@ function AppShell() {
   // Two steps: fade once everything is ready, then remove it when the fade has finished. (One effect doing
   // both cancelled its own removal timer, since switching to 'fading' re-ran it.)
   useEffect(() => {
-    if (splash === 'showing' && minTimeDone && dataReady) setSplash('fading');
+    if (splash === 'showing' && minTimeDone && dataReady) {
+      setSplash('fading');
+    }
   }, [splash, minTimeDone, dataReady]);
   useEffect(() => {
-    if (splash !== 'fading') return;
+    if (splash !== 'fading') {
+      return;
+    }
     const timer = setTimeout(() => setSplash('gone'), SPLASH_FADE_MS);
     return () => clearTimeout(timer);
   }, [splash]);
@@ -88,7 +92,9 @@ function AppShell() {
       <div
         className="app"
         onMouseDown={(e) => {
-          if ((e.target as HTMLElement).closest('button')) e.preventDefault();
+          if ((e.target as HTMLElement).closest('button')) {
+            e.preventDefault();
+          }
         }}
       >
         <main className="screen play-screen" hidden={tab !== 'play'}>

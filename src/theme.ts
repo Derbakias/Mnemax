@@ -47,7 +47,11 @@ export function useTheme(): Theme {
 }
 
 export function accuracyColor(pct: number, theme: Theme): string {
-  if (pct >= 90) return theme.success;
-  if (pct >= 70) return theme.warning;
+  if (pct >= 90) {
+    return theme.success;
+  }
+  if (pct >= 70) {
+    return theme.warning;
+  }
   return theme.danger;
 }

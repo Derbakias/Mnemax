@@ -6,7 +6,9 @@ import { balancedAccuracy, summarizeRound } from './game/scoring';
 const COUNTDOWN_MS = 2100;
 
 export function roundDurationMs(round: RoundResult): number {
-  if (typeof round.durationMs === 'number') return round.durationMs;
+  if (typeof round.durationMs === 'number') {
+    return round.durationMs;
+  }
   return COUNTDOWN_MS + TRIALS_PER_ROUND * round.settings.trialDurationMs;
 }
 
@@ -16,7 +18,9 @@ export function playedOnDayMs(rounds: RoundResult[], day: Date): number {
   const end = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
   let total = 0;
   for (const round of rounds) {
-    if (round.finishedAt >= start && round.finishedAt < end) total += roundDurationMs(round);
+    if (round.finishedAt >= start && round.finishedAt < end) {
+      total += roundDurationMs(round);
+    }
   }
   return total;
 }
@@ -33,8 +37,12 @@ export function formatDuration(ms: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
   return `${seconds}s`;
 }
 
@@ -50,12 +58,16 @@ const COUNT_UNITS: [suffix: string, size: number][] = [
  * below 10 of a unit, whole numbers above; a value that rounds up to 1000 of a unit moves to the next.
  */
 export function formatCount(n: number): string {
-  if (Math.abs(n) < 1000) return String(Math.round(n));
+  if (Math.abs(n) < 1000) {
+    return String(Math.round(n));
+  }
   for (let i = 0; i < COUNT_UNITS.length; i++) {
     const [suffix, size] = COUNT_UNITS[i];
     const x = n / size;
     const rounded = Math.abs(x) < 10 ? Math.round(x * 10) / 10 : Math.round(x);
-    if (Math.abs(rounded) < 1000 || i === COUNT_UNITS.length - 1) return `${rounded}${suffix}`;
+    if (Math.abs(rounded) < 1000 || i === COUNT_UNITS.length - 1) {
+      return `${rounded}${suffix}`;
+    }
   }
   return String(n);
 }
@@ -139,7 +151,9 @@ export function collectionSummary(rounds: RoundResult[]): CollectionSummary {
 // ---------------------------------------------------------------------------
 
 export function median(values: number[]): number | null {
-  if (values.length === 0) return null;
+  if (values.length === 0) {
+    return null;
+  }
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
@@ -157,8 +171,11 @@ export function exponentialAverage(values: (number | null)[], n: number): (numbe
   let ema: number | null = null;
   return values.map((v) => {
     if (v != null) {
-      if (ema != null) ema = alpha * v + (1 - alpha) * ema;
-      else if (seed.push(v) === n) ema = seed.reduce((a, b) => a + b, 0) / n;
+      if (ema != null) {
+        ema = alpha * v + (1 - alpha) * ema;
+      } else if (seed.push(v) === n) {
+        ema = seed.reduce((a, b) => a + b, 0) / n;
+      }
     }
     return ema;
   });
@@ -195,7 +212,9 @@ export interface RoundPoint {
 }
 
 function hitRts(trial: TrialRecord, stream: StreamId): number | null {
-  if (trial.outcome[stream] !== 'hit') return null;
+  if (trial.outcome[stream] !== 'hit') {
+    return null;
+  }
   const rt = trial.responseTimesMs?.[stream];
   return typeof rt === 'number' && rt >= 0 ? rt : null;
 }
@@ -212,7 +231,9 @@ export function computeRoundPoints(rounds: RoundResult[]): RoundPoint[] {
       const rts: number[] = [];
       for (const trial of round.trials) {
         const rt = hitRts(trial, score.stream);
-        if (rt != null) rts.push(rt);
+        if (rt != null) {
+          rts.push(rt);
+        }
       }
       const streamMedian = median(rts);
       if (streamMedian != null) {
@@ -247,8 +268,12 @@ export interface RoundFilter {
 export function filterRounds(rounds: RoundResult[], filter: RoundFilter): RoundResult[] {
   const minTime = filter.days != null ? Date.now() - filter.days * 86400000 : null;
   return rounds.filter((round) => {
-    if (minTime != null && round.finishedAt < minTime) return false;
-    if (filter.nLevel != null && round.settings.nLevel !== filter.nLevel) return false;
+    if (minTime != null && round.finishedAt < minTime) {
+      return false;
+    }
+    if (filter.nLevel != null && round.settings.nLevel !== filter.nLevel) {
+      return false;
+    }
     return true;
   });
 }
@@ -276,9 +301,13 @@ const LEARNING_RATES = Array.from({ length: 401 }, (_, i) => 0.01 * 10 ** (i / 1
 
 function slopePerHour(points: { hours: number; value: number }[]): number | null {
   const n = points.length;
-  if (n < 5) return null;
+  if (n < 5) {
+    return null;
+  }
   const totalHours = points[n - 1].hours;
-  if (totalHours < 0.08) return null;
+  if (totalHours < 0.08) {
+    return null;
+  }
   const meanX = points.reduce((s, p) => s + p.hours, 0) / n;
   const meanY = points.reduce((s, p) => s + p.value, 0) / n;
   let num = 0;
@@ -287,7 +316,9 @@ function slopePerHour(points: { hours: number; value: number }[]): number | null
     num += (p.hours - meanX) * (p.value - meanY);
     den += (p.hours - meanX) ** 2;
   }
-  if (den === 0) return null;
+  if (den === 0) {
+    return null;
+  }
   return num / den;
 }
 
@@ -300,10 +331,14 @@ function slopePerHour(points: { hours: number; value: number }[]): number | null
  */
 function perfectEstimate(points: { hours: number; value: number }[]): PerfectEstimate | null {
   const n = points.length;
-  if (n < 5 || points[n - 1].hours < 0.08) return null;
+  if (n < 5 || points[n - 1].hours < 0.08) {
+    return null;
+  }
   const recent = points.slice(-CURRENT_WINDOW);
   const current = recent.reduce((s, p) => s + p.value, 0) / recent.length;
-  if (current >= PERFECT_ACCURACY) return { kind: 'reached' };
+  if (current >= PERFECT_ACCURACY) {
+    return { kind: 'reached' };
+  }
 
   const gaps = points.map((p) => ({ hours: p.hours, gap: Math.max(0, 100 - p.value) }));
   // A flat line (k = 0) fits best with G = the mean gap.
@@ -318,19 +353,29 @@ function perfectEstimate(points: { hours: number; value: number }[]): PerfectEst
       num += p.gap * e;
       den += e * e;
     }
-    if (den === 0) continue;
+    if (den === 0) {
+      continue;
+    }
     const g = num / den;
     let error = 0;
-    for (const p of gaps) error += (p.gap - g * Math.exp(-k * p.hours)) ** 2;
-    if (error < best.error) best = { k, error };
+    for (const p of gaps) {
+      error += (p.gap - g * Math.exp(-k * p.hours)) ** 2;
+    }
+    if (error < best.error) {
+      best = { k, error };
+    }
   }
-  if (best.k === 0 || best.error > flatError * (1 - MIN_FIT_GAIN)) return { kind: 'noProgress' };
+  if (best.k === 0 || best.error > flatError * (1 - MIN_FIT_GAIN)) {
+    return { kind: 'noProgress' };
+  }
   const hours = Math.log((100 - current) / (100 - PERFECT_ACCURACY)) / best.k;
   return { kind: 'eta', hours };
 }
 
 export function improvementRate(points: RoundPoint[]): ImprovementRate {
-  if (points.length < 5) return { toPerfect: null, speedMsPerHour: null };
+  if (points.length < 5) {
+    return { toPerfect: null, speedMsPerHour: null };
+  }
   let cumMs = 0;
   const acc: { hours: number; value: number }[] = [];
   const speed: { hours: number; value: number }[] = [];
@@ -338,7 +383,9 @@ export function improvementRate(points: RoundPoint[]): ImprovementRate {
     cumMs += point.durationMs;
     const hours = cumMs / 3600000;
     acc.push({ hours, value: point.accuracy });
-    if (point.speedMs != null) speed.push({ hours, value: point.speedMs });
+    if (point.speedMs != null) {
+      speed.push({ hours, value: point.speedMs });
+    }
   }
   return {
     toPerfect: perfectEstimate(acc),

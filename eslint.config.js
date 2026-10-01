@@ -21,8 +21,12 @@ export default defineConfig([
       'react-hooks/rules-of-hooks': 'error',
       // Always wrap if, else and loop bodies in { } braces.
       curly: ['error', 'all'],
+      // Taking a field out with `{ field: _, ...rest }` is fine.
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
     },
   },
+  // Tests break saved data on purpose to check it's caught, so they may use loose types.
+  { files: ['**/__tests__/**'], rules: { '@typescript-eslint/no-explicit-any': 'off' } },
   // The app runs in a browser.
   { files: ['src/**'], languageOptions: { globals: globals.browser } },
   // Build tools run in Node.

@@ -8,7 +8,9 @@ import { formatCount } from '@/stats';
 export function Count({ value, label, className }: { value: number; label: string; className?: string }) {
   const short = formatCount(value);
   const { rootRef, open, toggle, hoverHandlers } = useHoverOrTap<HTMLSpanElement>();
-  if (short === String(value)) return <span className={className}>{short}</span>;
+  if (short === String(value)) {
+    return <span className={className}>{short}</span>;
+  }
 
   const exact = `${value.toLocaleString()} ${label}`;
   // Not a <button>: in the modes table it sits inside a row that is one. A tap here shouldn't pick the row.
@@ -25,7 +27,9 @@ export function Count({ value, label, className }: { value: number; label: strin
           toggle();
         }}
         onKeyDown={(e) => {
-          if (e.key !== 'Enter' && e.key !== ' ') return;
+          if (e.key !== 'Enter' && e.key !== ' ') {
+            return;
+          }
           e.preventDefault();
           e.stopPropagation();
           toggle();

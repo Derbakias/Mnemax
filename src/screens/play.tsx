@@ -58,7 +58,9 @@ export function PlayScreen({
   const [roundCount, setRoundCount] = useState(0);
 
   useEffect(() => {
-    if (savedRounds) onReady?.();
+    if (savedRounds) {
+      onReady?.();
+    }
   }, [savedRounds, onReady]);
 
   // Load at startup and after any change to the saved rounds (a round saved, an import on the Settings
@@ -82,7 +84,9 @@ export function PlayScreen({
 
   const handleProgress = useCallback(
     (partial: RoundResult) => {
-      if (!tutorial) saveRoundInProgress(partial);
+      if (!tutorial) {
+        saveRoundInProgress(partial);
+      }
     },
     [tutorial],
   );
@@ -133,11 +137,15 @@ export function PlayScreen({
   const historyHighlight = STREAM_IDS.some((s) => state.match[s]) ? state.trialIndex - n : undefined;
 
   const onMain = () => {
-    if (state.paused) resumeRound();
-    else if (busy) pauseRound();
-    else {
+    if (state.paused) {
+      resumeRound();
+    } else if (busy) {
+      pauseRound();
+    } else {
       // A button left focused (e.g. by keyboard navigation) would react to the answer keys.
-      if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
+      if (document.activeElement instanceof HTMLButtonElement) {
+        document.activeElement.blur();
+      }
       primeSpeech();
       setRoundCount((c) => c + 1);
       setRoundSettings(settings);
@@ -151,23 +159,35 @@ export function PlayScreen({
   latest.current = { onMain, stopRound, respond, respondDisabled, busy, paused: state.paused, pauseRound, keys };
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+        return;
+      }
       const l = latest.current;
       if (e.key === ' ') {
         e.preventDefault();
         l.onMain();
       } else if (e.key === 'Escape') {
-        if (l.busy) l.stopRound();
+        if (l.busy) {
+          l.stopRound();
+        }
       } else {
         const stream = STREAM_IDS.find((s) => l.keys[s] === normalizeKey(e.key));
         // During a round an answer key is always ours, even while it can't answer (first trial, paused):
         // otherwise an arrow key would scroll the page or move focus.
-        if (stream && (l.busy || !l.respondDisabled)) e.preventDefault();
-        if (stream && !l.respondDisabled) l.respond(stream);
+        if (stream && (l.busy || !l.respondDisabled)) {
+          e.preventDefault();
+        }
+        if (stream && !l.respondDisabled) {
+          l.respond(stream);
+        }
       }
     };
     window.addEventListener('keydown', onKey);
@@ -178,7 +198,9 @@ export function PlayScreen({
   useEffect(() => {
     const onVisibility = () => {
       const l = latest.current;
-      if (document.hidden && l.busy && !l.paused) l.pauseRound();
+      if (document.hidden && l.busy && !l.paused) {
+        l.pauseRound();
+      }
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);

@@ -138,7 +138,9 @@ export function ProgressChart({
         interaction.plugin,
         tooltipPlugin((idx) => {
           const point = points[idx];
-          if (!point) return null;
+          if (!point) {
+            return null;
+          }
           const title = new Date(point.finishedAt).toLocaleString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',
@@ -165,8 +167,11 @@ export function ProgressChart({
   const toggleSeries = (key: SeriesKey) => {
     const next = new Set(hidden);
     const show = next.has(key);
-    if (show) next.delete(key);
-    else next.add(key);
+    if (show) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
     setHidden(next);
     const index = key === 'round' ? 1 : key === 'avg' ? 2 : 3 + streams.indexOf(key);
     plotRef.current?.setSeries(index, { show });
@@ -242,17 +247,24 @@ export function ProgressChart({
 const MAX_ESTIMATE_HOURS = 100;
 
 function PerfectEstimateLabel({ estimate }: { estimate: PerfectEstimate }) {
-  if (estimate.kind === 'reached') return <span className="t-small good">At 100%: time for a harder mode</span>;
-  if (estimate.kind === 'noProgress')
+  if (estimate.kind === 'reached') {
+    return <span className="t-small good">At 100%: time for a harder mode</span>;
+  }
+  if (estimate.kind === 'noProgress') {
     return <span className="t-small secondary">No clear progress toward 100% yet</span>;
+  }
   return <span className="t-small good">You need ~{formatPlayTime(estimate.hours)} playtime to reach 100%</span>;
 }
 
 /** Whole minutes under an hour, hours and minutes above. */
 function formatPlayTime(hours: number): string {
-  if (hours >= MAX_ESTIMATE_HOURS) return `${MAX_ESTIMATE_HOURS}h+`;
+  if (hours >= MAX_ESTIMATE_HOURS) {
+    return `${MAX_ESTIMATE_HOURS}h+`;
+  }
   const minutes = Math.max(1, Math.round(hours * 60));
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 

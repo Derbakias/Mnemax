@@ -49,7 +49,9 @@ export function HudDropdown({
       const panel = panelRef.current;
       // The wrapper is `display: contents`; the panel hangs off its positioned container (the chip row).
       const rowRect = panel?.offsetParent?.getBoundingClientRect();
-      if (!rowRect || !panel) return;
+      if (!rowRect || !panel) {
+        return;
+      }
       // The tab bar covers the bottom of the window, so the panel has to stop above it (it's hidden during a
       // round).
       const bottomLimit =
@@ -79,16 +81,24 @@ export function HudDropdown({
   }, [open, underChip]);
 
   useEffect(() => {
-    if (disabled) setOpen(false);
+    if (disabled) {
+      setOpen(false);
+    }
   }, [disabled]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKey);

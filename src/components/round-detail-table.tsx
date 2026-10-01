@@ -15,9 +15,15 @@ const COLUMN_LABEL: Record<StreamId, string> = {
 /** What a trial showed in a stream: the cell, a colour swatch, the digit or the letter. */
 function Shown({ stream, trial }: { stream: StreamId; trial: TrialRecord }) {
   const { stimulus } = trial;
-  if (stream === 'position') return <span>{stimulus.position + 1}</span>;
-  if (stream === 'number') return <span>{stimulus.number}</span>;
-  if (stream === 'audio') return <span>{stimulus.letter}</span>;
+  if (stream === 'position') {
+    return <span>{stimulus.position + 1}</span>;
+  }
+  if (stream === 'number') {
+    return <span>{stimulus.number}</span>;
+  }
+  if (stream === 'audio') {
+    return <span>{stimulus.letter}</span>;
+  }
   const index = stimulus.color % COLOR_PALETTE.length;
   return (
     <>

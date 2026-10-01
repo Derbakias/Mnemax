@@ -16,7 +16,9 @@ const MAX_ROUNDS = 500;
 export const ROUNDS_CHANGED_EVENT = 'mnemax:rounds-changed';
 
 function notifyRoundsChanged() {
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUNDS_CHANGED_EVENT));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(ROUNDS_CHANGED_EVENT));
+  }
 }
 
 /**
@@ -40,7 +42,9 @@ export function onRoundsChanged(onChange: () => void): () => void {
 export async function loadSettings(): Promise<GameSettings> {
   try {
     const json = await AsyncStorage.getItem(SETTINGS_KEY);
-    if (!json) return clampSettings(null);
+    if (!json) {
+      return clampSettings(null);
+    }
     return clampSettings(JSON.parse(json));
   } catch {
     return clampSettings(null);
@@ -75,7 +79,9 @@ export async function savePrefs(prefs: AppPrefs): Promise<void> {
 export async function loadRounds(): Promise<RoundResult[]> {
   try {
     const json = await AsyncStorage.getItem(ROUNDS_KEY);
-    if (!json) return [];
+    if (!json) {
+      return [];
+    }
     const parsed = JSON.parse(json);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -104,7 +110,9 @@ export function appendRound(round: RoundResult): Promise<RoundResult[]> {
       // persistence failure is non-fatal
     }
     notifyRoundsChanged();
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUND_PLAYED_EVENT));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(ROUND_PLAYED_EVENT));
+    }
     return next;
   });
 }
@@ -137,16 +145,22 @@ async function mergeNow(incoming: RoundResult[]): Promise<{ added: number }> {
   const existing = await loadRounds();
   const knownIds = new Set(existing.map((r) => r.id));
   const fresh = incoming.filter((r) => {
-    if (knownIds.has(r.id)) return false;
+    if (knownIds.has(r.id)) {
+      return false;
+    }
     knownIds.add(r.id);
     return true;
   });
-  if (fresh.length === 0) return { added: 0 };
+  if (fresh.length === 0) {
+    return { added: 0 };
+  }
   const merged = [...fresh, ...existing].sort(newestFirst).slice(0, MAX_ROUNDS);
   // Only the ones still there after the cap: older ones than the newest 500 aren't kept.
   const freshIds = new Set(fresh.map((r) => r.id));
   const added = merged.filter((r) => freshIds.has(r.id)).length;
-  if (added === 0) return { added: 0 };
+  if (added === 0) {
+    return { added: 0 };
+  }
   try {
     await AsyncStorage.setItem(ROUNDS_KEY, JSON.stringify(merged));
   } catch {
@@ -189,7 +203,9 @@ export async function recoverRoundInProgress(): Promise<void> {
   }
   if (round && typeof round.id === 'string') {
     const rounds = await loadRounds();
-    if (!rounds.some((r) => r.id === round.id)) await appendRound({ ...round, stopped: true });
+    if (!rounds.some((r) => r.id === round.id)) {
+      await appendRound({ ...round, stopped: true });
+    }
   }
   await clearRoundInProgress();
 }

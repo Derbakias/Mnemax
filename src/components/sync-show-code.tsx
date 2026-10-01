@@ -42,7 +42,9 @@ export function ShowCode({
     );
   }
   const onCopy = async () => {
-    if (!shown) return;
+    if (!shown) {
+      return;
+    }
     try {
       await navigator.clipboard.writeText(shown.text);
       setCopied(true);
@@ -91,7 +93,9 @@ function QrCode({ qr, label }: { qr: Qr; label: string }) {
   const side = qr.size + quiet * 2;
   let path = '';
   for (let i = 0; i < qr.modules.length; i++) {
-    if (qr.modules[i] === '1') path += `M${(i % qr.size) + quiet} ${Math.floor(i / qr.size) + quiet}h1v1h-1z`;
+    if (qr.modules[i] === '1') {
+      path += `M${(i % qr.size) + quiet} ${Math.floor(i / qr.size) + quiet}h1v1h-1z`;
+    }
   }
   return (
     <svg className="sync-qr" viewBox={`0 0 ${side} ${side}`} role="img" aria-label={label} shapeRendering="crispEdges">

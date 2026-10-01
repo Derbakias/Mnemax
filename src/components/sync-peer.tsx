@@ -85,7 +85,9 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
 function PeerState({ peer }: { peer: SyncPeer }) {
   let text = peer.lastSyncAt == null ? 'Not synced yet' : `Last synced ${when(peer.lastSyncAt)}`;
   // The device that showed the code doesn't start syncs (it has no Sync button): the other one does.
-  if (peer.address == null && peer.lastSyncAt == null) text += '. It connects to this device by itself.';
+  if (peer.address == null && peer.lastSyncAt == null) {
+    text += '. It connects to this device by itself.';
+  }
   return <div className="t-small secondary">{text}</div>;
 }
 

@@ -40,7 +40,9 @@ const MIN_ALL_DAYS = 7;
  * (no extrapolating into days before or after); null elsewhere and with fewer than 2 points.
  */
 function trendLine(points: { x: number; y: number }[], at: number[]): (number | null)[] {
-  if (points.length < 2) return at.map(() => null);
+  if (points.length < 2) {
+    return at.map(() => null);
+  }
   const firstX = points[0].x;
   const lastX = points[points.length - 1].x;
   const n = points.length;
@@ -175,7 +177,9 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
         interaction.plugin,
         tooltipPlugin((idx) => {
           const entry = days[idx];
-          if (!entry) return null;
+          if (!entry) {
+            return null;
+          }
           const title = new Date(entry.day).toLocaleDateString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',
@@ -183,7 +187,9 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
             year: 'numeric',
           });
           const s = entry.stats;
-          if (!s) return { title, rows: [['Time played', 'none']] };
+          if (!s) {
+            return { title, rows: [['Time played', 'none']] };
+          }
           return {
             title,
             rows: [

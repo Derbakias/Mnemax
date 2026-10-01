@@ -25,7 +25,9 @@ export function useAutoSync(
   const again = useRef<string | null>(null);
   const syncAll = useCallback(
     async (why: string) => {
-      if (!onRef.current) return;
+      if (!onRef.current) {
+        return;
+      }
       if (running.current) {
         again.current = why;
         return;
@@ -37,7 +39,9 @@ export function useAutoSync(
           // The paired devices as they are now: one may have been paired or forgotten since.
           const { peers } = await syncStatus();
           for (const peer of peers.filter((p) => p.address != null)) {
-            if (!onRef.current) break;
+            if (!onRef.current) {
+              break;
+            }
             await syncPeer(peer, true, reason);
           }
         } catch (error) {
@@ -51,7 +55,9 @@ export function useAutoSync(
     [syncPeer, note],
   );
   useEffect(() => {
-    if (!on) return;
+    if (!on) {
+      return;
+    }
     const soon = setTimeout(() => void syncAll('Mnemax is open'), AUTO_SYNC_DELAY_MS);
     const every = setInterval(() => void syncAll('Syncing every few minutes'), AUTO_SYNC_MS);
     return () => {

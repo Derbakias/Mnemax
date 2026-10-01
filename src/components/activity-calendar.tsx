@@ -30,10 +30,18 @@ function countsByDayFor(rounds: RoundResult[]): Map<string, number> {
 }
 
 function levelOpacity(count: number): number {
-  if (count <= 1) return 0.25;
-  if (count === 2) return 0.45;
-  if (count <= 4) return 0.65;
-  if (count <= 7) return 0.85;
+  if (count <= 1) {
+    return 0.25;
+  }
+  if (count === 2) {
+    return 0.45;
+  }
+  if (count <= 4) {
+    return 0.65;
+  }
+  if (count <= 7) {
+    return 0.85;
+  }
   return 1;
 }
 
@@ -106,10 +114,14 @@ export const ActivityCalendar = memo(function ActivityCalendar({ rounds }: { rou
   const userScrolled = useRef(false);
   useLayoutEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
+    if (!el) {
+      return;
+    }
     userScrolled.current = false;
     const scrollToLatest = () => {
-      if (userScrolled.current || el.clientWidth === 0) return;
+      if (userScrolled.current || el.clientWidth === 0) {
+        return;
+      }
       el.scrollLeft = el.scrollWidth;
     };
     scrollToLatest();

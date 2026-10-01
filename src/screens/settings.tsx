@@ -66,7 +66,9 @@ export function SettingsScreen({ active }: { active: boolean }) {
   };
 
   const onExportStats = async () => {
-    if (dataBusy) return;
+    if (dataBusy) {
+      return;
+    }
     setDataBusy(true);
     setDataStatus(null);
     try {
@@ -76,7 +78,9 @@ export function SettingsScreen({ active }: { active: boolean }) {
         return;
       }
       const filename = statsFilename();
-      if (!(await exportStats(buildStatsJson(rounds), filename))) return;
+      if (!(await exportStats(buildStatsJson(rounds), filename))) {
+        return;
+      }
       setDataStatus(`Exported ${rounds.length} rounds.`);
     } catch (error) {
       setDataStatus(errorMessage(error, 'Export failed.'));
@@ -86,12 +90,16 @@ export function SettingsScreen({ active }: { active: boolean }) {
   };
 
   const onImportStats = async () => {
-    if (dataBusy) return;
+    if (dataBusy) {
+      return;
+    }
     setDataBusy(true);
     setDataStatus(null);
     try {
       const text = await pickStatsFileText();
-      if (text == null) return;
+      if (text == null) {
+        return;
+      }
       const { rounds, skipped } = parseStatsPayload(text);
       const { added } = await mergeRounds(rounds);
       const status = added > 0 ? `Imported ${added} new round${added === 1 ? '' : 's'}.` : 'No new rounds found.';
@@ -355,8 +363,12 @@ export function SettingsScreen({ active }: { active: boolean }) {
 }
 
 function errorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string' && error) return error;
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string' && error) {
+    return error;
+  }
   return fallback;
 }
 
@@ -418,7 +430,9 @@ function LayoutPreview({ layout }: { layout: ButtonLayout }) {
 
   const cells = [];
   for (let i = 0; i < 9; i++) {
-    if (i === 4) continue;
+    if (i === 4) {
+      continue;
+    }
     cells.push(
       <rect
         key={i}
@@ -460,10 +474,16 @@ function KeyBindings({
   const [warning, setWarning] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!listening) return;
+    if (!listening) {
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (['Shift', 'CapsLock', 'Tab'].includes(e.key)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+      if (['Shift', 'CapsLock', 'Tab'].includes(e.key)) {
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       if (e.key === 'Escape') {
