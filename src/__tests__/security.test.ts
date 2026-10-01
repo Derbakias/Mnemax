@@ -99,8 +99,8 @@ describe('what the page is allowed to do', () => {
 describe('the camera', () => {
   it('is opened only to scan a QR code, and never with the microphone', () => {
     const page = filesIn('src', /\.tsx?$/).filter((f) => !f.includes('__tests__'));
-    expect(filesUsing(page, /getUserMedia\(/)).toEqual(['src/components/sync-scan.tsx']);
-    expect(read('src/components/sync-scan.tsx')).toContain(
+    expect(filesUsing(page, /getUserMedia\(/)).toEqual(['src/sync/sync-scan.tsx']);
+    expect(read('src/sync/sync-scan.tsx')).toContain(
       "getUserMedia({ video: { facingMode: 'environment' }, audio: false })",
     );
   });

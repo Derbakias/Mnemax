@@ -29,7 +29,7 @@ import {
 import { useSettings } from '@/stores/settings-context';
 import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/lib/stats';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
-import { useSync } from '@/sync-context';
+import { useSync } from '@/stores/sync-context';
 import { accuracyColor, useTheme, type Theme } from '@/lib/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */

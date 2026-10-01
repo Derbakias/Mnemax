@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { groupCode, type Qr, type ShownCode } from '@/sync';
+import { groupCode, type Qr, type ShownCode } from '@/sync/sync';
 
 /**
  * The address, code and QR code, with the seconds left. Once the code can't be used any more (it ran out, or

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { DATE_LOCALE } from '@/lib/stats';
-import { useSync } from '@/sync-context';
-import { forgetDevice, type SyncPeer } from '@/sync';
+import { useSync } from '@/stores/sync-context';
+import { forgetDevice, type SyncPeer } from '@/sync/sync';
 
 /** How long "Tap again" waits for the second tap. */
 const FORGET_CONFIRM_MS = 3000;

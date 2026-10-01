@@ -1,16 +1,16 @@
 import { useEffect, useState, type SubmitEvent } from 'react';
 
-import { Section } from './ui/section';
+import { Section } from '../components/ui/section';
 import { SyncLog } from './sync-log';
 import { Pairing } from './sync-pairing';
 import { PeerRow } from './sync-peer';
 import { useSettings } from '@/stores/settings-context';
-import { useSync } from '@/sync-context';
-import { cancelPairing, renameDevice } from '@/sync';
+import { useSync } from '@/stores/sync-context';
+import { cancelPairing, renameDevice } from '@/sync/sync';
 
 /**
  * Sync with your other devices on the same Wi-Fi: the paired devices, pairing a new one, and the switch for
- * syncing by itself. The syncing itself runs for the whole app (see src/sync-context.tsx). Only in the app.
+ * syncing by itself. The syncing itself runs for the whole app (see src/stores/sync-context.tsx). Only in the app.
  */
 export function SyncSection({ active }: { active: boolean }) {
   return useSync().available ? <SyncPanel active={active} /> : null;

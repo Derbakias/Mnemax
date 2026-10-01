@@ -6,7 +6,7 @@ import { PlayScreen, type PlayStage } from '@/screens/play';
 import { SettingsScreen } from '@/screens/settings';
 import { StatsScreen } from '@/screens/stats';
 import { SettingsProvider, useSettings } from '@/stores/settings-context';
-import { SyncProvider } from '@/sync-context';
+import { SyncProvider } from '@/stores/sync-context';
 import { preloadSpeech } from '@/lib/speech';
 
 type Tab = 'play' | 'stats' | 'settings';
