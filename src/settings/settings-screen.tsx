@@ -1,11 +1,11 @@
-// TODO: All the info text should be in one place maybe in a state to have everything together
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Icon } from '@/components/ui/icon';
 import { Section } from '@/components/ui/section';
 import { Stepper } from '@/components/ui/stepper';
+import { settingsCopy } from '@/copy/settings';
 import { SyncSection } from '@/sync/sync-section';
-import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND } from '@/config/game';
+import { MAX_N, MIN_N, SPEED_PRESETS } from '@/config/game';
 import { RESET_CONFIRM_MS, STREAM_ICONS } from '@/config/ui';
 import { maxMatchesFor } from '@/game/rules';
 import type { StreamId } from '@/game/types';
@@ -16,10 +16,7 @@ import { useSettings } from '@/stores/settings-context';
 import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/lib/stats-io';
 import { loadRounds, mergeRounds } from '@/lib/storage';
 
-const BUTTON_LAYOUTS: { id: ButtonLayout; label: string }[] = [
-  { id: 'grid', label: 'Two per row' },
-  { id: 'rows', label: 'One per row' },
-];
+const BUTTON_LAYOUTS: ButtonLayout[] = ['grid', 'rows'];
 
 /** `active`: the Settings tab is showing (the screen stays mounted behind the other tabs). */
 export function SettingsScreen({ active }: { active: boolean }) {
@@ -65,16 +62,16 @@ export function SettingsScreen({ active }: { active: boolean }) {
     try {
       const rounds = await loadRounds();
       if (rounds.length === 0) {
-        setDataStatus('Nothing to export yet — play a round first.');
+        setDataStatus(settingsCopy.data.nothingToExport);
         return;
       }
       const filename = statsFilename();
       if (!(await exportStats(buildStatsJson(rounds), filename))) {
         return;
       }
-      setDataStatus(`Exported ${rounds.length} rounds.`);
+      setDataStatus(settingsCopy.data.exported(rounds.length));
     } catch (error) {
-      setDataStatus(errorMessage(error, 'Export failed.'));
+      setDataStatus(errorMessage(error, settingsCopy.data.exportFailed));
     } finally {
       setDataBusy(false);
     }
@@ -93,10 +90,10 @@ export function SettingsScreen({ active }: { active: boolean }) {
       }
       const { rounds, skipped } = parseStatsPayload(text);
       const { added } = await mergeRounds(rounds);
-      const status = added > 0 ? `Imported ${added} new round${added === 1 ? '' : 's'}.` : 'No new rounds found.';
-      setDataStatus(skipped > 0 ? `${status} Skipped ${skipped} broken round${skipped === 1 ? '' : 's'}.` : status);
+      const status = added > 0 ? settingsCopy.data.imported(added) : settingsCopy.data.nothingNew;
+      setDataStatus(skipped > 0 ? `${status} ${settingsCopy.data.skipped(skipped)}` : status);
     } catch (error) {
-      setDataStatus(errorMessage(error, 'Import failed.'));
+      setDataStatus(errorMessage(error, settingsCopy.data.importFailed));
     } finally {
       setDataBusy(false);
     }
@@ -104,17 +101,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
 
   return (
     <div className="content settings">
-      <Section
-        title="Active streams"
-        info={
-          <>
-            <p>What you keep track of each trial. More streams is harder. At least one stays on.</p>
-            <p>
-              <strong>Letter</strong> is spoken aloud.
-            </p>
-          </>
-        }
-      >
+      <Section title={settingsCopy.streams.title} info={settingsCopy.streams.info}>
         {STREAM_IDS.map((stream) => (
           <label key={stream} className="row-between switch-row">
             <span className="t-default">{STREAM_LABELS[stream]}</span>
@@ -129,32 +116,11 @@ export function SettingsScreen({ active }: { active: boolean }) {
         ))}
       </Section>
 
-      <Section
-        title="N-back level"
-        info={
-          <p>
-            How far back to compare: each trial is checked against the one N trials before it. A higher N is harder.
-          </p>
-        }
-      >
+      <Section title={settingsCopy.nLevel.title} info={settingsCopy.nLevel.info}>
         <Stepper value={settings.nLevel} min={MIN_N} max={MAX_N} onChange={setNLevel} />
       </Section>
 
-      <Section
-        title="Trial speed"
-        info={
-          <>
-            <p>
-              How long the box shows, which is the time you have to answer. Then the grid is blank for {BLANK_MS / 1000}{' '}
-              s before the next one. Faster is harder.
-            </p>
-            <p>
-              <strong>Trial timer:</strong> a bar at the top of the grid, under the progress, that fills up while you
-              can answer.
-            </p>
-          </>
-        }
-      >
+      <Section title={settingsCopy.speed.title} info={settingsCopy.speed.info}>
         <div className="preset-row">
           {/* Slowest first, reading left to right towards faster. */}
           {[...SPEED_PRESETS].reverse().map((preset) => (
@@ -170,7 +136,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
           ))}
         </div>
         <label className="switch-row inline">
-          <span className="t-default">Show trial timer</span>
+          <span className="t-default">{settingsCopy.speed.timerSwitch}</span>
           <input
             type="checkbox"
             role="switch"
@@ -181,15 +147,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
         </label>
       </Section>
 
-      <Section
-        title="Matches per stream"
-        info={
-          <p>
-            How many of the {TRIALS_PER_ROUND} trials in a round are a match, for each stream. The first N trials can't
-            be matches, so the most is {TRIALS_PER_ROUND} − N ({matchCap} now).
-          </p>
-        }
-      >
+      <Section title={settingsCopy.matches.title} info={settingsCopy.matches.info(matchCap)}>
         {STREAM_IDS.filter((s) => settings.activeStreams[s]).map((stream) => (
           <MatchSlider
             key={stream}
@@ -201,14 +159,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
         ))}
       </Section>
 
-      <Section
-        title="Daily target"
-        info={
-          <p>
-            How long you want to play each day. It shows at the top of the Play screen. Tutorial rounds don't count.
-          </p>
-        }
-      >
+      <Section title={settingsCopy.dailyTarget.title} info={settingsCopy.dailyTarget.info}>
         <div className="inline-row">
           <Stepper
             value={prefs.dailyTargetMinutes}
@@ -217,30 +168,13 @@ export function SettingsScreen({ active }: { active: boolean }) {
             step={STEP_DAILY_TARGET_MINUTES}
             onChange={setDailyTargetMinutes}
           />
-          <span className="t-default secondary">minutes per day</span>
+          <span className="t-default secondary">{settingsCopy.dailyTarget.unit}</span>
         </div>
       </Section>
 
-      <Section
-        title="Tutorial"
-        info={
-          <>
-            <p>
-              Turn tutorial mode on with <Icon name="school-outline" size={16} /> on the Play screen. The round results
-              aren't saved and don't count towards the daily target. One of the tutorial options should be always on.
-            </p>
-            <p>
-              <strong>History:</strong> every trial from the one N back to the current one, just above the grid. The one
-              N back is outlined when it matches the current trial.
-            </p>
-            <p>
-              <strong>Solution:</strong> the answer buttons of the streams that match are outlined.
-            </p>
-          </>
-        }
-      >
+      <Section title={settingsCopy.tutorial.title} info={settingsCopy.tutorial.info}>
         <label className="row-between switch-row">
-          <span className="t-default">Show history</span>
+          <span className="t-default">{settingsCopy.tutorial.historySwitch}</span>
           <input
             type="checkbox"
             role="switch"
@@ -250,7 +184,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
           />
         </label>
         <label className="row-between switch-row">
-          <span className="t-default">Show solution</span>
+          <span className="t-default">{settingsCopy.tutorial.solutionSwitch}</span>
           <input
             type="checkbox"
             role="switch"
@@ -261,34 +195,23 @@ export function SettingsScreen({ active }: { active: boolean }) {
         </label>
       </Section>
 
-      <Section
-        title="Button layout"
-        info={
-          <>
-            <p>Where the answer buttons sit on the Play screen.</p>
-            <p>
-              With two per row you can also swipe: press a button and slide over the others to answer them too. To
-              answer two buttons corner to corner, slide straight through the middle.
-            </p>
-          </>
-        }
-      >
+      <Section title={settingsCopy.buttonLayout.title} info={settingsCopy.buttonLayout.info}>
         <div className="layout-options">
           {BUTTON_LAYOUTS.map((layout) => (
             <button
-              key={layout.id}
+              key={layout}
               type="button"
-              className={prefs.buttonLayout === layout.id ? 'preset-chip on' : 'preset-chip'}
-              onClick={() => setButtonLayout(layout.id)}
+              className={prefs.buttonLayout === layout ? 'preset-chip on' : 'preset-chip'}
+              onClick={() => setButtonLayout(layout)}
             >
-              <LayoutPreview layout={layout.id} />
-              <span className="t-small">{layout.label}</span>
+              <LayoutPreview layout={layout} />
+              <span className="t-small">{settingsCopy.buttonLayout.layouts[layout]}</span>
             </button>
           ))}
         </div>
         {prefs.buttonLayout === 'grid' && (
           <label className="switch-row inline">
-            <span className="t-default">Swipe</span>
+            <span className="t-default">{settingsCopy.buttonLayout.swipeSwitch}</span>
             <input
               type="checkbox"
               role="switch"
@@ -301,30 +224,12 @@ export function SettingsScreen({ active }: { active: boolean }) {
       </Section>
 
       {hasKeyboard && (
-        <Section
-          title="Keyboard"
-          info={
-            <>
-              <p>
-                <strong>Space</strong> starts, pauses and resumes a round. <strong>Esc</strong> stops it.
-              </p>
-              <p>To change a stream's key, click it, then press the new key.</p>
-            </>
-          }
-        >
+        <Section title={settingsCopy.keyboard.title} info={settingsCopy.keyboard.info}>
           <KeyBindings keys={prefs.keyBindings} onChange={setKeyBinding} />
         </Section>
       )}
 
-      <Section
-        title="Data"
-        info={
-          <p>
-            Save your rounds to a file, or load them from one (for example from another device). Rounds you already have
-            aren't added twice.
-          </p>
-        }
-      >
+      <Section title={settingsCopy.data.title} info={settingsCopy.data.info}>
         <div className="data-row">
           <button type="button" className="outline-button accent" disabled={dataBusy} onClick={onExportStats}>
             Export JSON
@@ -345,7 +250,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
         </span>
       </button>
       <span className="visually-hidden" role="status">
-        {resetDone ? 'Settings reset to defaults' : ''}
+        {resetDone ? settingsCopy.reset.done : ''}
       </span>
 
       <p className="app-version t-small secondary">Mnemax v{__APP_VERSION__}</p>
@@ -481,9 +386,9 @@ function KeyBindings({
         setListening(null);
         setWarning(null);
       } else if (e.key === ' ') {
-        setWarning('Space is taken: it starts, pauses and resumes a round.');
+        setWarning(settingsCopy.keyboard.spaceTaken);
       } else if (!isBindableKey(e.key)) {
-        setWarning(`"${e.key}" can't be used. Pick a letter, digit, symbol or arrow key.`);
+        setWarning(settingsCopy.keyboard.keyNotAllowed(e.key));
       } else {
         onChange(listening, e.key);
         setListening(null);

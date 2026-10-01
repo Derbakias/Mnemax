@@ -1,11 +1,10 @@
 import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { YearDropdown } from './year-dropdown';
+import { statsCopy } from '@/copy/stats';
 import type { RoundResult } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
 import { useTheme } from '@/lib/theme';
-
-const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 function dayKey(date: Date): string {
   const y = date.getFullYear();
@@ -156,7 +155,7 @@ export const ActivityCalendar = memo(function ActivityCalendar({ rounds }: { rou
 
       <div className="calendar-row">
         <div className="calendar-day-labels">
-          {DAY_LETTERS.map((letter, i) => (
+          {statsCopy.activity.dayLetters.map((letter, i) => (
             <span key={`${letter}-${i}`} className="t-code secondary">
               {letter}
             </span>
@@ -201,8 +200,8 @@ export const ActivityCalendar = memo(function ActivityCalendar({ rounds }: { rou
           {shown
             ? `${formatDay(shown.date)} · ${shownCount} ${shownCount === 1 ? 'round' : 'rounds'}`
             : canHover
-              ? 'Hover over a day for details'
-              : 'Tap a day for details'}
+              ? statsCopy.activity.hoverHint
+              : statsCopy.activity.tapHint}
         </span>
         <div className="calendar-legend">
           <span className="t-small secondary">less</span>

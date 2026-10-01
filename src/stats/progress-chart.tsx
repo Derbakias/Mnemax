@@ -22,6 +22,7 @@ import {
   RATE_MIN_ROUNDS,
   STREAM_CHART_COLORS,
 } from '@/config/charts';
+import { statsCopy } from '@/copy/stats';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
@@ -193,9 +194,7 @@ export function ProgressChart({
       ) : (
         <div className="chart-box" style={{ height: PROGRESS_CHART_HEIGHT }}>
           <span className="t-small secondary">
-            {metric === 'reaction' && points.length > 0
-              ? 'No reaction times yet. They come from the matches you catch.'
-              : 'No rounds in this time range.'}
+            {metric === 'reaction' && points.length > 0 ? statsCopy.byMode.noReactionTimes : statsCopy.noRoundsInRange}
           </span>
         </div>
       )}
@@ -236,8 +235,7 @@ export function ProgressChart({
         )}
         {points.length >= RATE_MIN_ROUNDS && metric === 'reaction' && rate.speedMsPerHour != null && (
           <span className={rate.speedMsPerHour <= 0 ? 't-small good' : 't-small bad'}>
-            {rate.speedMsPerHour <= 0 ? '' : '+'}
-            {Math.round(rate.speedMsPerHour)} ms per hour of play
+            {statsCopy.byMode.reactionTrend(`${rate.speedMsPerHour <= 0 ? '' : '+'}${Math.round(rate.speedMsPerHour)}`)}
           </span>
         )}
       </div>
@@ -247,12 +245,12 @@ export function ProgressChart({
 
 function PerfectEstimateLabel({ estimate }: { estimate: PerfectEstimate }) {
   if (estimate.kind === 'reached') {
-    return <span className="t-small good">At 100%: time for a harder mode</span>;
+    return <span className="t-small good">{statsCopy.byMode.reached}</span>;
   }
   if (estimate.kind === 'noProgress') {
-    return <span className="t-small secondary">No clear progress toward 100% yet</span>;
+    return <span className="t-small secondary">{statsCopy.byMode.noProgress}</span>;
   }
-  return <span className="t-small good">You need ~{formatPlayTime(estimate.hours)} playtime to reach 100%</span>;
+  return <span className="t-small good">{statsCopy.byMode.toPerfect(formatPlayTime(estimate.hours))}</span>;
 }
 
 /** Whole minutes under an hour, hours and minutes above. */
