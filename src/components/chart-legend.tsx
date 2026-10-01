@@ -28,7 +28,8 @@ export function ChartLegend({ items }: { items: LegendItem[] }) {
             className={item.shown === false ? 'legend-toggle off' : 'legend-toggle'}
             aria-pressed={item.shown !== false}
             title={item.shown === false ? `Show ${item.label}` : `Hide ${item.label}`}
-            onClick={item.onToggle}>
+            onClick={item.onToggle}
+          >
             {swatch}
             {item.label}
           </button>

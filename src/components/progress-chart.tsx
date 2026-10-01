@@ -42,7 +42,15 @@ const HEIGHT = 220;
  * Hover or tap for a round's values; tap a stream in the legend to hide or show its line.
  */
 /** `zoom` comes from the parent (`useChartZoom`), which shows the crosshair switch and Reset zoom in the section header. */
-export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]; streams: StreamId[]; zoom: ChartZoom }) {
+export function ProgressChart({
+  rounds,
+  streams,
+  zoom,
+}: {
+  rounds: RoundResult[];
+  streams: StreamId[];
+  zoom: ChartZoom;
+}) {
   const theme = useTheme();
   const [metric, setMetric] = useState<Metric>('accuracy');
   const [days, setDays] = useState<number | null>(null);
@@ -69,8 +77,12 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
   const { perRound, averages } = useMemo(() => {
     const value = (p: (typeof allPoints)[number], s?: StreamId) =>
       metric === 'accuracy'
-        ? s ? (p.streamAccuracy[s] ?? null) : p.accuracy
-        : s ? (p.streamSpeedMs[s] ?? null) : p.speedMs;
+        ? s
+          ? (p.streamAccuracy[s] ?? null)
+          : p.accuracy
+        : s
+          ? (p.streamSpeedMs[s] ?? null)
+          : p.speedMs;
     const average = (values: (number | null)[]) => exponentialAverage(values, ROLLING_WINDOW).slice(start);
     return {
       perRound: allPoints.slice(start).map((p) => value(p)),
@@ -126,7 +138,9 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
         interaction.plugin,
         tooltipPlugin((idx) => {
           const point = points[idx];
-          if (!point) return null;
+          if (!point) {
+            return null;
+          }
           const title = new Date(point.finishedAt).toLocaleString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',
@@ -153,8 +167,11 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
   const toggleSeries = (key: SeriesKey) => {
     const next = new Set(hidden);
     const show = next.has(key);
-    if (show) next.delete(key);
-    else next.add(key);
+    if (show) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
     setHidden(next);
     const index = key === 'round' ? 1 : key === 'avg' ? 2 : 3 + streams.indexOf(key);
     plotRef.current?.setSeries(index, { show });
@@ -230,17 +247,24 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
 const MAX_ESTIMATE_HOURS = 100;
 
 function PerfectEstimateLabel({ estimate }: { estimate: PerfectEstimate }) {
-  if (estimate.kind === 'reached') return <span className="t-small good">At 100%: time for a harder mode</span>;
-  if (estimate.kind === 'noProgress')
+  if (estimate.kind === 'reached') {
+    return <span className="t-small good">At 100%: time for a harder mode</span>;
+  }
+  if (estimate.kind === 'noProgress') {
     return <span className="t-small secondary">No clear progress toward 100% yet</span>;
+  }
   return <span className="t-small good">You need ~{formatPlayTime(estimate.hours)} playtime to reach 100%</span>;
 }
 
 /** Whole minutes under an hour, hours and minutes above. */
 function formatPlayTime(hours: number): string {
-  if (hours >= MAX_ESTIMATE_HOURS) return `${MAX_ESTIMATE_HOURS}h+`;
+  if (hours >= MAX_ESTIMATE_HOURS) {
+    return `${MAX_ESTIMATE_HOURS}h+`;
+  }
   const minutes = Math.max(1, Math.round(hours * 60));
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 

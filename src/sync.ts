@@ -194,14 +194,18 @@ export function typeCode(before: string, typed: string): string {
 export async function scanQr(): Promise<string | null> {
   const scanner = await import('@tauri-apps/plugin-barcode-scanner');
   let permission = await scanner.checkPermissions();
-  if (permission !== 'granted') permission = await scanner.requestPermissions();
+  if (permission !== 'granted') {
+    permission = await scanner.requestPermissions();
+  }
   if (permission !== 'granted') {
     throw new Error("Mnemax needs the camera to scan the code. Allow it in the phone's settings, or type the code.");
   }
   try {
     return (await scanner.scan({ formats: [scanner.Format.QRCode], windowed: true })).content;
   } catch (error) {
-    if (String(error).includes('cancelled')) return null;
+    if (String(error).includes('cancelled')) {
+      return null;
+    }
     throw error;
   }
 }

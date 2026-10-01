@@ -24,7 +24,9 @@ function SyncPanel({ active }: { active: boolean }) {
   // Any pairing ends when the Sync section goes away.
   useEffect(() => () => void cancelPairing().catch(() => {}), []);
   useEffect(() => {
-    if (!active) setNameDraft(null);
+    if (!active) {
+      setNameDraft(null);
+    }
   }, [active]);
 
   const startPairing = (how: 'show' | 'enter', hint?: string) => {
@@ -34,7 +36,9 @@ function SyncPanel({ active }: { active: boolean }) {
 
   const onRename = async (e: SubmitEvent) => {
     e.preventDefault();
-    if (nameDraft == null) return;
+    if (nameDraft == null) {
+      return;
+    }
     try {
       setStatus(await renameDevice(nameDraft));
       setNameDraft(null);
@@ -77,7 +81,8 @@ function SyncPanel({ active }: { active: boolean }) {
             public ones, so nobody on a café or office Wi-Fi can reach it.
           </p>
         </>
-      }>
+      }
+    >
       {usable && (
         <div className="panel panel-pad stack-10">
           {nameDraft == null ? (
@@ -89,7 +94,8 @@ function SyncPanel({ active }: { active: boolean }) {
               <button
                 type="button"
                 className="text-button t-small secondary"
-                onClick={() => setNameDraft(status?.name ?? '')}>
+                onClick={() => setNameDraft(status?.name ?? '')}
+              >
                 Rename
               </button>
             </div>
@@ -142,14 +148,16 @@ function SyncPanel({ active }: { active: boolean }) {
                 type="button"
                 className="outline-button accent"
                 disabled={busy}
-                onClick={() => startPairing('show')}>
+                onClick={() => startPairing('show')}
+              >
                 Show a code
               </button>
               <button
                 type="button"
                 className="outline-button accent"
                 disabled={busy}
-                onClick={() => startPairing('enter')}>
+                onClick={() => startPairing('enter')}
+              >
                 Enter a code
               </button>
             </div>
@@ -177,7 +185,8 @@ function SyncPanel({ active }: { active: boolean }) {
           onClick={() => {
             dismiss();
             refresh();
-          }}>
+          }}
+        >
           Try again
         </button>
       )}
@@ -196,7 +205,8 @@ function SyncPanel({ active }: { active: boolean }) {
             type="button"
             className="text-button secondary sync-dismiss"
             aria-label={notice.kind === 'error' ? 'Dismiss error' : 'Dismiss message'}
-            onClick={dismiss}>
+            onClick={dismiss}
+          >
             Dismiss
           </button>
         </div>
@@ -209,6 +219,8 @@ function SyncPanel({ active }: { active: boolean }) {
 
 /** Whether paired devices can sync with this one now. */
 function reachText(listening: boolean, auto: boolean): string {
-  if (auto) return 'Syncs by itself while Mnemax is open on both devices.';
+  if (auto) {
+    return 'Syncs by itself while Mnemax is open on both devices.';
+  }
   return listening ? 'Paired devices can sync with this one while Settings is open.' : 'Open Settings on both to sync.';
 }

@@ -58,7 +58,9 @@ export function PlayScreen({
   const [roundCount, setRoundCount] = useState(0);
 
   useEffect(() => {
-    if (savedRounds) onReady?.();
+    if (savedRounds) {
+      onReady?.();
+    }
   }, [savedRounds, onReady]);
 
   // Load at startup and after any change to the saved rounds (a round saved, an import on the Settings
@@ -82,7 +84,9 @@ export function PlayScreen({
 
   const handleProgress = useCallback(
     (partial: RoundResult) => {
-      if (!tutorial) saveRoundInProgress(partial);
+      if (!tutorial) {
+        saveRoundInProgress(partial);
+      }
     },
     [tutorial],
   );
@@ -133,11 +137,15 @@ export function PlayScreen({
   const historyHighlight = STREAM_IDS.some((s) => state.match[s]) ? state.trialIndex - n : undefined;
 
   const onMain = () => {
-    if (state.paused) resumeRound();
-    else if (busy) pauseRound();
-    else {
+    if (state.paused) {
+      resumeRound();
+    } else if (busy) {
+      pauseRound();
+    } else {
       // A button left focused (e.g. by keyboard navigation) would react to the answer keys.
-      if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
+      if (document.activeElement instanceof HTMLButtonElement) {
+        document.activeElement.blur();
+      }
       primeSpeech();
       setRoundCount((c) => c + 1);
       setRoundSettings(settings);
@@ -151,23 +159,35 @@ export function PlayScreen({
   latest.current = { onMain, stopRound, respond, respondDisabled, busy, paused: state.paused, pauseRound, keys };
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+        return;
+      }
       const l = latest.current;
       if (e.key === ' ') {
         e.preventDefault();
         l.onMain();
       } else if (e.key === 'Escape') {
-        if (l.busy) l.stopRound();
+        if (l.busy) {
+          l.stopRound();
+        }
       } else {
         const stream = STREAM_IDS.find((s) => l.keys[s] === normalizeKey(e.key));
         // During a round an answer key is always ours, even while it can't answer (first trial, paused):
         // otherwise an arrow key would scroll the page or move focus.
-        if (stream && (l.busy || !l.respondDisabled)) e.preventDefault();
-        if (stream && !l.respondDisabled) l.respond(stream);
+        if (stream && (l.busy || !l.respondDisabled)) {
+          e.preventDefault();
+        }
+        if (stream && !l.respondDisabled) {
+          l.respond(stream);
+        }
       }
     };
     window.addEventListener('keydown', onKey);
@@ -178,7 +198,9 @@ export function PlayScreen({
   useEffect(() => {
     const onVisibility = () => {
       const l = latest.current;
-      if (document.hidden && l.busy && !l.paused) l.pauseRound();
+      if (document.hidden && l.busy && !l.paused) {
+        l.pauseRound();
+      }
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
@@ -208,7 +230,8 @@ export function PlayScreen({
               className="hud-icon-button"
               aria-label={state.paused ? 'Resume' : 'Pause'}
               title={state.paused ? 'Resume (Space)' : 'Pause (Space)'}
-              onClick={onMain}>
+              onClick={onMain}
+            >
               <Icon name={state.paused ? 'play' : 'pause'} size={22} />
             </button>
             <button
@@ -216,7 +239,8 @@ export function PlayScreen({
               className="hud-icon-button stop"
               aria-label="Stop"
               title="Stop (Esc)"
-              onClick={stopRound}>
+              onClick={stopRound}
+            >
               <Icon name="stop" size={20} />
             </button>
           </div>
@@ -234,7 +258,8 @@ export function PlayScreen({
                 aria-valuemin={0}
                 aria-valuemax={TRIALS_PER_ROUND}
                 aria-valuenow={trial}
-                aria-valuetext={`Trial ${trial} of ${TRIALS_PER_ROUND}`}>
+                aria-valuetext={`Trial ${trial} of ${TRIALS_PER_ROUND}`}
+              >
                 <div className="round-progress-fill" style={{ width: `${(trial / TRIALS_PER_ROUND) * 100}%` }} />
               </div>
               {prefs.showTrialTimer && (
@@ -263,7 +288,8 @@ export function PlayScreen({
             <div
               className="tutorial-history"
               aria-label="Last trials"
-              style={{ '--history-slots': n + 1 } as CSSProperties}>
+              style={{ '--history-slots': n + 1 } as CSSProperties}
+            >
               <TrialHistory
                 trials={historyItems}
                 highlightIndex={historyHighlight}
@@ -324,7 +350,8 @@ export function PlayScreen({
                 </span>
                 <span className="chip-text">{settings.nLevel}</span>
               </>
-            }>
+            }
+          >
             <span className="t-small secondary">N-back level</span>
             <Stepper value={settings.nLevel} min={MIN_N} max={MAX_N} onChange={setNLevel} />
           </HudDropdown>
@@ -335,7 +362,8 @@ export function PlayScreen({
             aria-label="Tutorial mode"
             aria-pressed={tutorial}
             title="Tutorial mode (rounds aren't saved)"
-            onClick={() => setTutorial((v) => !v)}>
+            onClick={() => setTutorial((v) => !v)}
+          >
             <Icon name={tutorial ? 'school' : 'school-outline'} size={22} />
           </button>
         </div>
@@ -352,7 +380,8 @@ export function PlayScreen({
                 aria-pressed={on}
                 // At least one stays on: turning off the last one does nothing (see toggleStream).
                 title={on && activeStreams.length === 1 ? 'At least one stream stays on' : undefined}
-                onClick={() => toggleStream(stream, !on)}>
+                onClick={() => toggleStream(stream, !on)}
+              >
                 {on && (
                   <span className="stream-check">
                     <Icon name="checkmark-circle" size={20} />
@@ -374,7 +403,8 @@ export function PlayScreen({
             Always there, only invisible outside tutorial mode, so turning it on doesn't push the results down. */}
         <div
           className={tutorial ? 't-small secondary start-note' : 't-small secondary start-note off'}
-          aria-hidden={!tutorial}>
+          aria-hidden={!tutorial}
+        >
           <p>Just for practice.</p>
           <p>This round won&apos;t count in the stats.</p>
         </div>
@@ -430,7 +460,8 @@ function DailyTargetChip({
           </span>
           <span className="chip-text">{loaded ? `${percent}%` : '–%'}</span>
         </>
-      }>
+      }
+    >
       <div className="target-panel">
         <div className="row-between">
           <span className="t-small secondary">Daily target</span>
@@ -441,7 +472,8 @@ function DailyTargetChip({
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={Math.min(100, percent)}>
+          aria-valuenow={Math.min(100, percent)}
+        >
           <div
             className={reached ? 'target-fill reached' : 'target-fill'}
             style={{ width: `${Math.min(100, percent)}%` }}
@@ -480,7 +512,8 @@ function SpeedChip({ speed: id, onSelect }: { speed: SpeedId; onSelect: (speed: 
       className="hud-chip t-code interactive"
       aria-label={`Speed: ${speed.label}. Tap for ${next.label.toLowerCase()}.`}
       title={title}
-      onClick={() => onSelect(next.id)}>
+      onClick={() => onSelect(next.id)}
+    >
       <SpeedBolts speed={speed.id} />
     </button>
   );
@@ -510,7 +543,8 @@ function SpeedBolts({ speed, onSelect }: { speed: SpeedId; onSelect?: (speed: Sp
             aria-label={`Speed: ${preset.label}`}
             aria-pressed={preset.id === speed}
             title={`${preset.label} (${preset.answerMs} ms to answer)`}
-            onClick={() => onSelect(preset.id)}>
+            onClick={() => onSelect(preset.id)}
+          >
             <Icon name="flash" size={16} />
           </button>
         );

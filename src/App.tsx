@@ -70,10 +70,14 @@ function AppShell() {
   // Two steps: fade once everything is ready, then remove it when the fade has finished. (One effect doing
   // both cancelled its own removal timer, since switching to 'fading' re-ran it.)
   useEffect(() => {
-    if (splash === 'showing' && minTimeDone && dataReady) setSplash('fading');
+    if (splash === 'showing' && minTimeDone && dataReady) {
+      setSplash('fading');
+    }
   }, [splash, minTimeDone, dataReady]);
   useEffect(() => {
-    if (splash !== 'fading') return;
+    if (splash !== 'fading') {
+      return;
+    }
     const timer = setTimeout(() => setSplash('gone'), SPLASH_FADE_MS);
     return () => clearTimeout(timer);
   }, [splash]);
@@ -88,8 +92,11 @@ function AppShell() {
       <div
         className="app"
         onMouseDown={(e) => {
-          if ((e.target as HTMLElement).closest('button')) e.preventDefault();
-        }}>
+          if ((e.target as HTMLElement).closest('button')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <main className="screen play-screen" hidden={tab !== 'play'}>
           {/* Keyboard shortcuts stay off under the startup screen, so Space can't start a round behind it. */}
           <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} onStageChange={setPlayStage} />
@@ -107,7 +114,8 @@ function AppShell() {
               type="button"
               className={tab === t.id ? 'tab on' : 'tab'}
               aria-current={tab === t.id ? 'page' : undefined}
-              onClick={() => setTab(t.id)}>
+              onClick={() => setTab(t.id)}
+            >
               <Icon name={t.icon} size={24} />
               <span>{t.title}</span>
             </button>

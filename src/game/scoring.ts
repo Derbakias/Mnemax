@@ -8,29 +8,39 @@ export function evaluateTrial(
 ): Partial<Record<StreamId, StreamOutcome>> {
   const outcome: Partial<Record<StreamId, StreamOutcome>> = {};
   for (const stream of STREAM_IDS) {
-    if (!activeStreams[stream]) continue;
+    if (!activeStreams[stream]) {
+      continue;
+    }
     const didRespond = responded[stream] === true;
-    if (isMatch[stream] && didRespond) outcome[stream] = 'hit';
-    else if (isMatch[stream]) outcome[stream] = 'miss';
-    else if (didRespond) outcome[stream] = 'falseAlarm';
-    else outcome[stream] = 'correctRejection';
+    if (isMatch[stream] && didRespond) {
+      outcome[stream] = 'hit';
+    } else if (isMatch[stream]) {
+      outcome[stream] = 'miss';
+    } else if (didRespond) {
+      outcome[stream] = 'falseAlarm';
+    } else {
+      outcome[stream] = 'correctRejection';
+    }
   }
   return outcome;
 }
 
-export function balancedAccuracy(
-  hits: number,
-  misses: number,
-  correctRejections: number,
-  falseAlarms: number,
-): number {
+export function balancedAccuracy(hits: number, misses: number, correctRejections: number, falseAlarms: number): number {
   const matchTrials = hits + misses;
   const nonMatchTrials = correctRejections + falseAlarms;
   const components: number[] = [];
-  if (matchTrials > 0) components.push(hits / matchTrials);
-  if (nonMatchTrials > 0) components.push(correctRejections / nonMatchTrials);
-  if (components.length === 0) return 0;
-  if (components.length === 1) return components[0];
+  if (matchTrials > 0) {
+    components.push(hits / matchTrials);
+  }
+  if (nonMatchTrials > 0) {
+    components.push(correctRejections / nonMatchTrials);
+  }
+  if (components.length === 0) {
+    return 0;
+  }
+  if (components.length === 1) {
+    return components[0];
+  }
   const balanced = (components[0] + components[1]) / 2;
   return Math.min(1, Math.max(0, balanced * 2 - 1));
 }
@@ -47,17 +57,22 @@ export function computeStreamScore(trials: TrialRecord[], stream: StreamId): Str
   let scored = 0;
   for (const trial of trials) {
     const outcome = trial.outcome[stream];
-    if (!outcome) continue;
+    if (!outcome) {
+      continue;
+    }
     scored++;
-    if (outcome === 'hit') score.hits++;
-    else if (outcome === 'miss') score.misses++;
-    else if (outcome === 'falseAlarm') score.falseAlarms++;
-    else score.correctRejections++;
+    if (outcome === 'hit') {
+      score.hits++;
+    } else if (outcome === 'miss') {
+      score.misses++;
+    } else if (outcome === 'falseAlarm') {
+      score.falseAlarms++;
+    } else {
+      score.correctRejections++;
+    }
   }
   score.accuracy =
-    scored > 0
-      ? balancedAccuracy(score.hits, score.misses, score.correctRejections, score.falseAlarms)
-      : 0;
+    scored > 0 ? balancedAccuracy(score.hits, score.misses, score.correctRejections, score.falseAlarms) : 0;
   return score;
 }
 
@@ -68,8 +83,7 @@ export function summarizeRound(result: RoundResult): RoundSummary {
   if (result.stopped) {
     return { overallAccuracy: 0, scores: scores.map((s) => ({ ...s, accuracy: 0 })) };
   }
-  const overallAccuracy =
-    scores.length > 0 ? scores.reduce((sum, s) => sum + s.accuracy, 0) / scores.length : 0;
+  const overallAccuracy = scores.length > 0 ? scores.reduce((sum, s) => sum + s.accuracy, 0) / scores.length : 0;
   return { overallAccuracy, scores };
 }
 
@@ -79,9 +93,7 @@ export function buildTrials(
   activeStreams: Record<StreamId, boolean>,
   responsesPerTrial: Partial<Record<StreamId, boolean>>[],
 ): TrialRecord[] {
-  return stimuli.map((stimulus, i) =>
-    buildTrial(i, stimulus, isMatch, activeStreams, responsesPerTrial[i] ?? {}),
-  );
+  return stimuli.map((stimulus, i) => buildTrial(i, stimulus, isMatch, activeStreams, responsesPerTrial[i] ?? {}));
 }
 
 function buildTrial(
@@ -92,7 +104,9 @@ function buildTrial(
   responded: Partial<Record<StreamId, boolean>>,
 ): TrialRecord {
   const row = {} as Record<StreamId, boolean>;
-  for (const stream of STREAM_IDS) row[stream] = isMatch[stream][index];
+  for (const stream of STREAM_IDS) {
+    row[stream] = isMatch[stream][index];
+  }
   return {
     index,
     stimulus,

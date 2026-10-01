@@ -15,9 +15,15 @@ const COLUMN_LABEL: Record<StreamId, string> = {
 /** What a trial showed in a stream: the cell, a colour swatch, the digit or the letter. */
 function Shown({ stream, trial }: { stream: StreamId; trial: TrialRecord }) {
   const { stimulus } = trial;
-  if (stream === 'position') return <span>{stimulus.position + 1}</span>;
-  if (stream === 'number') return <span>{stimulus.number}</span>;
-  if (stream === 'audio') return <span>{stimulus.letter}</span>;
+  if (stream === 'position') {
+    return <span>{stimulus.position + 1}</span>;
+  }
+  if (stream === 'number') {
+    return <span>{stimulus.number}</span>;
+  }
+  if (stream === 'audio') {
+    return <span>{stimulus.letter}</span>;
+  }
   const index = stimulus.color % COLOR_PALETTE.length;
   return (
     <>
@@ -87,8 +93,8 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
         </div>
       )}
       <p className="t-small secondary">
-        {result.stopped ? `Stopped after ${result.trials.length} of ${TRIALS_PER_ROUND}` : TRIALS_PER_ROUND} trials ·
-        N={s.nLevel} · {Math.round(s.trialDurationMs)} ms per trial
+        {result.stopped ? `Stopped after ${result.trials.length} of ${TRIALS_PER_ROUND}` : TRIALS_PER_ROUND} trials · N=
+        {s.nLevel} · {Math.round(s.trialDurationMs)} ms per trial
       </p>
       {legend && played && <OutcomeLegend />}
     </div>

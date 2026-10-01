@@ -62,7 +62,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       toggleStream: (stream, active) => {
         const streams = { ...settings.activeStreams, [stream]: active };
         const anyActive = Object.values(streams).some(Boolean);
-        if (!anyActive) return;
+        if (!anyActive) {
+          return;
+        }
         apply(clampSettings({ ...settings, activeStreams: streams }));
       },
       setNLevel: (n) => apply(clampSettings({ ...settings, nLevel: n })),
@@ -91,7 +93,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const normalized = normalizeKey(key);
         const keyBindings = { ...prefs.keyBindings };
         const holder = (Object.keys(keyBindings) as StreamId[]).find((s) => keyBindings[s] === normalized);
-        if (holder && holder !== stream) keyBindings[holder] = keyBindings[stream];
+        if (holder && holder !== stream) {
+          keyBindings[holder] = keyBindings[stream];
+        }
         keyBindings[stream] = normalized;
         applyPrefs(clampPrefs({ ...prefs, keyBindings }));
       },
@@ -107,6 +111,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
 export function useSettings(): SettingsContextValue {
   const ctx = useContext(SettingsContext);
-  if (!ctx) throw new Error('useSettings must be used within SettingsProvider');
+  if (!ctx) {
+    throw new Error('useSettings must be used within SettingsProvider');
+  }
   return ctx;
 }

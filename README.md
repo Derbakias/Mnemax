@@ -174,6 +174,8 @@ pnpm install
 
 pnpm test                      # game logic, stats and storage tests
 pnpm typecheck                 # checks the TypeScript types
+pnpm lint                      # checks for likely mistakes (ESLint)
+pnpm format                    # lays out the code the same way everywhere (Prettier)
 (cd src-tauri && cargo test)   # Rust tests
 ```
 
@@ -391,12 +393,13 @@ Pull requests are welcome. Before you open one, make sure you've followed the
 [Getting started](#getting-started) steps and run the tests to check that everything passes:
 
 ```bash
-pnpm test && pnpm typecheck && (cd src-tauri && cargo test)
+pnpm lint && pnpm format:check && pnpm test && pnpm typecheck && (cd src-tauri && cargo test)
 ```
 
 Git hooks run most of these for you. `pnpm install` sets them up (with [husky](https://typicode.github.io/husky/)):
 
-- **Before each commit:** `pnpm typecheck` and `pnpm test`, which take a few seconds.
+- **Before each commit:** `pnpm lint`, `pnpm format:check`, `pnpm typecheck` and `pnpm test`, which take a
+  few seconds. If `format:check` fails, `pnpm format` fixes the layout for you.
 - **Before each push:** `cargo test`, but only if the push changes Rust code in `src-tauri/`, because
   compiling the Rust tests can take a while.
 

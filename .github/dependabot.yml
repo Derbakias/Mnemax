@@ -17,6 +17,10 @@ updates:
       dependencies:
         patterns: ['*']
         update-types: [minor, patch]
+    # typescript-eslint can't read TypeScript 7 yet (it has no JavaScript API), so stay on 6 until it can.
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: cargo
     directory: /src-tauri

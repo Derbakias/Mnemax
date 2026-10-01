@@ -49,7 +49,8 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
               type="button"
               className="outline-button accent sync-small-button"
               disabled={busy}
-              onClick={() => void syncWithPeer(peer)}>
+              onClick={() => void syncWithPeer(peer)}
+            >
               {syncing === peer.key ? 'Syncing…' : 'Sync'}
             </button>
           )}
@@ -57,7 +58,8 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
             type="button"
             className={confirming ? 'text-button t-small bad' : 'text-button t-small secondary'}
             disabled={syncing != null}
-            onClick={onForget}>
+            onClick={onForget}
+          >
             {confirming ? 'Tap again' : 'Forget'}
           </button>
         </div>
@@ -65,7 +67,8 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
       {note && (
         <p
           className={note.kind === 'error' ? 't-small sync-error' : 't-small secondary'}
-          role={note.kind === 'error' ? 'alert' : 'status'}>
+          role={note.kind === 'error' ? 'alert' : 'status'}
+        >
           {note.text}
         </p>
       )}
@@ -82,7 +85,9 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
 function PeerState({ peer }: { peer: SyncPeer }) {
   let text = peer.lastSyncAt == null ? 'Not synced yet' : `Last synced ${when(peer.lastSyncAt)}`;
   // The device that showed the code doesn't start syncs (it has no Sync button): the other one does.
-  if (peer.address == null && peer.lastSyncAt == null) text += '. It connects to this device by itself.';
+  if (peer.address == null && peer.lastSyncAt == null) {
+    text += '. It connects to this device by itself.';
+  }
   return <div className="t-small secondary">{text}</div>;
 }
 

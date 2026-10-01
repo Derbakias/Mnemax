@@ -68,9 +68,7 @@ describe('generateRound', () => {
       for (const stream of STREAM_IDS) {
         for (let i = settings.nLevel; i < TRIALS_PER_ROUND; i++) {
           if (!round.isMatch[stream][i]) {
-            expect(valueOf(round.stimuli[i], stream)).not.toBe(
-              valueOf(round.stimuli[i - settings.nLevel], stream),
-            );
+            expect(valueOf(round.stimuli[i], stream)).not.toBe(valueOf(round.stimuli[i - settings.nLevel], stream));
           }
         }
       }

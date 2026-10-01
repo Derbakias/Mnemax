@@ -15,7 +15,9 @@ const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
 function filesIn(dir: string, name: RegExp): string[] {
   return readdirSync(join(ROOT, dir)).flatMap((entry) => {
     const path = join(dir, entry);
-    if (statSync(join(ROOT, path)).isDirectory()) return filesIn(path, name);
+    if (statSync(join(ROOT, path)).isDirectory()) {
+      return filesIn(path, name);
+    }
     return name.test(entry) ? [relative(ROOT, join(ROOT, path))] : [];
   });
 }
@@ -179,13 +181,19 @@ describe('the packages the app is built from', () => {
       'uplot',
     ]);
     expect(Object.keys(pkg.devDependencies).sort()).toEqual([
+      '@eslint/js',
       '@tauri-apps/cli',
       '@types/node',
       '@types/react',
       '@types/react-dom',
       '@vitejs/plugin-react',
+      'eslint',
+      'eslint-plugin-react-hooks',
+      'globals',
       'husky',
+      'prettier',
       'typescript',
+      'typescript-eslint',
       'vite',
       'vitest',
     ]);
@@ -195,9 +203,13 @@ describe('the packages the app is built from', () => {
     const names: string[] = [];
     let inDependencies = false;
     for (const line of read('src-tauri/Cargo.toml').split('\n')) {
-      if (line.startsWith('[')) inDependencies = /dependencies\]$/.test(line.trim());
+      if (line.startsWith('[')) {
+        inDependencies = /dependencies\]$/.test(line.trim());
+      }
       const name = /^([A-Za-z0-9_-]+)\s*=/.exec(line)?.[1];
-      if (inDependencies && name) names.push(name);
+      if (inDependencies && name) {
+        names.push(name);
+      }
     }
     expect(names.sort()).toEqual([
       'chacha20poly1305',

@@ -53,7 +53,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
     let cancelled = false;
     const reload = () =>
       loadRounds().then((r) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setRounds(r);
         setLoaded(true);
       });
@@ -67,7 +69,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
 
   // Effects run after the render is on screen, so this fires once the loaded stats are drawn.
   useEffect(() => {
-    if (loaded) onReady?.();
+    if (loaded) {
+      onReady?.();
+    }
   }, [loaded, onReady]);
 
   const history = useMemo(() => levelHistory(rounds), [rounds]);
@@ -172,7 +176,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             <p>Your level is the average of your last {LEVEL_WINDOW} rounds.</p>
             <ChartControlsTip />
           </>
-        }>
+        }
+      >
         <div className="panel panel-pad">
           <LevelChart history={history} zoom={levelZoom} />
         </div>
@@ -198,13 +203,13 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
               you get close to 100%, and the estimate allows for that.
             </p>
             <p>
-              <strong>Matched:</strong> you pressed on a match.{" "}
-              <strong>Missed:</strong> you didn't match.{" "}
+              <strong>Matched:</strong> you pressed on a match. <strong>Missed:</strong> you didn't match.{' '}
               <strong>False:</strong> you pressed when there was no match.
             </p>
             <ChartControlsTip />
           </>
-        }>
+        }
+      >
         <div className="mode-picker-row">
           <div className="mode-picker">
             <HudDropdown
@@ -214,7 +219,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
                   <ModeBadge mode={selected.mode} />
                   <span aria-hidden>▾</span>
                 </>
-              }>
+              }
+            >
               {(close) => (
                 <div className="mode-options">
                   {modes.map((m) => (
@@ -225,7 +231,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
                       onClick={() => {
                         setSelectedKey(m.mode.key);
                         close();
-                      }}>
+                      }}
+                    >
                       <ModeBadge mode={m.mode} aligned />
                       <span className="t-code secondary">
                         {m.rounds.length} {m.rounds.length === 1 ? 'round' : 'rounds'} · {shortDate(m.lastPlayed)}
@@ -298,7 +305,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
               more recently. Time to try something harder.
             </p>
           </>
-        }>
+        }
+      >
         <ModesTable modes={modes} selectedKey={selected.mode.key} onSelect={setSelectedKey} theme={theme} />
       </Section>
 
@@ -309,7 +317,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             Each square is a day: the darker it is, the more rounds you played. Hover over or tap a day to see its
             count.
           </p>
-        }>
+        }
+      >
         <div className="panel panel-pad">
           <ActivityCalendar rounds={rounds} />
         </div>
@@ -331,7 +340,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             </p>
             <ChartControlsTip />
           </>
-        }>
+        }
+      >
         <div className="panel panel-pad">
           <DailyTimeChart rounds={rounds} zoom={timeZoom} />
         </div>
@@ -341,8 +351,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
         title="Round history"
         info={
           <p>
-            Every round, newest first. Tap one to see each trial and how you answered it. Clearing deletes the rounds
-            on this device only: a paired device sends them back at the next sync.
+            Every round, newest first. Tap one to see each trial and how you answered it. Clearing deletes the rounds on
+            this device only: a paired device sends them back at the next sync.
           </p>
         }
         action={
@@ -350,10 +360,16 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
             type="button"
             className="text-button t-small"
             style={{ color: confirmClear ? theme.danger : theme.textSecondary }}
-            onClick={onClear}>
-            {confirmClear ? (paired ? 'Tap again (paired devices send them back)' : 'Tap again to clear') : 'Clear history'}
+            onClick={onClear}
+          >
+            {confirmClear
+              ? paired
+                ? 'Tap again (paired devices send them back)'
+                : 'Tap again to clear'
+              : 'Clear history'}
           </button>
-        }>
+        }
+      >
         <div className="panel panel-pad">
           <RoundHistoryList rounds={rounds} />
         </div>
@@ -389,7 +405,8 @@ function ModesTable({
           key={m.mode.key}
           type="button"
           className={m.mode.key === selectedKey ? 'mode-row on' : 'mode-row'}
-          onClick={() => onSelect(m.mode.key)}>
+          onClick={() => onSelect(m.mode.key)}
+        >
           <ModeBadge mode={m.mode} aligned />
           <Count className="t-code" value={m.rounds.length} label="rounds" />
           <span className="t-code" style={{ color: accuracyColor(m.recentAccuracy, theme) }}>

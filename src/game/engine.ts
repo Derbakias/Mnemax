@@ -53,10 +53,7 @@ interface RoundSequence {
  * `onProgress` gets the round so far as it starts and after each trial, already marked stopped, so it can
  * be saved and recorded as a stopped round if the app closes before the round ends.
  */
-export function useGameEngine(
-  onFinish: (result: RoundResult) => void,
-  onProgress?: (partial: RoundResult) => void,
-) {
+export function useGameEngine(onFinish: (result: RoundResult) => void, onProgress?: (partial: RoundResult) => void) {
   // TODO: Replace with zustand and check if there is a different way around all thse useRef
   const [state, setState] = useState<GameEngineState>(INITIAL_STATE);
 
@@ -85,14 +82,18 @@ export function useGameEngine(
 
   useEffect(() => {
     return () => {
-      for (const timer of timersRef.current) clearTimeout(timer);
+      for (const timer of timersRef.current) {
+        clearTimeout(timer);
+      }
       timersRef.current = [];
       stopSpeech();
     };
   }, []);
 
   function clearTimers() {
-    for (const timer of timersRef.current) clearTimeout(timer);
+    for (const timer of timersRef.current) {
+      clearTimeout(timer);
+    }
     timersRef.current = [];
   }
 
@@ -119,7 +120,9 @@ export function useGameEngine(
 
   function finishRound() {
     const round = roundRef.current;
-    if (!round) return;
+    if (!round) {
+      return;
+    }
     stopSpeech();
     trialActiveRef.current = false;
     setState((prev) => ({ ...prev, phase: 'finished', history: [...recordsRef.current] }));
@@ -128,13 +131,19 @@ export function useGameEngine(
 
   function endTrial(index: number) {
     const round = roundRef.current;
-    if (!round) return;
+    if (!round) {
+      return;
+    }
     trialActiveRef.current = false;
 
     const isMatchRow = {} as Record<StreamId, boolean>;
-    for (const stream of STREAM_IDS) isMatchRow[stream] = round.isMatch[stream][index];
+    for (const stream of STREAM_IDS) {
+      isMatchRow[stream] = round.isMatch[stream][index];
+    }
     const responded = emptyResponses();
-    for (const stream of STREAM_IDS) responded[stream] = respondedRef.current.has(stream);
+    for (const stream of STREAM_IDS) {
+      responded[stream] = respondedRef.current.has(stream);
+    }
 
     recordsRef.current.push({
       index,
@@ -163,7 +172,9 @@ export function useGameEngine(
 
   function runTrial(index: number) {
     const round = roundRef.current;
-    if (!round) return;
+    if (!round) {
+      return;
+    }
     respondedRef.current = new Set();
     trialRtsRef.current = {};
     trialActiveRef.current = true;
@@ -171,7 +182,9 @@ export function useGameEngine(
     remainingVisibleMsRef.current = 0;
     remainingTrialMsRef.current = 0;
     const match = emptyResponses();
-    for (const stream of STREAM_IDS) match[stream] = round.settings.activeStreams[stream] && round.isMatch[stream][index];
+    for (const stream of STREAM_IDS) {
+      match[stream] = round.settings.activeStreams[stream] && round.isMatch[stream][index];
+    }
     setState({
       phase: 'running',
       trialIndex: index,
@@ -212,8 +225,12 @@ export function useGameEngine(
 
   function pauseRound() {
     const round = roundRef.current;
-    if (!round || pausedRef.current) return;
-    if (state.phase !== 'running') return;
+    if (!round || pausedRef.current) {
+      return;
+    }
+    if (state.phase !== 'running') {
+      return;
+    }
     clearTimers();
     stopSpeech();
 
@@ -229,7 +246,9 @@ export function useGameEngine(
   function resumeRound() {
     const snapshot = pauseSnapshotRef.current;
     const round = roundRef.current;
-    if (!pausedRef.current || !snapshot || !round) return;
+    if (!pausedRef.current || !snapshot || !round) {
+      return;
+    }
     pausedRef.current = false;
     pauseSnapshotRef.current = null;
 
@@ -258,7 +277,9 @@ export function useGameEngine(
    */
   function stopRound() {
     const round = roundRef.current;
-    if (!round || state.phase !== 'running') return;
+    if (!round || state.phase !== 'running') {
+      return;
+    }
     const result = roundResult(round, true);
     resetRound();
     setState({ ...INITIAL_STATE, phase: 'finished', history: result.trials });
@@ -282,9 +303,15 @@ export function useGameEngine(
 
   function respond(stream: StreamId) {
     const round = roundRef.current;
-    if (!round || !trialActiveRef.current || pausedRef.current) return;
-    if (!round.settings.activeStreams[stream]) return;
-    if (respondedRef.current.has(stream)) return;
+    if (!round || !trialActiveRef.current || pausedRef.current) {
+      return;
+    }
+    if (!round.settings.activeStreams[stream]) {
+      return;
+    }
+    if (respondedRef.current.has(stream)) {
+      return;
+    }
     respondedRef.current.add(stream);
     trialRtsRef.current[stream] = Math.max(0, now() - trialStartRef.current);
     setState((prev) => ({ ...prev, responded: { ...prev.responded, [stream]: true } }));
@@ -292,7 +319,9 @@ export function useGameEngine(
 
   /** Play time of the running round so far (0 when none), counted like the durationMs it's saved with. */
   function currentPlayedMs(): number {
-    if (state.phase !== 'running' || !roundRef.current) return 0;
+    if (state.phase !== 'running' || !roundRef.current) {
+      return 0;
+    }
     return playedMs();
   }
 

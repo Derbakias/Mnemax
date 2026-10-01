@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 
 import { Icon } from './icon';
 
@@ -23,24 +30,36 @@ export function useHoverOrTap<T extends HTMLElement>() {
 
   // Opening closes whichever other one is open, whatever becomes of the press that opened this one.
   useEffect(() => {
-    if (!open) return;
-    if (closeOpenPopup !== close) closeOpenPopup?.();
+    if (!open) {
+      return;
+    }
+    if (closeOpenPopup !== close) {
+      closeOpenPopup?.();
+    }
     closeOpenPopup = close;
     return () => {
-      if (closeOpenPopup === close) closeOpenPopup = null;
+      if (closeOpenPopup === close) {
+        closeOpenPopup = null;
+      }
     };
   }, [open, close]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     // A click, not a press: a finger scrolling the page presses outside too, but a scroll or a drag never
     // ends in a click, so only a real tap or click elsewhere closes it. Captured, so it's seen before
     // anything on the page can stop it.
     const onClick = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) close();
+      if (!rootRef.current?.contains(e.target as Node)) {
+        close();
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') {
+        close();
+      }
     };
     document.addEventListener('click', onClick, true);
     document.addEventListener('keydown', onKey);
@@ -76,7 +95,8 @@ export function InfoTip({ label, children }: { label: string; children: ReactNod
         className={pinned ? 'info-tip-button on' : 'info-tip-button'}
         aria-label={`About ${label}`}
         aria-expanded={open}
-        onClick={toggle}>
+        onClick={toggle}
+      >
         <Icon name="information-circle-outline" size={18} />
       </button>
       {open && (
@@ -96,7 +116,8 @@ export function ChartControlsTip() {
         <strong>Chart:</strong> scroll to zoom, drag to move, drag an axis to stretch it, double-click to reset.
       </p>
       <p className="zoom-hint-touch">
-        <strong>Chart:</strong> pinch to zoom, drag to move, drag along an axis to stretch it, double-tap to reset. Turn on the crosshair (the icon above the chart) to read values with one finger instead.
+        <strong>Chart:</strong> pinch to zoom, drag to move, drag along an axis to stretch it, double-tap to reset. Turn
+        on the crosshair (the icon above the chart) to read values with one finger instead.
       </p>
     </>
   );

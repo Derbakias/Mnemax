@@ -29,7 +29,8 @@ export function StimulusGrid({ stimulus, visible, varyColor, showNumbers, showPo
           active && color
             ? ({ backgroundColor: color, '--box-color': color, '--box-shade': shade } as CSSProperties)
             : undefined
-        }>
+        }
+      >
         {showNumbers && <span className="digit">{active ? shown?.number : null}</span>}
       </div>
     </div>

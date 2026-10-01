@@ -43,7 +43,9 @@ export function useSyncMessages() {
     (error: unknown, noteIt = true) => {
       const text = errorText(error);
       setNotice({ kind: 'error', text });
-      if (noteIt) note(`Failed: ${text}`);
+      if (noteIt) {
+        note(`Failed: ${text}`);
+      }
     },
     [note],
   );
@@ -59,9 +61,15 @@ export function syncedText({ added, skipped }: SyncResult): string {
 }
 
 export function errorText(error: unknown): string {
-  if (typeof error === 'string' && error) return error;
-  if (error instanceof Error) return error.message;
+  if (typeof error === 'string' && error) {
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
   // A failed sync command: see SyncFailure.
-  if (typeof error === 'object' && error != null && 'message' in error) return String(error.message);
+  if (typeof error === 'object' && error != null && 'message' in error) {
+    return String(error.message);
+  }
   return 'Something went wrong.';
 }

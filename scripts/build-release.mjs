@@ -54,7 +54,9 @@ const DESKTOP_TYPES = [
 ];
 
 function filesIn(dir) {
-  if (!existsSync(dir)) return [];
+  if (!existsSync(dir)) {
+    return [];
+  }
   return readdirSync(dir, { recursive: true })
     .map((name) => join(dir, name))
     .filter((path) => statSync(path).isFile());
@@ -76,13 +78,17 @@ function desktopArtifacts() {
   const target = join(root, 'src-tauri/target');
   const bundleDirs = [join(target, 'release/bundle')];
   if (existsSync(target)) {
-    for (const triple of readdirSync(target)) bundleDirs.push(join(target, triple, 'release/bundle'));
+    for (const triple of readdirSync(target)) {
+      bundleDirs.push(join(target, triple, 'release/bundle'));
+    }
   }
   const out = [];
   for (const path of bundleDirs.flatMap(filesIn)) {
     const name = basename(path);
     const type = DESKTOP_TYPES.find((t) => name.endsWith(t.ext));
-    if (!type) continue;
+    if (!type) {
+      continue;
+    }
     const arch = archOf(name) ?? process.arch.replace('ia32', 'x86');
     const ext = type.outExt ?? type.ext;
     out.push([path, `${productName}-${version}-${arch}${type.suffix ?? ''}${ext}`]);
@@ -109,7 +115,9 @@ function androidArtifacts() {
   const out = [];
   for (const path of filesIn(apkRoot)) {
     const name = basename(path);
-    if (!name.endsWith('.apk') || basename(dirname(path)) !== 'release') continue;
+    if (!name.endsWith('.apk') || basename(dirname(path)) !== 'release') {
+      continue;
+    }
     const arch = apkArch(path);
     // An unsigned APK won't install on phones; keep that visible so it isn't uploaded by mistake.
     const unsigned = name.includes('-unsigned') ? '-unsigned' : '';
@@ -122,14 +130,18 @@ const findArtifacts = mode === 'desktop' ? desktopArtifacts : androidArtifacts;
 
 // Clear the previous build's outputs; the build tools write them again (Gradle would otherwise skip an
 // unchanged APK, and a --target build would leave the other architecture's files behind).
-for (const [path] of findArtifacts()) rmSync(path);
+for (const [path] of findArtifacts()) {
+  rmSync(path);
+}
 
 const tauriCli = createRequire(import.meta.url).resolve('@tauri-apps/cli/tauri.js');
 const build = spawnSync(process.execPath, [tauriCli, ...TAURI_ARGS[mode], ...extraArgs], {
   cwd: root,
   stdio: 'inherit',
 });
-if (build.status !== 0) process.exit(build.status ?? 1);
+if (build.status !== 0) {
+  process.exit(build.status ?? 1);
+}
 
 const artifacts = findArtifacts();
 if (artifacts.length === 0) {

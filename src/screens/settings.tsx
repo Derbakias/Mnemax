@@ -66,7 +66,9 @@ export function SettingsScreen({ active }: { active: boolean }) {
   };
 
   const onExportStats = async () => {
-    if (dataBusy) return;
+    if (dataBusy) {
+      return;
+    }
     setDataBusy(true);
     setDataStatus(null);
     try {
@@ -76,7 +78,9 @@ export function SettingsScreen({ active }: { active: boolean }) {
         return;
       }
       const filename = statsFilename();
-      if (!(await exportStats(buildStatsJson(rounds), filename))) return;
+      if (!(await exportStats(buildStatsJson(rounds), filename))) {
+        return;
+      }
       setDataStatus(`Exported ${rounds.length} rounds.`);
     } catch (error) {
       setDataStatus(errorMessage(error, 'Export failed.'));
@@ -86,12 +90,16 @@ export function SettingsScreen({ active }: { active: boolean }) {
   };
 
   const onImportStats = async () => {
-    if (dataBusy) return;
+    if (dataBusy) {
+      return;
+    }
     setDataBusy(true);
     setDataStatus(null);
     try {
       const text = await pickStatsFileText();
-      if (text == null) return;
+      if (text == null) {
+        return;
+      }
       const { rounds, skipped } = parseStatsPayload(text);
       const { added } = await mergeRounds(rounds);
       const status = added > 0 ? `Imported ${added} new round${added === 1 ? '' : 's'}.` : 'No new rounds found.';
@@ -114,7 +122,8 @@ export function SettingsScreen({ active }: { active: boolean }) {
               <strong>Letter</strong> is spoken aloud.
             </p>
           </>
-        }>
+        }
+      >
         {STREAM_IDS.map((stream) => (
           <label key={stream} className="row-between switch-row">
             <span className="t-default">{STREAM_LABELS[stream]}</span>
@@ -135,7 +144,8 @@ export function SettingsScreen({ active }: { active: boolean }) {
           <p>
             How far back to compare: each trial is checked against the one N trials before it. A higher N is harder.
           </p>
-        }>
+        }
+      >
         <Stepper value={settings.nLevel} min={MIN_N} max={MAX_N} onChange={setNLevel} />
       </Section>
 
@@ -144,15 +154,16 @@ export function SettingsScreen({ active }: { active: boolean }) {
         info={
           <>
             <p>
-              How long the box shows, which is the time you have to answer. Then the grid is blank for{' '}
-              {BLANK_MS / 1000} s before the next one. Faster is harder.
+              How long the box shows, which is the time you have to answer. Then the grid is blank for {BLANK_MS / 1000}{' '}
+              s before the next one. Faster is harder.
             </p>
             <p>
-              <strong>Trial timer:</strong> a bar at the top of the grid, under the progress, that fills up while you can
-              answer.
+              <strong>Trial timer:</strong> a bar at the top of the grid, under the progress, that fills up while you
+              can answer.
             </p>
           </>
-        }>
+        }
+      >
         <div className="preset-row">
           {/* Slowest first, reading left to right towards faster. */}
           {[...SPEED_PRESETS].reverse().map((preset) => (
@@ -160,7 +171,8 @@ export function SettingsScreen({ active }: { active: boolean }) {
               key={preset.id}
               type="button"
               className={settings.speed === preset.id ? 'preset-chip on' : 'preset-chip'}
-              onClick={() => setSpeed(preset.id)}>
+              onClick={() => setSpeed(preset.id)}
+            >
               <span className="t-small">{preset.label}</span>
               <span className="t-code preset-sub">{preset.answerMs} ms</span>
             </button>
@@ -185,7 +197,8 @@ export function SettingsScreen({ active }: { active: boolean }) {
             How many of the {TRIALS_PER_ROUND} trials in a round are a match, for each stream. The first N trials can't
             be matches, so the most is {TRIALS_PER_ROUND} − N ({matchCap} now).
           </p>
-        }>
+        }
+      >
         {STREAM_IDS.filter((s) => settings.activeStreams[s]).map((stream) => (
           <MatchSlider
             key={stream}
@@ -200,8 +213,11 @@ export function SettingsScreen({ active }: { active: boolean }) {
       <Section
         title="Daily target"
         info={
-          <p>How long you want to play each day. It shows at the top of the Play screen. Tutorial rounds don't count.</p>
-        }>
+          <p>
+            How long you want to play each day. It shows at the top of the Play screen. Tutorial rounds don't count.
+          </p>
+        }
+      >
         <div className="inline-row">
           <Stepper
             value={prefs.dailyTargetMinutes}
@@ -219,18 +235,19 @@ export function SettingsScreen({ active }: { active: boolean }) {
         info={
           <>
             <p>
-              Turn tutorial mode on with <Icon name="school-outline" size={16} /> on the Play screen. 
-              The round results aren't saved and don't count towards the daily target. One of the tutorial options shoulbe be always on.
+              Turn tutorial mode on with <Icon name="school-outline" size={16} /> on the Play screen. The round results
+              aren't saved and don't count towards the daily target. One of the tutorial options should be always on.
             </p>
             <p>
-              <strong>History:</strong> every trial from the one N back to the current one, just above the grid. The one N
-              back is outlined when it matches the current trial.
+              <strong>History:</strong> every trial from the one N back to the current one, just above the grid. The one
+              N back is outlined when it matches the current trial.
             </p>
             <p>
               <strong>Solution:</strong> the answer buttons of the streams that match are outlined.
             </p>
           </>
-        }>
+        }
+      >
         <label className="row-between switch-row">
           <span className="t-default">Show history</span>
           <input
@@ -263,14 +280,16 @@ export function SettingsScreen({ active }: { active: boolean }) {
               answer two buttons corner to corner, slide straight through the middle.
             </p>
           </>
-        }>
+        }
+      >
         <div className="layout-options">
           {BUTTON_LAYOUTS.map((layout) => (
             <button
               key={layout.id}
               type="button"
               className={prefs.buttonLayout === layout.id ? 'preset-chip on' : 'preset-chip'}
-              onClick={() => setButtonLayout(layout.id)}>
+              onClick={() => setButtonLayout(layout.id)}
+            >
               <LayoutPreview layout={layout.id} />
               <span className="t-small">{layout.label}</span>
             </button>
@@ -300,7 +319,8 @@ export function SettingsScreen({ active }: { active: boolean }) {
               </p>
               <p>To change a stream's key, click it, then press the new key.</p>
             </>
-          }>
+          }
+        >
           <KeyBindings keys={prefs.keyBindings} onChange={setKeyBinding} />
         </Section>
       )}
@@ -312,7 +332,8 @@ export function SettingsScreen({ active }: { active: boolean }) {
             Save your rounds to a file, or load them from one (for example from another device). Rounds you already have
             aren't added twice.
           </p>
-        }>
+        }
+      >
         <div className="data-row">
           <button type="button" className="outline-button accent" disabled={dataBusy} onClick={onExportStats}>
             Export JSON
@@ -342,8 +363,12 @@ export function SettingsScreen({ active }: { active: boolean }) {
 }
 
 function errorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string' && error) return error;
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string' && error) {
+    return error;
+  }
   return fallback;
 }
 
@@ -405,7 +430,9 @@ function LayoutPreview({ layout }: { layout: ButtonLayout }) {
 
   const cells = [];
   for (let i = 0; i < 9; i++) {
-    if (i === 4) continue;
+    if (i === 4) {
+      continue;
+    }
     cells.push(
       <rect
         key={i}
@@ -447,10 +474,16 @@ function KeyBindings({
   const [warning, setWarning] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!listening) return;
+    if (!listening) {
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (['Shift', 'CapsLock', 'Tab'].includes(e.key)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+      if (['Shift', 'CapsLock', 'Tab'].includes(e.key)) {
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       if (e.key === 'Escape') {
@@ -485,7 +518,8 @@ function KeyBindings({
             onClick={() => {
               setListening(listening === stream ? null : stream);
               setWarning(null);
-            }}>
+            }}
+          >
             {listening === stream ? 'Press a key…' : keyLabel(keys[stream])}
           </button>
         </div>

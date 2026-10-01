@@ -20,7 +20,8 @@ export function Stepper({ value, min, max, step = 1, disabled = false, onChange 
         className="stepper-button"
         aria-label="Decrease"
         disabled={!canDecrement}
-        onClick={() => canDecrement && onChange(value - step)}>
+        onClick={() => canDecrement && onChange(value - step)}
+      >
         <Icon name="remove" size={20} />
       </button>
       <span className="t-subtitle stepper-value">{value}</span>
@@ -29,7 +30,8 @@ export function Stepper({ value, min, max, step = 1, disabled = false, onChange 
         className="stepper-button"
         aria-label="Increase"
         disabled={!canIncrement}
-        onClick={() => canIncrement && onChange(value + step)}>
+        onClick={() => canIncrement && onChange(value + step)}
+      >
         <Icon name="add" size={20} />
       </button>
     </div>

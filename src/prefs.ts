@@ -52,11 +52,15 @@ export function keyLabel(key: string): string {
 }
 
 function clampKeyBindings(raw: unknown): Record<StreamId, string> {
-  if (!raw || typeof raw !== 'object') return { ...DEFAULT_KEY_BINDINGS };
+  if (!raw || typeof raw !== 'object') {
+    return { ...DEFAULT_KEY_BINDINGS };
+  }
   const out = {} as Record<StreamId, string>;
   for (const stream of STREAM_IDS) {
     const key = (raw as Record<string, unknown>)[stream];
-    if (typeof key !== 'string' || !isBindableKey(key)) return { ...DEFAULT_KEY_BINDINGS };
+    if (typeof key !== 'string' || !isBindableKey(key)) {
+      return { ...DEFAULT_KEY_BINDINGS };
+    }
     out[stream] = normalizeKey(key);
   }
   // Two streams on one key would make that key ambiguous.

@@ -157,7 +157,9 @@ describe('improvementRate', () => {
     const expected = Math.log((100 - current) / 0.5) / k;
     const estimate = improvementRate(pointsFor(accuracies)).toPerfect;
     expect(estimate?.kind).toBe('eta');
-    if (estimate?.kind !== 'eta') return;
+    if (estimate?.kind !== 'eta') {
+      return;
+    }
     expect(estimate.hours).toBeGreaterThan(expected * 0.9);
     expect(estimate.hours).toBeLessThan(expected * 1.1);
   });

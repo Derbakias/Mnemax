@@ -34,7 +34,14 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
   // The range is worked out when the history or range change (not once at mount), so it doesn't go stale.
   // The trend over every round ever played (it starts at the LEVEL_WINDOW-th, so the first rounds don't
   // show an average of fewer), cut to the range below.
-  const allTrend = useMemo(() => exponentialAverage(allHistory.map((p) => p.score), LEVEL_WINDOW), [allHistory]);
+  const allTrend = useMemo(
+    () =>
+      exponentialAverage(
+        allHistory.map((p) => p.score),
+        LEVEL_WINDOW,
+      ),
+    [allHistory],
+  );
   const { history, trend } = useMemo(() => {
     const now = Date.now();
     const cutoff = days == null ? -Infinity : now - days * 86400000;
@@ -59,7 +66,13 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
     return {
       legend: { show: false },
       scales: interaction.scales,
-      axes: [roundDateAxis(theme, history.map((p) => p.finishedAt)), axisStyle(theme, { size: 34 })],
+      axes: [
+        roundDateAxis(
+          theme,
+          history.map((p) => p.finishedAt),
+        ),
+        axisStyle(theme, { size: 34 }),
+      ],
       cursor: interaction.cursor,
       series: [
         {},
@@ -70,7 +83,9 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
         interaction.plugin,
         tooltipPlugin((idx) => {
           const point = history[idx];
-          if (!point) return null;
+          if (!point) {
+            return null;
+          }
           const title = new Date(point.finishedAt).toLocaleString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',

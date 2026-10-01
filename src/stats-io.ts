@@ -38,7 +38,9 @@ export async function exportStats(json: string, filename: string): Promise<boole
   const { save } = await import('@tauri-apps/plugin-dialog');
   const { writeTextFile } = await import('@tauri-apps/plugin-fs');
   const path = await save({ defaultPath: filename, filters: JSON_FILTERS() });
-  if (path == null) return false;
+  if (path == null) {
+    return false;
+  }
   await writeTextFile(path, json);
   return true;
 }
@@ -60,12 +62,18 @@ const tooBig = () => new Error('That file is too big to be a stats export.');
 
 /** Its size is checked before it's read, so a huge file is never loaded. */
 export async function pickStatsFileText(): Promise<string | null> {
-  if (!isTauri()) return pickWebFileText();
+  if (!isTauri()) {
+    return pickWebFileText();
+  }
   const { open } = await import('@tauri-apps/plugin-dialog');
   const { readTextFile, stat } = await import('@tauri-apps/plugin-fs');
   const path = await open({ multiple: false, directory: false, filters: JSON_FILTERS() });
-  if (path == null) return null;
-  if ((await stat(path)).size > MAX_FILE_BYTES) throw tooBig();
+  if (path == null) {
+    return null;
+  }
+  if ((await stat(path)).size > MAX_FILE_BYTES) {
+    throw tooBig();
+  }
   return readTextFile(path);
 }
 
@@ -96,7 +104,9 @@ function pickWebFileText(): Promise<string | null> {
 
 /** The file's rounds that pass every check, and how many didn't. */
 export function parseStatsPayload(text: string): { rounds: RoundResult[]; skipped: number } {
-  if (text.length > MAX_FILE_BYTES) throw tooBig();
+  if (text.length > MAX_FILE_BYTES) {
+    throw tooBig();
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);

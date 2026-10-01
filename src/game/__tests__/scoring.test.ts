@@ -54,9 +54,7 @@ describe('computeStreamScore', () => {
   it('scores zero accuracy when the player never responds', () => {
     const trials = [
       ...Array.from({ length: 6 }, (_, i) => trial({ index: i, outcome: { position: 'miss' } })),
-      ...Array.from({ length: 14 }, (_, i) =>
-        trial({ index: 6 + i, outcome: { position: 'correctRejection' } }),
-      ),
+      ...Array.from({ length: 14 }, (_, i) => trial({ index: 6 + i, outcome: { position: 'correctRejection' } })),
     ];
     const score = computeStreamScore(trials, 'position');
     expect(score.hits).toBe(0);

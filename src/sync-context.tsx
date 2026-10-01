@@ -89,7 +89,9 @@ const SyncContext = createContext<SyncContextValue | null>(null);
 
 export function useSync(): SyncContextValue {
   const value = useContext(SyncContext);
-  if (!value) throw new Error('useSync outside SyncProvider');
+  if (!value) {
+    throw new Error('useSync outside SyncProvider');
+  }
   return value;
 }
 
@@ -129,17 +131,23 @@ export function SyncProvider({
   }, [dismiss]);
   const syncingRef = useRef<string | null>(null);
   useEffect(() => {
-    if (peerNote?.kind !== 'info') return;
+    if (peerNote?.kind !== 'info') {
+      return;
+    }
     const timer = setTimeout(() => setPeerNote(null), RESULT_SHOWN_MS);
     return () => clearTimeout(timer);
   }, [peerNote]);
 
   const refresh = useCallback(() => {
-    if (!available) return;
+    if (!available) {
+      return;
+    }
     syncStatus().then((next) => {
       setStatus(next);
       const mismatch = apiMismatch(next);
-      if (mismatch) failWith(mismatch);
+      if (mismatch) {
+        failWith(mismatch);
+      }
     }, failWith);
   }, [available, failWith]);
   useEffect(refresh, [refresh]);
@@ -179,17 +187,23 @@ export function SyncProvider({
   // Starting and stopping one after the other, in order: a stop still on its way mustn't end a later start.
   const listenQueue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
-    if (!shouldListen) return;
+    if (!shouldListen) {
+      return;
+    }
     // Turns false when this effect ends: a start that finishes after that must not say it's listening.
     let wanted = true;
     const queue = (step: () => Promise<unknown>) => {
       listenQueue.current = listenQueue.current.then(step, step);
     };
     queue(async () => {
-      if (!wanted) return;
+      if (!wanted) {
+        return;
+      }
       try {
         await startListening((event) => onListenRef.current(event));
-        if (wanted) setListening(true);
+        if (wanted) {
+          setListening(true);
+        }
       } catch (error) {
         note(`Couldn't start listening: ${errorText(error)}`);
       }
@@ -203,7 +217,9 @@ export function SyncProvider({
 
   // A device that syncs with this one gets the rounds as they are now.
   useEffect(() => {
-    if (!listening) return;
+    if (!listening) {
+      return;
+    }
     return onRoundsChanged(
       () =>
         void updateListeningRounds().catch((error) =>
@@ -214,12 +230,15 @@ export function SyncProvider({
 
   const syncPeer = useCallback(
     async (peer: SyncPeer, auto: boolean, why = '') => {
-      if (syncingRef.current) return;
+      if (syncingRef.current) {
+        return;
+      }
       syncingRef.current = peer.key;
       setSyncing(peer.key);
       const step = auto ? (text: string) => note(`[auto] ${text}`) : note;
-      if (auto) step(`${why}: syncing with ${peer.name}…`);
-      else {
+      if (auto) {
+        step(`${why}: syncing with ${peer.name}…`);
+      } else {
         // Tapping Sync again clears the last result, so the one showing is always from this sync.
         setPeerNote(null);
         restart(`Syncing with ${peer.name}…`);
@@ -234,10 +253,14 @@ export function SyncProvider({
       } catch (error) {
         const code = failureCode(error) ?? '';
         // A problem with this device itself (its key store, its storage) shows for the whole section.
-        if (AUTO_FAILURES_SHOWN.includes(code)) failWith(error, false);
-        else if (auto && !AUTO_PEER_FAILURES.includes(code)) step(`Didn't sync: ${errorText(error)}`);
-        else {
-          if (auto) step(`Didn't sync: ${errorText(error)}`);
+        if (AUTO_FAILURES_SHOWN.includes(code)) {
+          failWith(error, false);
+        } else if (auto && !AUTO_PEER_FAILURES.includes(code)) {
+          step(`Didn't sync: ${errorText(error)}`);
+        } else {
+          if (auto) {
+            step(`Didn't sync: ${errorText(error)}`);
+          }
           const reconnect = RECONNECT_FAILURES.includes(code);
           setPeerNote({ key: peer.key, kind: 'error', text: errorText(error), reconnect });
         }

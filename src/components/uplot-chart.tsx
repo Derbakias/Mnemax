@@ -1,4 +1,4 @@
-// TODO: !IMPORTANT! This one needs to be broken down it's too large 
+// TODO: !IMPORTANT! This one needs to be broken down it's too large
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
@@ -32,31 +32,43 @@ export function UPlotChart({ options, data, height, plotRef: externalRef, zoom }
 
   useEffect(() => {
     const el = boxRef.current;
-    if (!el || !hasWidth) return;
+    if (!el || !hasWidth) {
+      return;
+    }
     const plot = new uPlot({ ...options, width: widthRef.current, height }, data, el);
     plotRef.current = plot;
-    if (externalRefRef.current) externalRefRef.current.current = plot;
+    if (externalRefRef.current) {
+      externalRefRef.current.current = plot;
+    }
     return () => {
       plot.destroy();
       plotRef.current = null;
-      if (externalRefRef.current) externalRefRef.current.current = null;
+      if (externalRefRef.current) {
+        externalRefRef.current.current = null;
+      }
     };
   }, [boxRef, options, data, height, hasWidth]);
 
   useEffect(() => {
-    if (width > 0) plotRef.current?.setSize({ width, height });
+    if (width > 0) {
+      plotRef.current?.setSize({ width, height });
+    }
   }, [width, height]);
 
   // Turning the crosshair off takes it (and the tooltip) away at once.
   const crosshair = zoom?.crosshair ?? false;
   useEffect(() => {
-    if (!crosshair) plotRef.current?.setCursor({ left: -10, top: -10 });
+    if (!crosshair) {
+      plotRef.current?.setCursor({ left: -10, top: -10 });
+    }
   }, [crosshair]);
 
   // The box holds the chart's height before uPlot has drawn into it (a new chart waits a render for its
   // width), so rebuilding one, like picking another mode, doesn't move the page under it.
   const box = <div ref={boxRef} className="uplot-box" style={{ minHeight: height }} />;
-  if (!zoom) return box;
+  if (!zoom) {
+    return box;
+  }
   // The touch gestures read the switch from `data-crosshair` (see chartInteraction), so flipping it
   // doesn't rebuild the chart.
   return (
@@ -97,7 +109,8 @@ export function RangeChips({
           onClick={() => {
             onPick(range.days);
             zoom.reset();
-          }}>
+          }}
+        >
           {range.label}
         </button>
       ))}
@@ -134,7 +147,8 @@ function CrosshairToggle({ zoom }: { zoom: ChartZoom }) {
       aria-label="Crosshair"
       aria-pressed={zoom.crosshair}
       title={zoom.crosshair ? 'Crosshair on: one finger reads values' : 'Crosshair off: one finger moves the chart'}
-      onClick={() => zoom.setCrosshair((v) => !v)}>
+      onClick={() => zoom.setCrosshair((v) => !v)}
+    >
       <Icon name="locate-outline" size={22} />
     </button>
   );
@@ -164,9 +178,13 @@ let measureContext: CanvasRenderingContext2D | null = null;
  */
 export function fitAxisSize(min = 16): uPlot.Axis.Size {
   return (_u, values) => {
-    if (!values?.length) return min;
+    if (!values?.length) {
+      return min;
+    }
     measureContext ??= document.createElement('canvas').getContext('2d');
-    if (!measureContext) return min;
+    if (!measureContext) {
+      return min;
+    }
     measureContext.font = AXIS_FONT;
     const widest = Math.max(...values.map((v) => measureContext!.measureText(String(v)).width));
     return Math.max(min, Math.ceil(widest) + 4 + AXIS_VALUE_PAD);
@@ -199,7 +217,9 @@ export function roundDateAxis(theme: Theme, times: number[]): uPlot.Axis {
       let lastPos = Infinity;
       for (let j = candidates.length - 1; j >= 0; j--) {
         const p = pos(candidates[j]);
-        if (p < DATE_LABEL_SPACE / 2) break;
+        if (p < DATE_LABEL_SPACE / 2) {
+          break;
+        }
         if (lastPos - p >= DATE_LABEL_SPACE) {
           kept.unshift(candidates[j]);
           lastPos = p;
@@ -211,7 +231,9 @@ export function roundDateAxis(theme: Theme, times: number[]): uPlot.Axis {
       const oneDay = splits.length > 1 && splits.every((x) => dayOf(x) === dayOf(splits[0]));
       return splits.map((x) => {
         const time = times[x - 1];
-        if (time == null) return '';
+        if (time == null) {
+          return '';
+        }
         const date = new Date(time);
         return oneDay
           ? date.toLocaleTimeString(DATE_LOCALE, { hour: '2-digit', minute: '2-digit' })
@@ -233,8 +255,12 @@ export function dayDateAxis(theme: Theme): uPlot.Axis {
       const days: number[] = [];
       const day = new Date(min * 1000);
       day.setHours(0, 0, 0, 0);
-      if (day.getTime() / 1000 < min) day.setDate(day.getDate() + 1);
-      for (; day.getTime() / 1000 <= max; day.setDate(day.getDate() + 1)) days.push(day.getTime() / 1000);
+      if (day.getTime() / 1000 < min) {
+        day.setDate(day.getDate() + 1);
+      }
+      for (; day.getTime() / 1000 <= max; day.setDate(day.getDate() + 1)) {
+        days.push(day.getTime() / 1000);
+      }
       // As on the round axis: from the newest day back, so the latest has a label, and none sticking out
       // past the plot's left end.
       const plotWidth = u.bbox.width / uPlot.pxRatio;
@@ -243,7 +269,9 @@ export function dayDateAxis(theme: Theme): uPlot.Axis {
       let lastPos = Infinity;
       for (let j = days.length - 1; j >= 0; j--) {
         const p = pos(days[j]);
-        if (p < DATE_LABEL_SPACE / 2) break;
+        if (p < DATE_LABEL_SPACE / 2) {
+          break;
+        }
         if (lastPos - p >= DATE_LABEL_SPACE) {
           kept.unshift(days[j]);
           lastPos = p;
@@ -261,16 +289,24 @@ export function dayDateAxis(theme: Theme): uPlot.Axis {
  * horizontal line to whichever visible series value there is closest to the pointer.
  */
 export const snapToNearestPoint: uPlot.Cursor.MousePosRefiner = (u, left, top) => {
-  if (left < 0) return [left, top];
+  if (left < 0) {
+    return [left, top];
+  }
   const idx = u.posToIdx(left);
   const x = u.data[0][idx];
-  if (x == null) return [left, top];
+  if (x == null) {
+    return [left, top];
+  }
   let bestTop = top;
   let bestDistance = Infinity;
   u.series.forEach((series, i) => {
-    if (i === 0 || !series.show) return;
+    if (i === 0 || !series.show) {
+      return;
+    }
     const value = (u.data[i] as (number | null | undefined)[])[idx];
-    if (value == null) return;
+    if (value == null) {
+      return;
+    }
     const pos = u.valToPos(value, series.scale ?? 'y');
     if (Math.abs(pos - top) < bestDistance) {
       bestDistance = Math.abs(pos - top);
@@ -397,7 +433,9 @@ export function chartInteraction({
     // the window kept in `state` instead of trusting the values it is given.
     x: { time: xTime, range: () => (state.xWindow ? [...state.xWindow] : [fullMin, fullMax]) },
   };
-  for (const y of yScales) scales[y.key] = { auto: () => !state.manualY, range: y.fit };
+  for (const y of yScales) {
+    scales[y.key] = { auto: () => !state.manualY, range: y.fit };
+  }
 
   const setXScale = (u: uPlot, min: number, max: number) => {
     const full = min <= fullMin && max >= fullMax;
@@ -408,8 +446,12 @@ export function chartInteraction({
     let width = Math.min(fullMax - fullMin, Math.max(minXSpan, hi - lo));
     const mid = (lo + hi) / 2;
     lo = mid - width / 2;
-    if (lo < fullMin) lo = fullMin;
-    if (lo + width > fullMax) lo = fullMax - width;
+    if (lo < fullMin) {
+      lo = fullMin;
+    }
+    if (lo + width > fullMax) {
+      lo = fullMax - width;
+    }
     width = Math.min(width, fullMax - lo);
     setXScale(u, lo, lo + width);
   };
@@ -423,7 +465,9 @@ export function chartInteraction({
     }
     const targets = yScales.map((y) => [y, to(y)] as const);
     state.manualY = true;
-    for (const [y, [lo, hi]] of targets) setY(u, y, lo, hi);
+    for (const [y, [lo, hi]] of targets) {
+      setY(u, y, lo, hi);
+    }
   };
   const setY = (u: uPlot, y: InteractiveYScale, lo: number, hi: number) => {
     const fitted = state.fittedSpan.get(y.key) ?? hi - lo;
@@ -444,7 +488,9 @@ export function chartInteraction({
     onZoomed(zoomed);
     // A zoomed-in chart takes vertical touch drags too (`.zoomed` in CSS), so a finger can move it up and
     // down; until then they scroll the page. Only where panning moves the y axes.
-    if (panZoomY) overEl?.classList.toggle('zoomed', zoomed);
+    if (panZoomY) {
+      overEl?.classList.toggle('zoomed', zoomed);
+    }
   };
   const range = (u: uPlot, key: string) => [u.scales[key].min ?? 0, u.scales[key].max ?? 1] as const;
   const xRange = () => state.xWindow ?? ([fullMin, fullMax] as const);
@@ -456,7 +502,9 @@ export function chartInteraction({
    */
   const onDrag = (el: HTMLElement, move: (dx: number, dy: number) => void, touch = false) => {
     el.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0 || (e.pointerType === 'touch' && !touch)) return;
+      if (e.button !== 0 || (e.pointerType === 'touch' && !touch)) {
+        return;
+      }
       e.preventDefault();
       el.setPointerCapture(e.pointerId);
       const startX = e.clientX;
@@ -489,7 +537,9 @@ export function chartInteraction({
         over.addEventListener(
           'wheel',
           (e) => {
-            if (e.deltaY === 0 || performance.now() - lastPageScroll < PAGE_SCROLL_GRACE_MS) return;
+            if (e.deltaY === 0 || performance.now() - lastPageScroll < PAGE_SCROLL_GRACE_MS) {
+              return;
+            }
             e.preventDefault();
             const factor = e.deltaY < 0 ? WHEEL_ZOOM : 1 / WHEEL_ZOOM;
             const [x0, x1] = xRange();
@@ -517,7 +567,9 @@ export function chartInteraction({
           panStart = { x: xRange(), y: new Map(yScales.map((y) => [y.key, range(u, y.key)])) };
         });
         onDrag(over, (dx, dy) => {
-          if (!panStart) return;
+          if (!panStart) {
+            return;
+          }
           const start = panStart;
           const [x0, x1] = start.x;
           const shiftX = (-dx / over.clientWidth) * (x1 - x0);
@@ -561,9 +613,12 @@ export function chartInteraction({
           const rect = over.getBoundingClientRect();
           return { left: p.x - rect.left, top: p.y - rect.top };
         };
-        const spread = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
+        const spread = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+          Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
         over.addEventListener('pointerdown', (e) => {
-          if (e.pointerType !== 'touch') return;
+          if (e.pointerType !== 'touch') {
+            return;
+          }
           // No emulated mouse events after it, which would move uPlot's cursor on their own.
           e.preventDefault();
           touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -585,9 +640,13 @@ export function chartInteraction({
           }
         });
         over.addEventListener('pointermove', (e) => {
-          if (!touches.has(e.pointerId)) return;
+          if (!touches.has(e.pointerId)) {
+            return;
+          }
           touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-          if (tap && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 10) tap = null;
+          if (tap && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 10) {
+            tap = null;
+          }
           const [a, b] = [...touches.values()];
           if (mode === 'scrub') {
             u.setCursor(local(a));
@@ -625,9 +684,15 @@ export function chartInteraction({
           }
         });
         const endTouch = (e: PointerEvent) => {
-          if (!touches.delete(e.pointerId)) return;
-          if (mode === 'pinch') mode = 'done';
-          if (e.type !== 'pointerup' || touches.size > 0 || !tap) return;
+          if (!touches.delete(e.pointerId)) {
+            return;
+          }
+          if (mode === 'pinch') {
+            mode = 'done';
+          }
+          if (e.type !== 'pointerup' || touches.size > 0 || !tap) {
+            return;
+          }
           tap = null;
           const now = performance.now();
           if (now - lastTap.time < 300 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) {
@@ -705,7 +770,9 @@ export function chartInteraction({
 /** A y range fitted to the data in view: padded, snapped to `step`, and kept within [floor, ceiling]. */
 export function fittedRange(step: number, floor: number, ceiling = Infinity): uPlot.Range.Function {
   return (_u, min, max) => {
-    if (min == null || max == null) return [floor, Math.min(ceiling, floor + step * 4)];
+    if (min == null || max == null) {
+      return [floor, Math.min(ceiling, floor + step * 4)];
+    }
     const pad = Math.max(step / 2, (max - min) * 0.1);
     const lo = Math.max(floor, Math.floor((min - pad) / step) * step);
     const hi = Math.min(ceiling, Math.ceil((max + pad) / step) * step);
@@ -749,20 +816,32 @@ const smoothLinePaths: uPlot.Series.PathBuilder = (u, seriesIdx, idx0, idx1) => 
   const py: number[] = [];
   for (let i = from; i <= to; i++) {
     const y = ys[i];
-    if (y == null) continue;
+    if (y == null) {
+      continue;
+    }
     px.push(u.valToPos(xs[i], 'x', true));
     py.push(u.valToPos(y, scale, true));
   }
 
   const stroke = new Path2D();
   const n = px.length;
-  if (n > 0) stroke.moveTo(px[0], py[0]);
-  if (n === 2) stroke.lineTo(px[1], py[1]);
+  if (n > 0) {
+    stroke.moveTo(px[0], py[0]);
+  }
+  if (n === 2) {
+    stroke.lineTo(px[1], py[1]);
+  }
   if (n > 2) {
     // Fritsch–Carlson tangents: the curve stays monotone between points, so it can't overshoot.
     const slope = px.slice(1).map((x, i) => (py[i + 1] - py[i]) / (x - px[i] || 1));
     const tangent = px.map((_, i) =>
-      i === 0 ? slope[0] : i === n - 1 ? slope[n - 2] : slope[i - 1] * slope[i] <= 0 ? 0 : (slope[i - 1] + slope[i]) / 2,
+      i === 0
+        ? slope[0]
+        : i === n - 1
+          ? slope[n - 2]
+          : slope[i - 1] * slope[i] <= 0
+            ? 0
+            : (slope[i - 1] + slope[i]) / 2,
     );
     for (let i = 0; i < n - 1; i++) {
       if (slope[i] === 0) {
@@ -835,7 +914,9 @@ export function tooltipPlugin(render: (idx: number) => TooltipContent | null): u
         u.over.appendChild(tip);
       },
       setCursor: (u) => {
-        if (!tip) return;
+        if (!tip) {
+          return;
+        }
         const { idx, left, top } = u.cursor;
         const content = idx == null || left == null || left < 0 ? null : render(idx);
         if (!content || left == null) {
