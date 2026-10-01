@@ -9,6 +9,7 @@ import { RoundDetailTable } from '@/components/rounds/round-detail-table';
 import { RoundHistoryList } from '@/components/rounds/round-history-list';
 import { RoundSummaryCard } from '@/components/rounds/round-summary-card';
 import { Stepper } from '@/components/ui/stepper';
+import { playCopy } from '@/copy/play';
 import { TrialGrid } from '@/play/trial-grid';
 import { TrialHistory } from '@/play/trial-history';
 import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND } from '@/config/game';
@@ -218,13 +219,13 @@ export function PlayScreen({
           <div className="hud-row">
             {/* Tutorial rounds don't count towards it. */}
             {!tutorial && targetChip}
-            <Chip title={`N-back level: ${n}`}>
+            <Chip title={playCopy.hud.nLevel.chipTitle(n)}>
               <span className="chip-icon-blue">
                 <Icon name="counter-clockwise" size={18} />
               </span>
               <span className="chip-text">{n}</span>
             </Chip>
-            <Chip title={`Speed: ${speedOf(shown).label}`}>
+            <Chip title={playCopy.hud.speed.chipTitle(speedOf(shown).label)}>
               <SpeedBolts speed={speedOf(shown).id} />
             </Chip>
             <button
@@ -313,7 +314,7 @@ export function PlayScreen({
             />
             {state.paused && (
               <div className="blur-overlay">
-                <span className="t-title">Paused</span>
+                <span className="t-title">{playCopy.paused}</span>
               </div>
             )}
           </div>
@@ -344,7 +345,7 @@ export function PlayScreen({
           <HudDropdown
             underChip
             label={`N-back level: ${settings.nLevel}`}
-            title={`N-back level: ${settings.nLevel}`}
+            title={playCopy.hud.nLevel.chipTitle(settings.nLevel)}
             chip={
               <>
                 <span className="chip-icon-blue">
@@ -354,7 +355,7 @@ export function PlayScreen({
               </>
             }
           >
-            <span className="t-small secondary">N-back level</span>
+            <span className="t-small secondary">{playCopy.hud.nLevel.title}</span>
             <Stepper value={settings.nLevel} min={MIN_N} max={MAX_N} onChange={setNLevel} />
           </HudDropdown>
           <SpeedChip speed={settings.speed} onSelect={setSpeed} />
@@ -363,14 +364,14 @@ export function PlayScreen({
             className={tutorial ? 'hud-icon-button tutorial on' : 'hud-icon-button tutorial'}
             aria-label="Tutorial mode"
             aria-pressed={tutorial}
-            title="Tutorial mode (rounds aren't saved)"
+            title={playCopy.hud.tutorialTitle}
             onClick={() => setTutorial((v) => !v)}
           >
             <Icon name={tutorial ? 'school' : 'school-outline'} size={22} />
           </button>
         </div>
 
-        <p className="t-small start-label">Select active streams</p>
+        <p className="t-small start-label">{playCopy.start.streamsLabel}</p>
         <div className="stream-picker">
           {STREAM_IDS.map((stream) => {
             const on = settings.activeStreams[stream];
@@ -381,7 +382,7 @@ export function PlayScreen({
                 className={on ? 'stream-card on' : 'stream-card'}
                 aria-pressed={on}
                 // At least one stays on: turning off the last one does nothing (see toggleStream).
-                title={on && activeStreams.length === 1 ? 'At least one stream stays on' : undefined}
+                title={on && activeStreams.length === 1 ? playCopy.start.lastStreamTitle : undefined}
                 onClick={() => toggleStream(stream, !on)}
               >
                 {on && (
@@ -407,14 +408,13 @@ export function PlayScreen({
           className={tutorial ? 't-small secondary start-note' : 't-small secondary start-note off'}
           aria-hidden={!tutorial}
         >
-          <p>Just for practice.</p>
-          <p>This round won&apos;t count in the stats.</p>
+          {playCopy.start.tutorialNote}
         </div>
       </div>
 
       {showLatest && (
         <section className="section">
-          <h2 className="t-heading">Last round</h2>
+          <h2 className="t-heading">{playCopy.results.lastRound}</h2>
           <RoundSummaryCard result={sessionRounds[0]} />
           <RoundDetailTable result={sessionRounds[0]} />
         </section>
@@ -422,10 +422,10 @@ export function PlayScreen({
 
       {sessionRounds.length > 0 && (
         <section className="section">
-          <h2 className="t-heading">This session</h2>
+          <h2 className="t-heading">{playCopy.results.thisSession}</h2>
           <RoundHistoryList
             rounds={showLatest ? sessionRounds.slice(1) : sessionRounds}
-            emptyLabel="Earlier rounds from this session will appear here."
+            emptyLabel={playCopy.results.sessionEmpty}
             // The last round's table just above already shows the key.
             legend={!showLatest}
           />
@@ -453,7 +453,7 @@ function DailyTargetChip({
     <HudDropdown
       underChip
       label="Daily target"
-      title="Daily target"
+      title={playCopy.hud.dailyTarget.title}
       chipClassName={reached ? 'good' : undefined}
       chip={
         <>
@@ -466,7 +466,7 @@ function DailyTargetChip({
     >
       <div className="target-panel">
         <div className="row-between">
-          <span className="t-small secondary">Daily target</span>
+          <span className="t-small secondary">{playCopy.hud.dailyTarget.title}</span>
           <span className={reached ? 't-small good' : 't-small'}>{percent}%</span>
         </div>
         <div
@@ -497,7 +497,7 @@ function DailyTargetChip({
 function SpeedChip({ speed: id, onSelect }: { speed: SpeedId; onSelect: (speed: SpeedId) => void }) {
   const touch = useMemo(() => window.matchMedia?.('(hover: none)').matches ?? false, []);
   const speed = speedPreset(id);
-  const title = `Speed: ${speed.label} (${speed.answerMs} ms to answer)`;
+  const title = playCopy.hud.speed.pickerTitle(speed.label, speed.answerMs);
   if (!touch) {
     return (
       <span className="hud-chip t-code" title={title}>
@@ -544,7 +544,7 @@ function SpeedBolts({ speed, onSelect }: { speed: SpeedId; onSelect?: (speed: Sp
             className={className}
             aria-label={`Speed: ${preset.label}`}
             aria-pressed={preset.id === speed}
-            title={`${preset.label} (${preset.answerMs} ms to answer)`}
+            title={playCopy.hud.speed.boltTitle(preset.label, preset.answerMs)}
             onClick={() => onSelect(preset.id)}
           >
             <Icon name="flash" size={16} />

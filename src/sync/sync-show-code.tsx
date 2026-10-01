@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { syncCopy } from '@/copy/sync';
 import { groupCode, type Qr, type ShownCode } from '@/sync/sync';
 
 /**
@@ -24,14 +25,14 @@ export function ShowCode({
   const { shown } = showing;
   const left = Math.max(0, Math.ceil((showing.expiresAt - now) / 1000));
 
-  const ended = showing.ended ?? (shown != null && left === 0 ? 'The code ran out.' : null);
+  const ended = showing.ended ?? (shown != null && left === 0 ? syncCopy.showCode.ranOut : null);
   if (ended) {
     return (
       <div className="card sync-pairing">
         <p className="t-default" role="alert">
           {ended}
         </p>
-        <p className="t-small secondary">A code works once, for one minute, so nobody else has time to guess it.</p>
+        <p className="t-small secondary">{syncCopy.showCode.whyShort}</p>
         <div className="data-row">
           {cancel}
           <button type="button" className="outline-button sync-primary" onClick={onNewCode}>
@@ -55,8 +56,8 @@ export function ShowCode({
   return (
     <div className="card sync-pairing">
       <ol className="t-small secondary sync-steps">
-        <li>On your other device, open Sync and tap Enter a code.</li>
-        <li>Scan this QR code with it, or type the address and code below.</li>
+        <li>{syncCopy.showCode.stepEnterCode}</li>
+        <li>{syncCopy.showCode.stepScan}</li>
       </ol>
       {/* Until the code is ready, an empty square holds its place, so nothing jumps when it comes. */}
       {shown ? (
@@ -76,9 +77,7 @@ export function ShowCode({
           </p>
         </div>
       </div>
-      <p className="t-small secondary sync-or">
-        {shown ? `Works once, for ${left} more second${left === 1 ? '' : 's'}.` : '\u00a0'}
-      </p>
+      <p className="t-small secondary sync-or">{shown ? syncCopy.showCode.timeLeft(left) : '\u00a0'}</p>
       <button type="button" className="text-button t-small secondary sync-center" disabled={!shown} onClick={onCopy}>
         {copied ? 'Copied' : 'Copy address and code'}
       </button>

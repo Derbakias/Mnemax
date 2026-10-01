@@ -1,5 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+
+import { syncCopy } from '@/copy/sync';
 import { LOOK_EVERY_MS, LOOK_WIDTH } from '@/config/sync';
 
 /**
@@ -63,7 +65,7 @@ export function CameraScan({
     void (async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("This device can't open its camera here.");
+          throw new Error(syncCopy.camera.cantOpen);
         }
         // The QR reader first: if it can't load, the camera is never turned on.
         const { default: jsQR } = await import('jsqr');
@@ -81,7 +83,7 @@ export function CameraScan({
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d', { willReadFrequently: true });
         if (!context) {
-          throw new Error("Couldn't read the camera picture.");
+          throw new Error(syncCopy.camera.cantRead);
         }
         timer = setInterval(() => {
           if (closed || view.readyState < view.HAVE_CURRENT_DATA || view.videoWidth === 0) {
@@ -110,7 +112,7 @@ export function CameraScan({
   }, []);
 
   return (
-    <ScanOverlay hint="Hold the QR code on your other device up to the camera" onCancel={onCancel}>
+    <ScanOverlay hint={syncCopy.pairing.cameraScanHint} onCancel={onCancel}>
       <video ref={video} className="scan-video" muted playsInline />
     </ScanOverlay>
   );
@@ -120,13 +122,13 @@ export function CameraScan({
 function cameraError(error: unknown): unknown {
   const name = error instanceof DOMException ? error.name : '';
   if (name === 'NotAllowedError') {
-    return new Error("Mnemax isn't allowed to use the camera. Allow it in the system's settings, or type the code.");
+    return new Error(syncCopy.camera.notAllowed);
   }
   if (name === 'NotFoundError' || name === 'OverconstrainedError') {
-    return new Error('No camera found.');
+    return new Error(syncCopy.camera.notFound);
   }
   if (name === 'NotReadableError') {
-    return new Error('The camera is busy: another app may be using it.');
+    return new Error(syncCopy.camera.busy);
   }
   return error;
 }

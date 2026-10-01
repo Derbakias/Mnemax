@@ -43,6 +43,7 @@ import {
   type SyncPeer,
   type SyncStatus,
 } from '@/sync/sync';
+import { syncCopy } from '@/copy/sync';
 import { AUTO_FAILURES_SHOWN, AUTO_PEER_FAILURES, RECONNECT_FAILURES, RESULT_SHOWN_MS } from '@/config/sync';
 import { errorText, syncedText, useSyncMessages, type LogLine, type Notice, type PeerNote } from '@/sync/sync-messages';
 
@@ -163,7 +164,7 @@ export function SyncProvider({
               setPeerNote({ key: event.peer.key, kind: 'info', text: syncedText(result) });
             }
           },
-          (error) => failWith(`Couldn't save the rounds from ${event.peer.name}: ${errorText(error)}`),
+          (error) => failWith(syncCopy.messages.saveFailed(event.peer.name, errorText(error))),
         );
         refresh();
       }

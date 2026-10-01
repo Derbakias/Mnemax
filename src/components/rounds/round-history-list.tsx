@@ -3,7 +3,7 @@ import { memo, useCallback, useState } from 'react';
 import { Icon } from '../ui/icon';
 import { OutcomeLegend, RoundDetailTable } from './round-detail-table';
 import { RoundSummaryCard } from './round-summary-card';
-import { TRIALS_PER_ROUND } from '@/config/game';
+import { roundsCopy } from '@/copy/rounds';
 import type { RoundResult } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
 
@@ -45,12 +45,7 @@ function RoundEntry({
       <button type="button" className="history-row" aria-expanded={expanded} onClick={() => onToggle(round.id)}>
         <span className="t-small history-row-title">
           {formatTimestamp(round.finishedAt)} · N={round.settings.nLevel}
-          {round.stopped && (
-            <span className="secondary">
-              {' '}
-              · stopped at {round.trials.length}/{TRIALS_PER_ROUND}
-            </span>
-          )}
+          {round.stopped && <span className="secondary"> {roundsCopy.history.stoppedAt(round.trials.length)}</span>}
         </span>
         <span className="history-row-end">
           <RoundSummaryCard result={round} compact />
@@ -80,9 +75,7 @@ export const RoundHistoryList = memo(function RoundHistoryList({
   const [openId, setOpenId] = useState<string | null>(null);
   const toggle = useCallback((id: string) => setOpenId((open) => (open === id ? null : id)), []);
   if (rounds.length === 0) {
-    return (
-      <p className="t-small secondary">{emptyLabel ?? 'Finish a round to see its detailed trial history here.'}</p>
-    );
+    return <p className="t-small secondary">{emptyLabel ?? roundsCopy.history.empty}</p>;
   }
   return (
     <>

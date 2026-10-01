@@ -4,6 +4,7 @@
 import { Channel, invoke, isTauri } from '@tauri-apps/api/core';
 
 import { SYNC_API } from '@/config/sync';
+import { syncCopy } from '@/copy/sync';
 import { checkRound } from '@/game/round-check';
 import { loadRounds, mergeRounds } from '@/lib/storage';
 
@@ -26,7 +27,7 @@ export interface SyncStatus {
 
 /** A message if the Rust side is from another version of the app. */
 export function apiMismatch(status: SyncStatus): string | null {
-  return status.api === SYNC_API ? null : 'Sync is out of date. Restart or update the app.';
+  return status.api === SYNC_API ? null : syncCopy.messages.outOfDate;
 }
 
 export type PairEvent =
@@ -131,7 +132,7 @@ export async function syncWith(key: string, onStep: (text: string) => void): Pro
   if (typeof outcome === 'object' && outcome != null && Array.isArray((outcome as { rounds?: unknown }).rounds)) {
     return saveReceived((outcome as { rounds: unknown[] }).rounds);
   }
-  throw new Error("The app's sync answered in a way this page doesn't know. Restart the app.");
+  throw new Error(syncCopy.messages.unknownAnswer);
 }
 
 /** Checks the rounds another device sent, the same way as an imported file's, and saves the new ones. */
@@ -193,7 +194,7 @@ export async function scanQr(): Promise<string | null> {
     permission = await scanner.requestPermissions();
   }
   if (permission !== 'granted') {
-    throw new Error("Mnemax needs the camera to scan the code. Allow it in the phone's settings, or type the code.");
+    throw new Error(syncCopy.camera.phoneNotAllowed);
   }
   try {
     return (await scanner.scan({ formats: [scanner.Format.QRCode], windowed: true })).content;

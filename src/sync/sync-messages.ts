@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 
 import type { SyncResult } from '@/sync/sync';
 import { MAX_LOG_LINES } from '@/config/sync';
+import { syncCopy } from '@/copy/sync';
 
 /** A message under the Sync section. */
 export type Notice = { kind: 'info' | 'error'; text: string };
@@ -53,9 +54,8 @@ export function useSyncMessages() {
 }
 
 export function syncedText({ added, skipped }: SyncResult): string {
-  const got = added > 0 ? `Synced ${added} new round${added === 1 ? '' : 's'}.` : 'Synced, nothing new.';
-  const broken = skipped > 0 ? ` Skipped ${skipped} broken round${skipped === 1 ? '' : 's'}.` : '';
-  return `${got}${broken}`;
+  const got = added > 0 ? syncCopy.messages.synced(added) : syncCopy.messages.nothingNew;
+  return skipped > 0 ? `${got} ${syncCopy.messages.skipped(skipped)}` : got;
 }
 
 export function errorText(error: unknown): string {
@@ -69,5 +69,5 @@ export function errorText(error: unknown): string {
   if (typeof error === 'object' && error != null && 'message' in error) {
     return String(error.message);
   }
-  return 'Something went wrong.';
+  return syncCopy.messages.somethingWrong;
 }

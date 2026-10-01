@@ -1,16 +1,10 @@
 import { Icon } from '../ui/icon';
 import { STREAM_ICONS } from '@/config/ui';
-import { OUTCOME_LABELS, OutcomeIcon } from './stream-table';
+import { OutcomeIcon } from './stream-table';
+import { roundsCopy } from '@/copy/rounds';
 import { COLOR_NAMES, COLOR_PALETTE, TRIALS_PER_ROUND } from '@/config/game';
 import type { RoundResult, StreamId, StreamOutcome, TrialRecord } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
-
-const COLUMN_LABEL: Record<StreamId, string> = {
-  position: 'Pos',
-  color: 'Col',
-  number: 'Num',
-  audio: 'Ltr',
-};
 
 /** What a trial showed in a stream: the cell, a colour swatch, the digit or the letter. */
 function Shown({ stream, trial }: { stream: StreamId; trial: TrialRecord }) {
@@ -58,7 +52,7 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
                   <th key={stream} className="c-stream">
                     <span className="detail-heading">
                       <Icon name={STREAM_ICONS[stream]} size={14} />
-                      {COLUMN_LABEL[stream]}
+                      {roundsCopy.columns[stream]}
                     </span>
                   </th>
                 ))}
@@ -78,7 +72,7 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
                           {outcome && (
                             <>
                               <OutcomeIcon outcome={outcome} />
-                              <span className="visually-hidden">{OUTCOME_LABELS[outcome]}</span>
+                              <span className="visually-hidden">{roundsCopy.outcomes[outcome]}</span>
                             </>
                           )}
                         </div>
@@ -93,8 +87,11 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
         </div>
       )}
       <p className="t-small secondary">
-        {result.stopped ? `Stopped after ${result.trials.length} of ${TRIALS_PER_ROUND}` : TRIALS_PER_ROUND} trials · N=
-        {s.nLevel} · {Math.round(s.trialDurationMs)} ms per trial
+        {roundsCopy.detail.footer(
+          result.stopped ? roundsCopy.detail.stoppedAfter(result.trials.length) : TRIALS_PER_ROUND,
+          s.nLevel,
+          Math.round(s.trialDurationMs),
+        )}
       </p>
       {legend && played && <OutcomeLegend />}
     </div>
@@ -105,20 +102,20 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
 export function OutcomeLegend({ inline = false }: { inline?: boolean }) {
   return (
     <div className={inline ? 'legend-list inline' : 'legend-list'}>
-      <LegendItem outcome="hit" label="matched" />
-      <LegendItem outcome="correctRejection" label="no match" />
-      <LegendItem outcome="miss" label="missed" />
-      <LegendItem outcome="falseAlarm" label="false match" />
-      <span className="t-small secondary legend-note">Small numbers are reaction times</span>
+      <LegendItem outcome="hit" />
+      <LegendItem outcome="correctRejection" />
+      <LegendItem outcome="miss" />
+      <LegendItem outcome="falseAlarm" />
+      <span className="t-small secondary legend-note">{roundsCopy.legendNote}</span>
     </div>
   );
 }
 
-function LegendItem({ outcome, label }: { outcome: StreamOutcome; label: string }) {
+function LegendItem({ outcome }: { outcome: StreamOutcome }) {
   return (
     <div className="legend-item">
       <OutcomeIcon outcome={outcome} />
-      <span className="t-small secondary">{label}</span>
+      <span className="t-small secondary">{roundsCopy.outcomes[outcome]}</span>
     </div>
   );
 }
