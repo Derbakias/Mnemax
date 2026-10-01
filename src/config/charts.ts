@@ -32,6 +32,8 @@ export const PAN_Y_THRESHOLD = 8;
 /** The y axis can be stretched to between 1/20 and 4× its fitted range. */
 export const Y_MIN_SHARE = 1 / 20;
 export const Y_MAX_SHARE = 4;
+
+/** TODO:  Y_HANDLE_WIDTH only controls where the left-axis handle is placed; src/styles/index.css:2176-2178 still fixes the handle itself at 44px. Changing this config creates either a gap or overlap between the axis and its interactive strip. Apply the configured width to the handle (inline or via a CSS custom property) as well as its placement. */
 /** Width of the strip over a y axis that stretches it (matches `.axis-handle.y` in CSS). */
 export const Y_HANDLE_WIDTH = 44;
 /** A chart ignores the wheel this long after the page scrolled, so scrolling past it doesn't zoom it. */
