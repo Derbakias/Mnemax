@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { clampSettings, defaultSettings } from './game/config';
-import type { GameSettings, SpeedId, StreamId } from './game/types';
-import { clampPrefs, defaultPrefs, normalizeKey, type AppPrefs, type ButtonLayout } from './prefs';
-import { loadPrefs, loadSettings, savePrefs, saveSettings } from './storage';
+import { clampSettings, defaultSettings } from '../game/config';
+import type { GameSettings, SpeedId, StreamId } from '../game/types';
+import { clampPrefs, defaultPrefs, normalizeKey, type AppPrefs, type ButtonLayout } from '../lib/prefs';
+import { loadPrefs, loadSettings, savePrefs, saveSettings } from '../lib/storage';
 
 interface SettingsContextValue {
   settings: GameSettings;

@@ -1,5 +1,5 @@
-import { checkRound } from '../game/round-check';
-import type { RoundResult, TrialRecord } from '../game/types';
+import { checkRound } from '../round-check';
+import type { RoundResult, TrialRecord } from '../types';
 
 const NOW = Date.UTC(2026, 8, 30, 12);
 

@@ -17,8 +17,8 @@ import {
   type ChartZoom,
 } from './uplot-chart';
 import { LEVEL_WINDOW, roundMode, type LevelPoint } from '@/levels';
-import { DATE_LOCALE, exponentialAverage } from '@/stats';
-import { useTheme } from '@/theme';
+import { DATE_LOCALE, exponentialAverage } from '@/lib/stats';
+import { useTheme } from '@/lib/theme';
 
 const HEIGHT = 200;
 

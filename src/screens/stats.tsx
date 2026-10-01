@@ -4,15 +4,15 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ActivityCalendar } from '@/components/activity-calendar';
 import { Count } from '@/components/count';
 import { DailyTimeChart } from '@/components/daily-time-chart';
-import { GridLoader } from '@/components/grid-loader';
-import { HudDropdown } from '@/components/hud-dropdown';
-import { Icon, type IconName } from '@/components/icon';
-import { ChartControlsTip } from '@/components/info-tip';
+import { GridLoader } from '@/components/ui/grid-loader';
+import { HudDropdown } from '@/components/ui/hud-dropdown';
+import { Icon, type IconName } from '@/components/ui/icon';
+import { ChartControlsTip } from '@/components/ui/info-tip';
 import { LevelChart } from '@/components/level-chart';
 import { ModeBadge } from '@/components/mode-badge';
 import { ProgressChart } from '@/components/progress-chart';
 import { RoundHistoryList } from '@/components/round-history-list';
-import { Section } from '@/components/section';
+import { Section } from '@/components/ui/section';
 import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/stream-table';
 import { ChartZoomActions, useChartZoom } from '@/components/uplot-chart';
 import type { RoundResult } from '@/game/types';
@@ -26,11 +26,11 @@ import {
   summarizeModes,
   type ModeSummary,
 } from '@/levels';
-import { useSettings } from '@/settings-context';
-import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/stats';
-import { clearRounds, loadRounds, onRoundsChanged } from '@/storage';
+import { useSettings } from '@/stores/settings-context';
+import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/lib/stats';
+import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
 import { useSync } from '@/sync-context';
-import { accuracyColor, useTheme, type Theme } from '@/theme';
+import { accuracyColor, useTheme, type Theme } from '@/lib/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
 export function StatsScreen({ onReady }: { onReady?: () => void }) {

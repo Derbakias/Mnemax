@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type SubmitEvent } from 'react';
 
-import { Icon } from './icon';
+import { Icon } from './ui/icon';
 import { CameraScan, ScanOverlay } from './sync-scan';
 import { ShowCode } from './sync-show-code';
 import { useSync } from '@/sync-context';

@@ -1,11 +1,11 @@
 import { memo, useCallback, useState } from 'react';
 
-import { Icon } from './icon';
+import { Icon } from './ui/icon';
 import { OutcomeLegend, RoundDetailTable } from './round-detail-table';
 import { RoundSummaryCard } from './round-summary-card';
 import { TRIALS_PER_ROUND } from '@/game/config';
 import type { RoundResult } from '@/game/types';
-import { DATE_LOCALE } from '@/stats';
+import { DATE_LOCALE } from '@/lib/stats';
 
 interface RoundHistoryListProps {
   rounds: RoundResult[];

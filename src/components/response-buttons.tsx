@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
-import { Icon, type IconName } from './icon';
+import { Icon, type IconName } from './ui/icon';
 import type { StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
-import { keyLabel, normalizeKey, type ButtonLayout } from '@/prefs';
+import { keyLabel, normalizeKey, type ButtonLayout } from '@/lib/prefs';
 
 export const STREAM_ICONS: Record<StreamId, IconName> = {
   position: 'grid-outline',

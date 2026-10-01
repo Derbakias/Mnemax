@@ -16,8 +16,8 @@ import {
 } from './uplot-chart';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/levels';
-import { DATE_LOCALE, formatDuration } from '@/stats';
-import { useTheme } from '@/theme';
+import { DATE_LOCALE, formatDuration } from '@/lib/stats';
+import { useTheme } from '@/lib/theme';
 
 const HEIGHT = 240;
 const DAY_MS = 86400000;

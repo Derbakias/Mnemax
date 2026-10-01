@@ -4,7 +4,7 @@
 
 import { DEFAULT_SPEED, speedOf, speedPreset } from './game/config';
 import { summarizeRound } from './game/scoring';
-import { roundDurationMs } from './stats';
+import { roundDurationMs } from './lib/stats';
 import type { GameSettings, RoundResult, SpeedId, StreamId } from './game/types';
 import { STREAM_IDS } from './game/types';
 

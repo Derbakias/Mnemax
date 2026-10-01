@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
-import { Icon } from './icon';
+import { Icon } from './ui/icon';
 import { useElementWidth } from '@/hooks/use-element-width';
-import { DATE_LOCALE } from '@/stats';
-import type { Theme } from '@/theme';
+import { DATE_LOCALE } from '@/lib/stats';
+import type { Theme } from '@/lib/theme';
 
 interface UPlotChartProps {
   /** Memoize these: a new object rebuilds the chart. */

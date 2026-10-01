@@ -1,4 +1,4 @@
-import { Icon } from './icon';
+import { Icon } from './ui/icon';
 import { STREAM_ICONS } from './response-buttons';
 import { SPEED_PRESETS, speedPreset } from '@/game/config';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';

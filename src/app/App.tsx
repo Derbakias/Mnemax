@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { GridLoader } from '@/components/grid-loader';
-import { Icon, type IconName } from '@/components/icon';
+import { GridLoader } from '@/components/ui/grid-loader';
+import { Icon, type IconName } from '@/components/ui/icon';
 import { PlayScreen, type PlayStage } from '@/screens/play';
 import { SettingsScreen } from '@/screens/settings';
 import { StatsScreen } from '@/screens/stats';
-import { SettingsProvider, useSettings } from '@/settings-context';
+import { SettingsProvider, useSettings } from '@/stores/settings-context';
 import { SyncProvider } from '@/sync-context';
-import { preloadSpeech } from '@/speech';
+import { preloadSpeech } from '@/lib/speech';
 
 type Tab = 'play' | 'stats' | 'settings';
 

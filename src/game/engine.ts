@@ -4,7 +4,7 @@ import type { GameSettings, RoundResult, StreamId, TrialRecord, TrialStimulus } 
 import { TRIALS_PER_ROUND, stimulusVisibleMs } from './config';
 import { generateRound } from './generator';
 import { evaluateTrial } from './scoring';
-import { speakLetter, stopSpeech } from '@/speech';
+import { speakLetter, stopSpeech } from '@/lib/speech';
 import { STREAM_IDS } from './types';
 
 export type GamePhase = 'idle' | 'running' | 'finished';

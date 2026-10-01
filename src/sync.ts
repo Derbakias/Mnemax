@@ -4,7 +4,7 @@
 import { Channel, invoke, isTauri } from '@tauri-apps/api/core';
 
 import { checkRound } from '@/game/round-check';
-import { loadRounds, mergeRounds } from '@/storage';
+import { loadRounds, mergeRounds } from '@/lib/storage';
 
 export interface SyncPeer {
   /** The device's public key, in hex: what identifies it. */

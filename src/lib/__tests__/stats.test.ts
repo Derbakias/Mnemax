@@ -9,7 +9,7 @@ import {
   exponentialAverage,
   rollingAverage,
 } from '../stats';
-import type { RoundResult, StreamId, TrialRecord } from '../game/types';
+import type { RoundResult, StreamId, TrialRecord } from '../../game/types';
 
 const NOW = Date.now();
 

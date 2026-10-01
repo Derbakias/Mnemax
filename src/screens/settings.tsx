@@ -1,10 +1,10 @@
 // TODO: All the info text should be in one place maybe in a state to have everything together
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Icon } from '@/components/icon';
-import { Section } from '@/components/section';
+import { Icon } from '@/components/ui/icon';
+import { Section } from '@/components/ui/section';
 import { STREAM_ICONS } from '@/components/response-buttons';
-import { Stepper } from '@/components/stepper';
+import { Stepper } from '@/components/ui/stepper';
 import { SyncSection } from '@/components/sync-section';
 import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, maxMatchesFor } from '@/game/config';
 import type { StreamId } from '@/game/types';
@@ -16,10 +16,10 @@ import {
   isBindableKey,
   keyLabel,
   type ButtonLayout,
-} from '@/prefs';
-import { useSettings } from '@/settings-context';
-import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/stats-io';
-import { loadRounds, mergeRounds } from '@/storage';
+} from '@/lib/prefs';
+import { useSettings } from '@/stores/settings-context';
+import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/lib/stats-io';
+import { loadRounds, mergeRounds } from '@/lib/storage';
 
 // TODO: Move inside a config file to have everything together
 /** How long the tick on the reset button stays up. */

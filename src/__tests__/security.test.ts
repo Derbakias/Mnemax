@@ -86,13 +86,13 @@ describe('what the page is allowed to do', () => {
   it('never talks to the network itself or runs text as code', () => {
     const page = filesIn('src', /\.tsx?$/).filter((f) => !f.includes('__tests__'));
     // Only to load the app's own sound files (the page's rules allow nothing else).
-    expect(filesUsing(page, /\bfetch\(/)).toEqual(['src/speech.ts']);
+    expect(filesUsing(page, /\bfetch\(/)).toEqual(['src/lib/speech.ts']);
     expect(filesUsing(page, /XMLHttpRequest|WebSocket|EventSource|sendBeacon|window\.open/)).toEqual([]);
     expect(filesUsing(page, /\beval\(|new Function|\.innerHTML|outerHTML|insertAdjacentHTML|document\.write/)).toEqual(
       [],
     );
     // Only the app's built-in icons go in as raw SVG.
-    expect(filesUsing(page, /dangerouslySetInnerHTML/)).toEqual(['src/components/icon.tsx']);
+    expect(filesUsing(page, /dangerouslySetInnerHTML/)).toEqual(['src/components/ui/icon.tsx']);
   });
 });
 

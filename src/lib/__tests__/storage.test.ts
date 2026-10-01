@@ -7,7 +7,7 @@ import {
   recoverRoundInProgress,
   saveRoundInProgress,
 } from '../storage';
-import type { RoundResult } from '../game/types';
+import type { RoundResult } from '../../game/types';
 
 const mockMemory = new Map<string, string>();
 

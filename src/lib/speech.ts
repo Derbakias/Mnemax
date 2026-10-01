@@ -2,7 +2,7 @@
 // Webviews don't reliably offer speechSynthesis (Android WebView has none), and clips
 // give the same low, constant latency on every platform.
 
-const CLIP_URLS = import.meta.glob<string>('./assets/letters/*.wav', {
+const CLIP_URLS = import.meta.glob<string>('../assets/letters/*.wav', {
   eager: true,
   query: '?url',
   import: 'default',

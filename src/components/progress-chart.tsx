@@ -17,8 +17,14 @@ import {
 } from './uplot-chart';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
-import { computeRoundPoints, DATE_LOCALE, exponentialAverage, improvementRate, type PerfectEstimate } from '@/stats';
-import { useTheme, type Theme } from '@/theme';
+import {
+  computeRoundPoints,
+  DATE_LOCALE,
+  exponentialAverage,
+  improvementRate,
+  type PerfectEstimate,
+} from '@/lib/stats';
+import { useTheme, type Theme } from '@/lib/theme';
 
 type Metric = 'accuracy' | 'reaction';
 /** Every line in the legend can be hidden: the round dots, the overall average and each stream. */

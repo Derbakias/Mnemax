@@ -1,8 +1,8 @@
 // App preferences that don't affect the game itself, so they're kept out of GameSettings
 // (which is copied into every saved round).
 
-import type { StreamId } from './game/types';
-import { STREAM_IDS } from './game/types';
+import type { StreamId } from '../game/types';
+import { STREAM_IDS } from '../game/types';
 
 // The answer buttons always sit under the grid: two per row, or one per row. (Earlier builds also had
 // columns beside the grid, 'right' and 'left'; those saved choices now read as 'grid'.)

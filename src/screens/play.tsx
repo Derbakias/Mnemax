@@ -1,23 +1,23 @@
 // TODO: !IMPORTANT! This one also needs to be broken down (the round view and the start screen)
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
-import { Icon } from '@/components/icon';
-import { HudDropdown } from '@/components/hud-dropdown';
+import { Icon } from '@/components/ui/icon';
+import { HudDropdown } from '@/components/ui/hud-dropdown';
 import { ResponseButtons, STREAM_ICONS } from '@/components/response-buttons';
 import { RoundDetailTable } from '@/components/round-detail-table';
 import { RoundHistoryList } from '@/components/round-history-list';
 import { RoundSummaryCard } from '@/components/round-summary-card';
-import { Stepper } from '@/components/stepper';
+import { Stepper } from '@/components/ui/stepper';
 import { StimulusGrid } from '@/components/stimulus-grid';
 import { TrialHistory } from '@/components/trial-history';
 import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedOf, speedPreset, stimulusVisibleMs } from '@/game/config';
 import { useGameEngine } from '@/game/engine';
 import type { GameSettings, RoundResult, SpeedId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
-import { normalizeKey } from '@/prefs';
-import { useSettings } from '@/settings-context';
-import { primeSpeech } from '@/speech';
-import { formatDuration, playedOnDayMs, roundDurationMs } from '@/stats';
+import { normalizeKey } from '@/lib/prefs';
+import { useSettings } from '@/stores/settings-context';
+import { primeSpeech } from '@/lib/speech';
+import { formatDuration, playedOnDayMs, roundDurationMs } from '@/lib/stats';
 import {
   appendRound,
   clearRoundInProgress,
@@ -25,7 +25,7 @@ import {
   onRoundsChanged,
   recoverRoundInProgress,
   saveRoundInProgress,
-} from '@/storage';
+} from '@/lib/storage';
 
 /** Where the Play screen is: the start screen, or a round (running or paused). */
 export type PlayStage = 'start' | 'playing' | 'paused';

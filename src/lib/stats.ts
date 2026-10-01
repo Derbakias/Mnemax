@@ -1,7 +1,7 @@
-import type { RoundResult, StreamId, TrialRecord } from './game/types';
-import { STREAM_IDS } from './game/types';
-import { TRIALS_PER_ROUND } from './game/config';
-import { balancedAccuracy, summarizeRound } from './game/scoring';
+import type { RoundResult, StreamId, TrialRecord } from '../game/types';
+import { STREAM_IDS } from '../game/types';
+import { TRIALS_PER_ROUND } from '../game/config';
+import { balancedAccuracy, summarizeRound } from '../game/scoring';
 
 const COUNTDOWN_MS = 2100;
 
