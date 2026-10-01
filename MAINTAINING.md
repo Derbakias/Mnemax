@@ -113,6 +113,10 @@ match.
 
 Security updates arrive as their own pull requests. Merge them as soon as possible.
 
+TypeScript stays on version 6: typescript-eslint (the linter's TypeScript support) can't read version 7
+yet. Dependabot is told to skip TypeScript's major versions (see `ignore` in `.github/dependabot.yml`).
+Remove that once typescript-eslint supports TypeScript 7.
+
 The Android project (`src-tauri/gen/android`) isn't updated by Dependabot. Tauri generates it, and its
 Android libraries have to work with the Kotlin version in Tauri's template: newer `appcompat` or
 `material` versions need a newer Kotlin, and the Android build then fails. CI doesn't build Android, so
