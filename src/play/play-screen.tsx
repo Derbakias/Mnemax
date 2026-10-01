@@ -8,7 +8,7 @@ import { RoundDetailTable } from '@/components/rounds/round-detail-table';
 import { RoundHistoryList } from '@/components/rounds/round-history-list';
 import { RoundSummaryCard } from '@/components/rounds/round-summary-card';
 import { Stepper } from '@/components/ui/stepper';
-import { StimulusGrid } from '@/play/stimulus-grid';
+import { BoxGrid } from '@/play/box-grid';
 import { TrialHistory } from '@/play/trial-history';
 import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedOf, speedPreset, stimulusVisibleMs } from '@/game/config';
 import { useGameEngine } from '@/game/engine';
@@ -302,7 +302,7 @@ export function PlayScreen({
           )}
 
           <div className="grid-area">
-            <StimulusGrid
+            <BoxGrid
               stimulus={state.stimulus}
               visible={state.stimulusVisible}
               varyColor={shown.activeStreams.color}
