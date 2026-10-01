@@ -17,7 +17,8 @@ import {
 import { DAILY_TIME_CHART_HEIGHT, MIN_ALL_DAYS, MIN_ZOOM_DAYS, MINUTE_STEPS } from '@/config/charts';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
-import { DATE_LOCALE, formatDuration } from '@/lib/stats';
+import { DATE_LOCALE } from '@/config/stats';
+import { formatDuration } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
 
 const DAY_MS = 86400000;

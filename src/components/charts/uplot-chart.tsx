@@ -19,7 +19,7 @@ import {
   Y_MIN_SHARE,
 } from '@/config/charts';
 import { useElementWidth } from '@/hooks/use-element-width';
-import { DATE_LOCALE } from '@/lib/stats';
+import { DATE_LOCALE } from '@/config/stats';
 import type { Theme } from '@/lib/theme';
 
 interface UPlotChartProps {

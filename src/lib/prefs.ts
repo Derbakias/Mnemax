@@ -4,6 +4,7 @@
 import type { StreamId } from '../game/types';
 import { STREAM_IDS } from '../game/types';
 import { DEFAULT_KEY_BINDINGS } from '@/config/ui';
+import { MAX_DAILY_TARGET_MINUTES, MIN_DAILY_TARGET_MINUTES } from '@/config/stats';
 
 // The answer buttons always sit under the grid: two per row, or one per row. (Earlier builds also had
 // columns beside the grid, 'right' and 'left'; those saved choices now read as 'grid'.)
@@ -65,11 +66,6 @@ function clampKeyBindings(raw: unknown): Record<StreamId, string> {
   // Two streams on one key would make that key ambiguous.
   return new Set(Object.values(out)).size === STREAM_IDS.length ? out : { ...DEFAULT_KEY_BINDINGS };
 }
-
-// TODO: move to a config
-export const MIN_DAILY_TARGET_MINUTES = 5;
-export const MAX_DAILY_TARGET_MINUTES = 120;
-export const STEP_DAILY_TARGET_MINUTES = 5;
 
 export function clampPrefs(raw: Partial<AppPrefs> | null | undefined): AppPrefs {
   const minutes = raw?.dailyTargetMinutes;

@@ -3,6 +3,14 @@
 // scale: difficulty × accuracy, in "dual N-back at Normal speed" units.
 
 import { DEFAULT_SPEED } from '@/config/game';
+import {
+  EXTRA_STREAM_WEIGHT,
+  LEVEL_WINDOW,
+  MASTERY_ACCURACY,
+  MASTERY_MIN_ROUNDS,
+  RECENT_ROUNDS,
+  REFERENCE_STREAMS,
+} from '@/config/stats';
 import { speedOf, speedPreset } from '@/game/rules';
 import { summarizeRound } from '../game/scoring';
 import { roundDurationMs } from '../lib/stats';
@@ -35,11 +43,6 @@ export function roundMode(round: RoundResult): Mode {
 // Difficulty and level score
 // ---------------------------------------------------------------------------
 
-/** Each stream beyond the first adds half of a single stream's load. */
-const EXTRA_STREAM_WEIGHT = 0.5;
-/** Two streams (dual N-back) is the reference, so its factor is 1. */
-const REFERENCE_STREAMS = 2;
-
 export function streamFactor(streamCount: number): number {
   const load = (k: number) => 1 + EXTRA_STREAM_WEIGHT * (Math.max(1, k) - 1);
   return load(streamCount) / load(REFERENCE_STREAMS);
@@ -63,9 +66,6 @@ export function modeDifficulty(mode: Mode): number {
 export function roundLevel(round: RoundResult): number {
   return modeDifficulty(roundMode(round)) * summarizeRound(round).overallAccuracy;
 }
-
-/** Rounds averaged into the level line; one lucky or bad round shouldn't move it much. */
-export const LEVEL_WINDOW = 10;
 
 export interface LevelPoint {
   round: RoundResult;
@@ -117,13 +117,6 @@ export function levelSummary(history: LevelPoint[], now = Date.now()): LevelSumm
 // ---------------------------------------------------------------------------
 // Per-mode summaries
 // ---------------------------------------------------------------------------
-
-// TODO: move to a config
-/** Rounds averaged for a mode's "recent" accuracy. */
-export const RECENT_ROUNDS = 5;
-/** A mode counts as mastered at this recent accuracy (%), over at least MASTERY_MIN_ROUNDS rounds. */
-export const MASTERY_ACCURACY = 80;
-export const MASTERY_MIN_ROUNDS = 3;
 
 export interface ModeSummary {
   mode: Mode;

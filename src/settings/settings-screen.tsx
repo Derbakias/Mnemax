@@ -10,14 +10,8 @@ import { RESET_CONFIRM_MS, STREAM_ICONS } from '@/config/ui';
 import { maxMatchesFor } from '@/game/rules';
 import type { StreamId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
-import {
-  MAX_DAILY_TARGET_MINUTES,
-  MIN_DAILY_TARGET_MINUTES,
-  STEP_DAILY_TARGET_MINUTES,
-  isBindableKey,
-  keyLabel,
-  type ButtonLayout,
-} from '@/lib/prefs';
+import { MAX_DAILY_TARGET_MINUTES, MIN_DAILY_TARGET_MINUTES, STEP_DAILY_TARGET_MINUTES } from '@/config/stats';
+import { isBindableKey, keyLabel, type ButtonLayout } from '@/lib/prefs';
 import { useSettings } from '@/stores/settings-context';
 import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/lib/stats-io';
 import { loadRounds, mergeRounds } from '@/lib/storage';

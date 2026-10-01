@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { YearDropdown } from './year-dropdown';
 import type { RoundResult } from '@/game/types';
-import { DATE_LOCALE } from '@/lib/stats';
+import { DATE_LOCALE } from '@/config/stats';
 import { useTheme } from '@/lib/theme';
 
 const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];

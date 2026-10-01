@@ -24,13 +24,8 @@ import {
 } from '@/config/charts';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
-import {
-  computeRoundPoints,
-  DATE_LOCALE,
-  exponentialAverage,
-  improvementRate,
-  type PerfectEstimate,
-} from '@/lib/stats';
+import { DATE_LOCALE } from '@/config/stats';
+import { computeRoundPoints, exponentialAverage, improvementRate, type PerfectEstimate } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
 
 type Metric = 'accuracy' | 'reaction';

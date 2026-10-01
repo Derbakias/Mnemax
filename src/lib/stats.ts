@@ -1,9 +1,15 @@
 import type { RoundResult, StreamId, TrialRecord } from '../game/types';
 import { STREAM_IDS } from '../game/types';
 import { TRIALS_PER_ROUND } from '@/config/game';
+import {
+  COUNT_UNITS,
+  COUNTDOWN_MS,
+  ESTIMATE_CURRENT_WINDOW,
+  LEARNING_RATES,
+  MIN_FIT_GAIN,
+  PERFECT_ACCURACY,
+} from '@/config/stats';
 import { balancedAccuracy, summarizeRound } from '../game/scoring';
-
-const COUNTDOWN_MS = 2100;
 
 export function roundDurationMs(round: RoundResult): number {
   if (typeof round.durationMs === 'number') {
@@ -25,13 +31,6 @@ export function playedOnDayMs(rounds: RoundResult[], day: Date): number {
   return total;
 }
 
-/**
- * The language dates are written in, the same on every device whatever the system is set to: 1 Oct 2026,
- * 15:00.
- */
-// TODO: Add in the settings
-export const DATE_LOCALE = 'en-GB';
-
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.round(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -45,13 +44,6 @@ export function formatDuration(ms: number): string {
   }
   return `${seconds}s`;
 }
-
-// TODO: move to a config
-const COUNT_UNITS: [suffix: string, size: number][] = [
-  ['K', 1e3],
-  ['M', 1e6],
-  ['B', 1e9],
-];
 
 /**
  * A count in at most four characters, for narrow table columns: 999, 1.2K, 12K, 999K, 1.2M. One decimal
@@ -290,15 +282,6 @@ export interface ImprovementRate {
   speedMsPerHour: number | null;
 }
 
-/** Current accuracy is the average of this many latest rounds (the chart's "Avg of 10" line). */
-const CURRENT_WINDOW = 10;
-/** Accuracy counts as 100% from here (it rounds to 100). */
-const PERFECT_ACCURACY = 99.5;
-/** The learning curve must fit at least this much better than a flat line to count as progress. */
-const MIN_FIT_GAIN = 0.02;
-/** Learning rates tried, per hour of play: 0.01 to 100, log-spaced. */
-const LEARNING_RATES = Array.from({ length: 401 }, (_, i) => 0.01 * 10 ** (i / 100));
-
 function slopePerHour(points: { hours: number; value: number }[]): number | null {
   const n = points.length;
   if (n < 5) {
@@ -334,7 +317,7 @@ function perfectEstimate(points: { hours: number; value: number }[]): PerfectEst
   if (n < 5 || points[n - 1].hours < 0.08) {
     return null;
   }
-  const recent = points.slice(-CURRENT_WINDOW);
+  const recent = points.slice(-ESTIMATE_CURRENT_WINDOW);
   const current = recent.reduce((s, p) => s + p.value, 0) / recent.length;
   if (current >= PERFECT_ACCURACY) {
     return { kind: 'reached' };
