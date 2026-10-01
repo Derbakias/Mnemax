@@ -1,5 +1,5 @@
-// Local sync with the user's other devices: the page's side. The network, the keys and the pairing all live
-// in Rust (src-tauri/src/sync); this passes rounds to it and checks and saves the ones it brings back.
+// Sync with your other devices: the page's side. The network, the keys and pairing all live in Rust
+// (src-tauri/src/sync). This file passes rounds to Rust, and checks and saves the rounds it brings back.
 
 import { Channel, invoke, isTauri } from '@tauri-apps/api/core';
 
@@ -7,98 +7,83 @@ import { checkRound } from '@/game/round-check';
 import { loadRounds, mergeRounds } from '@/storage';
 
 export interface SyncPeer {
-  /** The device's public key, in hex. */
+  /** The device's public key, in hex: what identifies it. */
   key: string;
   name: string;
+  /** Where this device connects to it. Null when it's the other device that connects here. */
+  address: string | null;
   pairedAt: number;
   lastSyncAt: number | null;
 }
 
 /**
- * What the sync commands take and give: must match API_VERSION in src-tauri/src/sync/mod.rs. In development
- * this page reloads on its own but the Rust side only when the app is rebuilt, and a page talking to older
- * commands would misread their answers.
+ * The version of the Rust commands this page talks to: must match API_VERSION in src-tauri/src/sync/commands.rs.
+ * During development this page reloads by itself but Rust only when the app is rebuilt.
  */
-export const SYNC_API = 3;
+export const SYNC_API = 5;
 
 export interface SyncStatus {
-  /** The Rust side's SYNC_API (missing from builds before it had one). */
   api?: number;
   /** This device's name, as paired devices see it. */
   name: string;
   peers: SyncPeer[];
 }
 
-/** Why the Rust side can't be used from this page, if it can't. */
+/** A message if the Rust side is from another version of the app. */
 export function apiMismatch(status: SyncStatus): string | null {
-  return status.api === SYNC_API
-    ? null
-    : "Sync functionality is outdated. Restart/update the app to the latest version.";
+  return status.api === SYNC_API ? null : 'Sync is out of date. Restart or update the app.';
 }
 
 export type PairEvent =
-  | { kind: 'check'; name: string; check: string }
   | { kind: 'paired'; peer: SyncPeer }
-  /** No device tried the code in time: it no longer works. */
+  /** Nobody tried the code in time. */
   | { kind: 'expired' }
   | { kind: 'failed'; message: string }
-  /** What the pairing is doing, for the Details view. */
+  /** What pairing is doing, for the log. */
   | { kind: 'step'; text: string };
 
-/** A QR code to draw: `size` × `size` modules, row by row, `1` for a dark one. */
+/** A QR code to draw: `size` × `size` squares, row by row, `1` for a dark one. */
 export interface Qr {
   size: number;
   modules: string;
 }
 
 export interface ShownCode {
-  /** The 6 digits to type on the other device. */
+  /** This device's address, like 192.168.1.20. */
+  address: string;
+  /** The 9 digits. */
   code: string;
-  /** How long the code works for. */
+  /** The address and code together, for the Copy button. */
+  text: string;
+  /** How long the code works. */
   seconds: number;
-  /** The same code, for a phone to scan. */
   qr: Qr;
 }
 
 export type ListenEvent =
   | { kind: 'synced'; peer: SyncPeer; rounds: unknown[] }
-  /** A paired device unpaired this one, so it's gone here too. */
-  | { kind: 'unpaired'; name: string }
-  | { kind: 'failed'; message: string }
-  /** What the listener is doing, for the Details view. */
+  /** What the listener is doing, for the log. */
   | { kind: 'step'; text: string };
 
-/** Only the app has the network access sync needs, not a plain browser. */
-export const syncAvailable = (): boolean => isTauri();
+/** A phone or tablet: the app sleeps in the background, and it scans QR codes with the system's scanner. */
+export const isPhone = (): boolean => /android|iphone|ipad/i.test(navigator.userAgent);
 
-export const syncStatus = () => invoke<SyncStatus>('sync_status');
-export const renameDevice = (name: string) => invoke<SyncStatus>('sync_rename', { name });
-/** A failed sync command: the message to show, and which error it was. */
+/**
+ * Sync needs the app (a browser can't open network connections). Not on iPhone yet: it still needs a way to
+ * lock the secret key in the iPhone's keychain.
+ */
+export const syncAvailable = (): boolean => isTauri() && !/iphone|ipad/i.test(navigator.userAgent);
+
+/** A failed sync command: a short name for the error, and the message to show. */
 export interface SyncFailure {
   code: string;
   message: string;
 }
 
-/** Which error a sync command failed with, if it was one. */
+/** Which error a sync command failed with. */
 export function failureCode(error: unknown): string | null {
   return typeof error === 'object' && error != null && 'code' in error ? String((error as SyncFailure).code) : null;
 }
-
-/** `both`: the other device removed this one, then this one removed it; `alreadyGone`: it no longer knew it. */
-export type Forgot = 'both' | 'alreadyGone';
-
-/**
- * Forgets the device on both sides: first it removes this device, then this one removes it. Fails, changing
- * nothing, if it can't be reached. `onStep` hears what it's doing.
- */
-export async function forgetDevice(key: string, onStep: (text: string) => void): Promise<Forgot> {
-  const forgot = await invoke<unknown>('sync_forget', { key, onStep: channel(onStep) });
-  if (forgot === 'both' || forgot === 'alreadyGone') return forgot;
-  throw new Error("The app's sync answered in a way this page doesn't know. Restart the app.");
-}
-
-/** Forgets a device that can't be reached (lost, say) on this side only; it's told if it ever tries to sync. */
-export const forgetDeviceHere = (key: string) => invoke<SyncStatus>('sync_forget_here', { key });
 
 function channel<T>(onEvent: (event: T) => void): Channel<T> {
   const ch = new Channel<T>();
@@ -106,25 +91,29 @@ function channel<T>(onEvent: (event: T) => void): Channel<T> {
   return ch;
 }
 
-/** Waits for the other device; resolves with the code to type or scan on it. */
+export const syncStatus = () => invoke<SyncStatus>('sync_status');
+export const renameDevice = (name: string) => invoke<SyncStatus>('sync_rename', { name });
+/** Forgets the device on this device only. */
+export const forgetDevice = (key: string) => invoke<SyncStatus>('sync_forget', { key });
+
+/** Shows a code and waits for the other device; how it goes comes through `onEvent`. */
 export const startPairing = (onEvent: (event: PairEvent) => void) =>
   invoke<ShownCode>('pair_start', { onEvent: channel(onEvent) });
 
-/** Looks for the device showing `code` and pairs with it; how it goes comes through `onEvent`. */
-export const joinPairing = (code: string, onEvent: (event: PairEvent) => void) =>
-  invoke<void>('pair_join', { code, onEvent: channel(onEvent) });
+/** Pairs with the device at `address` that shows `code`; how it goes comes through `onEvent`. */
+export const joinPairing = (address: string, code: string, onEvent: (event: PairEvent) => void) =>
+  invoke<void>('pair_join', { address, code, onEvent: channel(onEvent) });
 
-export const answerPairing = (accept: boolean) => invoke<void>('pair_answer', { accept });
 export const cancelPairing = () => invoke<void>('pair_cancel');
 
-/** Lets paired devices sync with this one until `stopListening`. */
+/** Lets paired devices connect and sync until `stopListening`. */
 export async function startListening(onEvent: (event: ListenEvent) => void): Promise<void> {
   await invoke('sync_listen', { rounds: await loadRounds(), onEvent: channel(onEvent) });
 }
 
 export const stopListening = () => invoke<void>('sync_stop');
 
-/** What a listening device hands out, after the saved rounds changed. */
+/** Hands the listener the rounds as they are now, after they changed. */
 export async function updateListeningRounds(): Promise<void> {
   await invoke('sync_rounds', { rounds: await loadRounds() });
 }
@@ -135,28 +124,15 @@ export interface SyncResult {
   skipped: number;
 }
 
-/**
- * Syncs with a paired device that has Mnemax open; `onStep` hears what it's doing. Null if that device had
- * unpaired this one (it's then gone here too). `quick` (automatic syncs) gives up at once if the device isn't
- * announcing itself, rather than asking it to connect back.
- */
-export async function syncWith(
-  key: string,
-  onStep: (text: string) => void,
-  quick = false,
-): Promise<SyncResult | null> {
+/** Connects to a paired device and syncs with it; `onStep` hears what it's doing. */
+export async function syncWith(key: string, onStep: (text: string) => void): Promise<SyncResult> {
   const rounds = await loadRounds();
-  const outcome = await invoke<unknown>('sync_now', { key, rounds, quick, onStep: channel(onStep) });
-  // Only an answer that says so counts as unpaired: anything unexpected is an error, never a conclusion.
-  if (isObject(outcome) && outcome.kind === 'unpaired') return null;
-  if (isObject(outcome) && outcome.kind === 'synced' && Array.isArray(outcome.rounds)) {
-    return saveReceived(outcome.rounds);
+  const outcome = await invoke<unknown>('sync_now', { key, rounds, onStep: channel(onStep) });
+  // Anything but the expected shape is an error, never a guess.
+  if (typeof outcome === 'object' && outcome != null && Array.isArray((outcome as { rounds?: unknown }).rounds)) {
+    return saveReceived((outcome as { rounds: unknown[] }).rounds);
   }
   throw new Error("The app's sync answered in a way this page doesn't know. Restart the app.");
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value != null && !Array.isArray(value);
 }
 
 /** Checks the rounds another device sent, the same way as an imported file's, and saves the new ones. */
@@ -167,20 +143,49 @@ export async function saveReceived(received: unknown[]): Promise<SyncResult> {
   return { added, skipped: received.length - rounds.length };
 }
 
-/** A phone (or tablet): the app is put to sleep in the background, and it has a camera to scan with. */
-export const isPhone = (): boolean => /android|iphone|ipad/i.test(navigator.userAgent);
+/** The address and code in a scanned QR code or pasted text (`mnemax:pair:192.168.1.20:482913057`), or null. */
+export function readPairingText(text: string): { address: string; code: string } | null {
+  const match = /^mnemax:pair:(\d{1,3}(?:\.\d{1,3}){3}):(\d{9})$/.exec(text.trim());
+  return match ? { address: match[1], code: match[2] } : null;
+}
 
-/** Phones can scan the QR code another device shows; computers type the code. */
-export const canScan = (): boolean => isTauri() && isPhone();
+/** `482913057` → `482-913-057`, easier to read and type. */
+export const groupCode = (code: string): string => code.replace(/(\d{3})(?=\d)/g, '$1-');
 
-/** The code in a QR code another device shows, or null if it isn't a Mnemax pairing code. */
-export function codeFromQr(text: string): string | null {
-  return /^mnemax:pair:(\d{6})$/.exec(text.trim())?.[1] ?? null;
+/**
+ * Tidies an address as it's typed (`before` → `typed`), adding the dot by itself when the number before it can't
+ * get longer: after 3 digits, after a number over 25 (one more digit would pass 255), or after a single 0. Other
+ * times the person types the dot, since 10 could still become 100. Deleting never adds a dot back.
+ */
+export function typeAddress(before: string, typed: string): string {
+  const parts: string[] = [];
+  for (const piece of typed.replace(/[^\d.]/g, '').split('.')) {
+    // A fourth digit in a row starts the next number.
+    let rest = piece;
+    do {
+      parts.push(rest.slice(0, 3));
+      rest = rest.slice(3);
+    } while (rest);
+  }
+  // No empty numbers (from two dots in a row, or a dot first), except the one just started.
+  const numbers = parts.filter((p, i) => p !== '' || i === parts.length - 1).slice(0, 4);
+  const last = numbers[numbers.length - 1] ?? '';
+  const complete = last.length === 3 || Number(last) > 25 || last === '0';
+  const addDot = typed.length > before.length && numbers.length < 4 && last !== '' && complete;
+  return numbers.join('.') + (addDot ? '.' : '');
+}
+
+/** Tidies a code as it's typed: digits only, at most 9, with a dash after each 3 (kept while deleting too). */
+export function typeCode(before: string, typed: string): string {
+  const digits = typed.replace(/\D/g, '').slice(0, 9);
+  const atDash = digits.length === 3 || digits.length === 6;
+  const addDash = atDash && (typed.length > before.length || typed.endsWith('-'));
+  return groupCode(digits) + (addDash ? '-' : '');
 }
 
 /**
- * Opens the camera behind the page (the page shows its own frame and Cancel button over it, see
- * ScanOverlay) until a QR code is found. Resolves with its text, or null if the scan was cancelled.
+ * Phones: opens the camera behind the page (the page shows its own frame and Cancel button over it) until it finds a
+ * QR code. Resolves with its text, or null if the scan was cancelled.
  */
 export async function scanQr(): Promise<string | null> {
   const scanner = await import('@tauri-apps/plugin-barcode-scanner');

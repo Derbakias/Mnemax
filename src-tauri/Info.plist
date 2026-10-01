@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- Merged into the macOS app's Info.plist by Tauri. Local sync finds the user's other devices over mDNS;
-     macOS asks before an app uses the local network, and shows this reason. -->
+<!-- Merged into the macOS app's Info.plist by Tauri. macOS asks before an app connects to other devices on
+     the home network or opens the camera (to scan a pairing QR code), and shows these reasons. -->
 <plist version="1.0">
 <dict>
   <key>NSLocalNetworkUsageDescription</key>
-  <string>Mnemax finds your other devices on this Wi-Fi to sync your rounds, only while Sync is open.</string>
-  <key>NSBonjourServices</key>
-  <array>
-    <string>_mnemax._tcp</string>
-  </array>
+  <string>Mnemax connects to your other devices on this Wi-Fi to sync your rounds.</string>
+  <key>NSCameraUsageDescription</key>
+  <string>Mnemax uses the camera only to scan the pairing QR code from your other device.</string>
 </dict>
 </plist>

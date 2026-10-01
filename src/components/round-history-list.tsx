@@ -5,6 +5,7 @@ import { OutcomeLegend, RoundDetailTable } from './round-detail-table';
 import { RoundSummaryCard } from './round-summary-card';
 import { TRIALS_PER_ROUND } from '@/game/config';
 import type { RoundResult } from '@/game/types';
+import { DATE_LOCALE } from '@/stats';
 
 interface RoundHistoryListProps {
   rounds: RoundResult[];
@@ -16,12 +17,12 @@ interface RoundHistoryListProps {
 
 // Made once: toLocaleDateString and friends set up a new formatter on every call, which added up to most of
 // the time a long history took to draw.
-const DATE_FORMAT = new Intl.DateTimeFormat(undefined, {
+const DATE_FORMAT = new Intl.DateTimeFormat(DATE_LOCALE, {
   year: 'numeric',
   month: 'short',
   day: 'numeric',
 });
-const TIME_FORMAT = new Intl.DateTimeFormat(undefined, {
+const TIME_FORMAT = new Intl.DateTimeFormat(DATE_LOCALE, {
   hour: '2-digit',
   minute: '2-digit',
 });

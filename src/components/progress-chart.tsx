@@ -17,7 +17,7 @@ import {
 } from './uplot-chart';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
-import { computeRoundPoints, exponentialAverage, improvementRate, type PerfectEstimate } from '@/stats';
+import { computeRoundPoints, DATE_LOCALE, exponentialAverage, improvementRate, type PerfectEstimate } from '@/stats';
 import { useTheme, type Theme } from '@/theme';
 
 type Metric = 'accuracy' | 'reaction';
@@ -127,7 +127,7 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
         tooltipPlugin((idx) => {
           const point = points[idx];
           if (!point) return null;
-          const title = new Date(point.finishedAt).toLocaleString(undefined, {
+          const title = new Date(point.finishedAt).toLocaleString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',
             month: 'short',

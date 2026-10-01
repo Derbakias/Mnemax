@@ -17,7 +17,7 @@ import {
   type ChartZoom,
 } from './uplot-chart';
 import { LEVEL_WINDOW, roundMode, type LevelPoint } from '@/levels';
-import { exponentialAverage } from '@/stats';
+import { DATE_LOCALE, exponentialAverage } from '@/stats';
 import { useTheme } from '@/theme';
 
 const HEIGHT = 200;
@@ -71,7 +71,7 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
         tooltipPlugin((idx) => {
           const point = history[idx];
           if (!point) return null;
-          const title = new Date(point.finishedAt).toLocaleString(undefined, {
+          const title = new Date(point.finishedAt).toLocaleString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',
             month: 'short',

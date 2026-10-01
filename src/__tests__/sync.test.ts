@@ -1,5 +1,14 @@
 import { loadRounds } from '../storage';
-import { SYNC_API, apiMismatch, codeFromQr, forgetDevice, saveReceived, syncWith } from '../sync';
+import {
+  SYNC_API,
+  apiMismatch,
+  groupCode,
+  readPairingText,
+  saveReceived,
+  syncWith,
+  typeAddress,
+  typeCode,
+} from '../sync';
 import type { RoundResult } from '../game/types';
 
 const mockMemory = new Map<string, string>();
@@ -62,24 +71,87 @@ describe('saveReceived', () => {
   });
 });
 
-describe('codeFromQr', () => {
-  it('takes the code from a Mnemax pairing QR code', () => {
-    expect(codeFromQr('mnemax:pair:815307')).toBe('815307');
-    expect(codeFromQr(' mnemax:pair:000001\n')).toBe('000001');
+describe('readPairingText', () => {
+  it('takes the address and code from a Mnemax QR code or the copied text', () => {
+    const read = readPairingText('mnemax:pair:192.168.1.20:815307042');
+    expect(read).toEqual({ address: '192.168.1.20', code: '815307042' });
+    expect(readPairingText(' mnemax:pair:10.0.0.5:000000001\n')).toEqual({ address: '10.0.0.5', code: '000000001' });
   });
 
-  it('turns down any other QR code', () => {
+  it('turns down any other text', () => {
     for (const text of [
-      '815307',
-      'https://example.com/mnemax:pair:815307',
-      'mnemax:pair:81530',
-      'mnemax:pair:8153077',
-      'mnemax:pair:815-307',
-      'mnemax:pair:815307&next=evil',
-      'MNEMAX:PAIR:815307',
+      '815307042',
+      '192.168.1.20',
+      'https://example.com/mnemax:pair:192.168.1.20:815307042',
+      'mnemax:pair:192.168.1.20:81530704',
+      'mnemax:pair:192.168.1.20:8153070421',
+      'mnemax:pair:192.168.1:815307042',
+      'mnemax:pair:evil.example:815307042',
+      'mnemax:pair:192.168.1.20:815307042&next=evil',
+      'MNEMAX:PAIR:192.168.1.20:815307042',
     ]) {
-      expect(codeFromQr(text)).toBeNull();
+      expect(readPairingText(text)).toBeNull();
     }
+  });
+
+  it('groups a code in threes', () => {
+    expect(groupCode('815307042')).toBe('815-307-042');
+    expect(groupCode('8153')).toBe('815-3');
+  });
+});
+
+/** Types `keys` one at a time, the way a person would, through `tidy`. */
+function typeKeys(tidy: (before: string, typed: string) => string, keys: string, start = ''): string {
+  return [...keys].reduce((text, key) => (key === '⌫' ? tidy(text, text.slice(0, -1)) : tidy(text, text + key)), start);
+}
+
+describe('typing an address', () => {
+  it('adds the dot by itself once a number is complete', () => {
+    expect(typeKeys(typeAddress, '192')).toBe('192.');
+    expect(typeKeys(typeAddress, '192168120')).toBe('192.168.120.');
+    expect(typeKeys(typeAddress, '19216812')).toBe('192.168.12');
+    expect(typeKeys(typeAddress, '26')).toBe('26.');
+    expect(typeKeys(typeAddress, '0')).toBe('0.');
+  });
+
+  it('works for every kind of home address, with a typed dot where a number could still grow', () => {
+    expect(typeKeys(typeAddress, '192168.1.20')).toBe('192.168.1.20');
+    expect(typeKeys(typeAddress, '10.0.1.1')).toBe('10.0.1.1');
+    expect(typeKeys(typeAddress, '10.01.1')).toBe('10.0.1.1');
+    expect(typeKeys(typeAddress, '172.16.05')).toBe('172.16.0.5');
+    expect(typeKeys(typeAddress, '10.255.255.254')).toBe('10.255.255.254');
+    expect(typeKeys(typeAddress, '10.2.25.5')).toBe('10.2.25.5');
+    expect(typeKeys(typeAddress, '192.168.100.200')).toBe('192.168.100.200');
+  });
+
+  it('never adds a dot back while deleting, and lets the dot be typed twice without doubling it', () => {
+    expect(typeKeys(typeAddress, '192⌫')).toBe('192');
+    expect(typeKeys(typeAddress, '192⌫⌫')).toBe('19');
+    expect(typeKeys(typeAddress, '192.')).toBe('192.');
+    expect(typeKeys(typeAddress, '.1')).toBe('1');
+  });
+
+  it('stops after four numbers and takes only digits and dots', () => {
+    expect(typeKeys(typeAddress, '192.168.1.205')).toBe('192.168.1.205');
+    expect(typeKeys(typeAddress, '192.168.1.2059')).toBe('192.168.1.205');
+    expect(typeAddress('', '192.168.1.20.')).toBe('192.168.1.20');
+    expect(typeAddress('', '19a2.1x6')).toBe('192.16');
+    expect(typeAddress('', '192.168.1.20')).toBe('192.168.1.20');
+  });
+});
+
+describe('typing a code', () => {
+  it('adds the dashes by itself and keeps only 9 digits', () => {
+    expect(typeKeys(typeCode, '482')).toBe('482-');
+    expect(typeKeys(typeCode, '482913057')).toBe('482-913-057');
+    expect(typeKeys(typeCode, '4829130579')).toBe('482-913-057');
+    expect(typeCode('', '48a2 91')).toBe('482-91');
+  });
+
+  it('deletes normally', () => {
+    expect(typeKeys(typeCode, '482⌫')).toBe('482');
+    expect(typeKeys(typeCode, '4829⌫')).toBe('482-');
+    expect(typeKeys(typeCode, '4829⌫⌫')).toBe('482');
   });
 });
 
@@ -89,30 +161,21 @@ describe('talking to the Rust side', () => {
     mockInvoke.mockReset();
   });
 
-  it('only takes an answer that says so as unpaired', async () => {
-    mockInvoke.mockResolvedValueOnce({ kind: 'unpaired' });
-    await expect(syncWith('k', () => {})).resolves.toBeNull();
-  });
-
   it('saves the rounds from a sync', async () => {
-    mockInvoke.mockResolvedValueOnce({ kind: 'synced', rounds: [round('a', Date.UTC(2026, 8, 30))] });
+    mockInvoke.mockResolvedValueOnce({ rounds: [round('a', Date.UTC(2026, 8, 30))] });
     await expect(syncWith('k', () => {})).resolves.toEqual({ added: 1, skipped: 0 });
   });
 
-  it('turns an answer it does not know into an error, not a conclusion', async () => {
-    // What an older Rust side answered: the rounds alone.
-    for (const answer of [[round('a', Date.UTC(2026, 8, 30))], null, 'unpaired', { kind: 'synced' }]) {
+  it('turns an answer it does not know into an error, not a guess', async () => {
+    for (const answer of [[round('a', Date.UTC(2026, 8, 30))], null, 'synced', { kind: 'synced' }]) {
       mockInvoke.mockResolvedValueOnce(answer);
       await expect(syncWith('k', () => {})).rejects.toThrow('Restart the app');
     }
-    // What an older Rust side answered to forgetting: the status.
-    mockInvoke.mockResolvedValueOnce({ name: 'Laptop', peers: [] });
-    await expect(forgetDevice('k', () => {})).rejects.toThrow('Restart the app');
   });
 
   it('notices a Rust side from another version', () => {
     expect(apiMismatch({ api: SYNC_API, name: 'Laptop', peers: [] })).toBeNull();
-    expect(apiMismatch({ name: 'Laptop', peers: [] })).toContain('Restart/update the app');
-    expect(apiMismatch({ api: SYNC_API - 1, name: 'Laptop', peers: [] })).toContain('Restart/update the app');
+    expect(apiMismatch({ name: 'Laptop', peers: [] })).toContain('Restart or update the app');
+    expect(apiMismatch({ api: SYNC_API - 1, name: 'Laptop', peers: [] })).toContain('Restart or update the app');
   });
 });

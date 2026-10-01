@@ -68,17 +68,14 @@ On desktop, `Space` starts, pauses and resumes a round, and `Esc` stops it. You 
   against level, and every past round trial by trial.
 - **Daily target:** set how many minutes you want to play each day and see if you reached it.
 - **Backup:** export your rounds to a JSON file and import them again, for example on another device.
-- **Sync:** swap rounds between your own devices on the same Wi-Fi. Pair two devices once in Settings →
-  Sync: one shows a 6-digit code and a QR code, and the other scans it (on a phone) or types the code. A
-  code works once, for 30 seconds. After that they sync by themselves whenever Mnemax is open on both (on a
-  phone, while it's on screen): when it opens, after each round, and every few minutes; or turn Sync
-  automatically off and tap Sync. Only paired devices can sync, and sync only ever adds rounds. Other
-  devices on the network can only see Mnemax while a code is shown or entered: paired devices find each
-  other under names that only they can work out, new every hour, and anything else that connects gets
-  nothing back. It works even when one of the two blocks incoming connections (a computer's firewall, say):
-  that one connects out instead. Forgetting a device unpairs it on both sides (a lost device can be
-  forgotten on one side only). The first time, Windows and macOS ask whether Mnemax may use the network, and
-  a phone asks for the camera when you first scan.
+- **Sync:** swap rounds between your own devices on the same Wi-Fi. Connect two devices once in Settings →
+  Sync: one shows its address, a 9-digit code and a QR code, and the other scans it with its camera or types
+  the address and code. A code works once, for one minute. After that the second device connects to the first
+  by itself whenever Mnemax is open on both (on a phone, while it's on screen): when it opens, after each
+  round, and every few minutes; or turn Sync automatically off and tap Sync. Only paired devices can sync, only
+  on the home network, everything is encrypted, and sync only ever adds rounds. If a device's address changes,
+  tap Reconnect and connect them again. The first time, Windows and macOS ask whether Mnemax may use the
+  network, and every device but a Linux one asks for the camera when you first scan. Not on iPhone yet.
 - **Keeps timing accurate:** buttons respond the moment you press them rather than when you let go, and
   a round pauses by itself when you switch away from the app.
 
@@ -136,7 +133,7 @@ Mnemax/
 │   └── __tests__/
 ├── src-tauri/                 # Native part of the app (Rust)
 │   ├── src/lib.rs             # Plugin setup, moves data over from older versions of the app
-│   ├── src/sync/              # Sync: pairing, encryption, finding devices, swapping rounds
+│   ├── src/sync/              # Sync: pairing, encryption, swapping rounds
 │   ├── tauri.conf.json        # Window, packaging and security settings
 │   ├── capabilities/          # What the interface is allowed to access
 │   ├── icons/                 # App icons for every platform
@@ -176,7 +173,6 @@ pnpm install
 pnpm test                      # game logic, stats and storage tests
 pnpm typecheck                 # checks the TypeScript types
 (cd src-tauri && cargo test)   # Rust tests
-(cd src-tauri && cargo test -- --ignored)   # sync over the real network (needs Wi-Fi or Ethernet)
 ```
 
 ### Run the app in development mode

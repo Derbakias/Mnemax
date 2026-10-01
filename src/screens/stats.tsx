@@ -27,7 +27,7 @@ import {
   type ModeSummary,
 } from '@/levels';
 import { useSettings } from '@/settings-context';
-import { aggregateStreams, collectionSummary, formatDuration } from '@/stats';
+import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/stats';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/storage';
 import { accuracyColor, useTheme, type Theme } from '@/theme';
 
@@ -404,7 +404,7 @@ function ModesTable({
 }
 
 function shortDate(time: number): string {
-  return new Date(time).toLocaleDateString(undefined, {
+  return new Date(time).toLocaleDateString(DATE_LOCALE, {
     day: 'numeric',
     month: 'short',
   });

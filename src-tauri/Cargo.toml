@@ -29,8 +29,6 @@ snow = { version = "0.10", default-features = false, features = ["use-chacha20po
 spake2 = "0.4"
 tokio = { version = "1", features = ["net", "io-util", "time", "sync", "macros", "rt"] }
 getrandom = "0.2"
-blake2 = "0.10"
-mdns-sd = "0.21"
 qrcode = { version = "0.14", default-features = false }
 if-addrs = "0.15"
 zeroize = "1"
@@ -49,6 +47,11 @@ tokio = { version = "1", features = ["rt-multi-thread", "test-util"] }
 
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-barcode-scanner = "2"
+
+# Linux: lets the page open the camera to scan a pairing QR code (see allow_camera in src/lib.rs). The same
+# version Tauri uses.
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = { version = "=2.0.2", features = ["v2_8"] }
 
 # The sync key's vault on computers: the system's key store (see src/sync/vault.rs).
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]

@@ -2502,6 +2502,27 @@ p {
   border-color: var(--danger);
   color: var(--danger);
 }
+.outline-button.secondary {
+  border-color: var(--background-selected);
+}
+/* The one main action in a pairing card (Pair, New code): filled blue, so it stands apart from Cancel. */
+.outline-button.sync-primary {
+  border-color: var(--accent-fill);
+  background: var(--accent-fill);
+  color: #ffffff;
+}
+/* The steps at the top of a pairing card, numbered. */
+.sync-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-left: 20px;
+}
+.sync-note {
+  font-size: 13px;
+  line-height: 18px;
+}
 /* Sync (Settings): the paired devices, the pairing steps and the code. */
 .text-field {
   flex: 1;
@@ -2543,27 +2564,82 @@ p {
   gap: 8px;
   padding: 14px;
 }
-.sync-pairing .text-button,
-.sync-close {
+.sync-pairing .text-button {
   align-self: flex-start;
 }
-.sync-code {
-  font-family: var(--font-mono);
-  font-size: 30px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+.sync-pairing .text-button.sync-center {
+  align-self: center;
+}
+/* The address and the code side by side: shown on one device, typed on the other. Wraps on very narrow screens. */
+.sync-pair-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 12px;
   text-align: center;
+}
+.sync-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
   user-select: text;
   -webkit-user-select: text;
 }
+/* Room shared out by the longest each can be: 15 characters for an address, 11 for a code. */
+.sync-field {
+  display: flex;
+  flex: 15 1 0;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  text-align: left;
+}
+.sync-field:last-child {
+  flex-grow: 11;
+}
+/* Boxes to type in: the page's own background with a thin border and small corners, so they don't look like
+   the buttons under them (which have the card's grey and rounder corners). */
+.sync-field .text-field {
+  flex: none;
+  width: 100%;
+  padding: 10px 6px;
+  border-width: 1px;
+  border-radius: 8px;
+  background: var(--background);
+  /* Small enough for the longest address (15 characters) and a code to fit side by side on a small phone. */
+  font-size: 14px;
+}
+.sync-field .text-field:focus {
+  border-color: var(--accent);
+  outline: none;
+}
 .sync-code-field {
   font-family: var(--font-mono);
-  letter-spacing: 0.2em;
 }
-.sync-or,
-.sync-countdown {
+.sync-or {
   text-align: center;
+}
+/* Room for a pairing error of up to four lines (a small phone), kept even when there's none, so nothing below moves. */
+.sync-pair-error {
+  position: relative;
+  min-height: 80px;
+}
+/* Room on the right for the × that closes the error. */
+.sync-pair-error .sync-error {
+  padding-right: 28px;
+}
+.text-button.sync-error-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  padding: 1px;
+}
+/* Holds the QR code's place until it's ready. */
+.sync-qr-waiting {
+  aspect-ratio: 1;
+  background: var(--background-selected);
 }
 /* White behind the QR code in dark mode too: scanners look for dark modules on a light ground. */
 .sync-qr {
@@ -2589,12 +2665,15 @@ p {
   line-height: 16px;
 }
 
-/* Offered when the other device can't remove this one: forgetting it on this side only. */
-.sync-forget-here {
+/* A paired device: its row, then how the latest sync with it went. */
+.sync-peer {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 4px;
+}
+/* A paired device that can't be reached: a warning sign (after a day) and the words. */
+.text-button.sync-link {
+  color: var(--accent);
 }
 
 /* Every step of the latest attempt, to find out why one failed. */
@@ -2622,8 +2701,9 @@ p {
   color: var(--text-secondary);
 }
 
-/* Scanning (phones): the camera shows behind the page, so while it's open the page clears its background,
-   hides the app, and shows only a frame to aim with and a Cancel button. */
+/* Scanning: on a phone the camera shows behind the page, so while it's open the page clears its background,
+   hides the app, and shows only a frame to aim with and a Cancel button. On a computer the page shows the
+   camera picture itself, behind the same frame. */
 html.scanning,
 html.scanning body {
   background: transparent;
@@ -2655,6 +2735,17 @@ html.scanning #root {
   border: 3px solid #fff;
   border-radius: 20px;
   box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+}
+/* Mirrored, like a mirror: moving the code left moves it left on screen. */
+.scan-video {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  transform: scaleX(-1);
 }
 .outline-button.scan-cancel {
   flex: none;

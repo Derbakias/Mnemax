@@ -21,6 +21,12 @@ export function playedOnDayMs(rounds: RoundResult[], day: Date): number {
   return total;
 }
 
+/**
+ * The language dates are written in, the same on every device whatever the system is set to: 1 Oct 2026,
+ * 15:00.
+ */
+export const DATE_LOCALE = 'en-GB';
+
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.round(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);

@@ -16,7 +16,7 @@ import {
 } from './uplot-chart';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/levels';
-import { formatDuration } from '@/stats';
+import { DATE_LOCALE, formatDuration } from '@/stats';
 import { useTheme } from '@/theme';
 
 const HEIGHT = 240;
@@ -170,7 +170,7 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
         tooltipPlugin((idx) => {
           const entry = days[idx];
           if (!entry) return null;
-          const title = new Date(entry.day).toLocaleDateString(undefined, {
+          const title = new Date(entry.day).toLocaleDateString(DATE_LOCALE, {
             weekday: 'short',
             day: 'numeric',
             month: 'short',

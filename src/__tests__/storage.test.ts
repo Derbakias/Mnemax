@@ -163,5 +163,10 @@ describe('storage', () => {
       await expect(mergeRounds([at('old', 1000)])).resolves.toEqual({ added: 0 });
       expect((await loadRounds()).some((r) => r.id === 'old')).toBe(false);
     });
+
+    it('loses nothing when a round ends while a sync saves', async () => {
+      await Promise.all([mergeRounds([at('from-phone', 1000)]), appendRound(at('just-played', 2000))]);
+      expect((await loadRounds()).map((r) => r.id)).toEqual(['just-played', 'from-phone']);
+    });
   });
 });

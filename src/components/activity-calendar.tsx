@@ -2,6 +2,7 @@ import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { YearDropdown } from './year-dropdown';
 import type { RoundResult } from '@/game/types';
+import { DATE_LOCALE } from '@/stats';
 import { useTheme } from '@/theme';
 
 const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -37,7 +38,7 @@ function levelOpacity(count: number): number {
 }
 
 // Made once: toLocaleDateString sets up a new formatter on every call, and every day of the year gets a label.
-const DAY_FORMAT = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+const DAY_FORMAT = new Intl.DateTimeFormat(DATE_LOCALE, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
 function formatDay(date: Date): string {
   return DAY_FORMAT.format(date);

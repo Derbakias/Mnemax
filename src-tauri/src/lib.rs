@@ -40,6 +40,40 @@ fn migrate_from_old_name(new_data_dir: &Path) {
     }
 }
 
+/// Linux: the page opens the camera itself to scan a pairing QR code, but WebKitGTK keeps the camera off and
+/// turns down every page that asks for it. This turns it on and lets the app's own page use a camera, never the
+/// microphone. (Windows and macOS ask the person themselves.)
+#[cfg(target_os = "linux")]
+fn allow_camera(window: &tauri::WebviewWindow) {
+    use webkit2gtk::glib::Cast;
+    use webkit2gtk::{
+        PermissionRequestExt, SettingsExt, UserMediaPermissionRequest, UserMediaPermissionRequestExt, WebViewExt,
+    };
+    let _ = window.with_webview(|webview| {
+        let view = webview.inner();
+        if let Some(settings) = WebViewExt::settings(&view) {
+            settings.set_enable_media_stream(true);
+        }
+        view.connect_permission_request(|view, request| {
+            let ours = view.uri().is_some_and(|uri| is_app_page(&uri));
+            match request.downcast_ref::<UserMediaPermissionRequest>() {
+                Some(media) if ours && media.is_for_video_device() && !media.is_for_audio_device() => {
+                    request.allow()
+                }
+                // Everything else is turned down, as before.
+                _ => request.deny(),
+            }
+            true
+        });
+    });
+}
+
+/// The app's own page: built in, or the dev server while developing.
+#[cfg(target_os = "linux")]
+fn is_app_page(uri: &str) -> bool {
+    uri.starts_with("tauri://localhost/") || (cfg!(debug_assertions) && uri.starts_with("http://localhost:1420/"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default();
@@ -55,10 +89,8 @@ pub fn run() {
             sync::sync_status,
             sync::sync_rename,
             sync::sync_forget,
-            sync::sync_forget_here,
             sync::pair_start,
             sync::pair_join,
-            sync::pair_answer,
             sync::pair_cancel,
             sync::sync_listen,
             sync::sync_rounds,
@@ -69,6 +101,10 @@ pub fn run() {
         .setup(|app| {
             if let Ok(dir) = app.path().app_data_dir() {
                 migrate_from_old_name(&dir);
+            }
+            #[cfg(target_os = "linux")]
+            if let Some(window) = app.get_webview_window("main") {
+                allow_camera(&window);
             }
             Ok(())
         })

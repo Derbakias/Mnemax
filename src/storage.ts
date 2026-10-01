@@ -83,26 +83,41 @@ export async function loadRounds(): Promise<RoundResult[]> {
   }
 }
 
-export async function appendRound(round: RoundResult): Promise<RoundResult[]> {
-  const rounds = await loadRounds();
-  const next = [round, ...rounds].slice(0, MAX_ROUNDS);
-  try {
-    await AsyncStorage.setItem(ROUNDS_KEY, JSON.stringify(next));
-  } catch {
-    // persistence failure is non-fatal
-  }
-  notifyRoundsChanged();
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUND_PLAYED_EVENT));
-  return next;
+// Every change to the saved rounds reads them, changes them, and writes them back. Two at the same time (a
+// round ending while a sync saves, say) would each write their own copy, and one change would be lost. So
+// they wait in line: each one starts only after the one before has finished.
+let roundsLine: Promise<unknown> = Promise.resolve();
+
+function inLine<T>(change: () => Promise<T>): Promise<T> {
+  const done = roundsLine.then(change, change);
+  roundsLine = done.catch(() => {});
+  return done;
 }
 
-export async function clearRounds(): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(ROUNDS_KEY);
-  } catch {
-    // non-fatal
-  }
-  notifyRoundsChanged();
+export function appendRound(round: RoundResult): Promise<RoundResult[]> {
+  return inLine(async () => {
+    const rounds = await loadRounds();
+    const next = [round, ...rounds].slice(0, MAX_ROUNDS);
+    try {
+      await AsyncStorage.setItem(ROUNDS_KEY, JSON.stringify(next));
+    } catch {
+      // persistence failure is non-fatal
+    }
+    notifyRoundsChanged();
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUND_PLAYED_EVENT));
+    return next;
+  });
+}
+
+export function clearRounds(): Promise<void> {
+  return inLine(async () => {
+    try {
+      await AsyncStorage.removeItem(ROUNDS_KEY);
+    } catch {
+      // non-fatal
+    }
+    notifyRoundsChanged();
+  });
 }
 
 /** Newest first; rounds that finished at the same time go by id, so every device keeps the same 500. */
@@ -114,7 +129,11 @@ function newestFirst(a: RoundResult, b: RoundResult): number {
  * Adds the rounds whose id isn't saved yet; a saved round is never changed. A round with the id of one already
  * saved (or earlier in `incoming`) is dropped. Past 500 the oldest rounds go, as when a round is played.
  */
-export async function mergeRounds(incoming: RoundResult[]): Promise<{ added: number }> {
+export function mergeRounds(incoming: RoundResult[]): Promise<{ added: number }> {
+  return inLine(() => mergeNow(incoming));
+}
+
+async function mergeNow(incoming: RoundResult[]): Promise<{ added: number }> {
   const existing = await loadRounds();
   const knownIds = new Set(existing.map((r) => r.id));
   const fresh = incoming.filter((r) => {
