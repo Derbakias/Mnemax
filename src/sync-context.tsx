@@ -25,9 +25,9 @@ import {
   type ReactNode,
 } from 'react';
 
-import { useSettings } from '@/settings-context';
+import { useSettings } from '@/stores/settings-context';
 import { useAutoSync } from '@/sync-auto';
-import { onRoundsChanged } from '@/storage';
+import { onRoundsChanged } from '@/lib/storage';
 import {
   apiMismatch,
   failureCode,

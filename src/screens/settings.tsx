@@ -16,10 +16,10 @@ import {
   isBindableKey,
   keyLabel,
   type ButtonLayout,
-} from '@/prefs';
-import { useSettings } from '@/settings-context';
-import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/stats-io';
-import { loadRounds, mergeRounds } from '@/storage';
+} from '@/lib/prefs';
+import { useSettings } from '@/stores/settings-context';
+import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/lib/stats-io';
+import { loadRounds, mergeRounds } from '@/lib/storage';
 
 // TODO: Move inside a config file to have everything together
 /** How long the tick on the reset button stays up. */

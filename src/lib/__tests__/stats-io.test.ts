@@ -1,5 +1,5 @@
 import { buildStatsJson, parseStatsPayload } from '../stats-io';
-import type { RoundResult } from '../game/types';
+import type { RoundResult } from '../../game/types';
 
 function round(id: string): RoundResult {
   return {

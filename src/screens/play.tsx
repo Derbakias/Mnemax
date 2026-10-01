@@ -14,10 +14,10 @@ import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedOf, speedPreset, st
 import { useGameEngine } from '@/game/engine';
 import type { GameSettings, RoundResult, SpeedId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
-import { normalizeKey } from '@/prefs';
-import { useSettings } from '@/settings-context';
-import { primeSpeech } from '@/speech';
-import { formatDuration, playedOnDayMs, roundDurationMs } from '@/stats';
+import { normalizeKey } from '@/lib/prefs';
+import { useSettings } from '@/stores/settings-context';
+import { primeSpeech } from '@/lib/speech';
+import { formatDuration, playedOnDayMs, roundDurationMs } from '@/lib/stats';
 import {
   appendRound,
   clearRoundInProgress,
@@ -25,7 +25,7 @@ import {
   onRoundsChanged,
   recoverRoundInProgress,
   saveRoundInProgress,
-} from '@/storage';
+} from '@/lib/storage';
 
 /** Where the Play screen is: the start screen, or a round (running or paused). */
 export type PlayStage = 'start' | 'playing' | 'paused';

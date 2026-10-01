@@ -26,11 +26,11 @@ import {
   summarizeModes,
   type ModeSummary,
 } from '@/levels';
-import { useSettings } from '@/settings-context';
-import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/stats';
-import { clearRounds, loadRounds, onRoundsChanged } from '@/storage';
+import { useSettings } from '@/stores/settings-context';
+import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/lib/stats';
+import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
 import { useSync } from '@/sync-context';
-import { accuracyColor, useTheme, type Theme } from '@/theme';
+import { accuracyColor, useTheme, type Theme } from '@/lib/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
 export function StatsScreen({ onReady }: { onReady?: () => void }) {

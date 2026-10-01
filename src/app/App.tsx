@@ -5,9 +5,9 @@ import { Icon, type IconName } from '@/components/icon';
 import { PlayScreen, type PlayStage } from '@/screens/play';
 import { SettingsScreen } from '@/screens/settings';
 import { StatsScreen } from '@/screens/stats';
-import { SettingsProvider, useSettings } from '@/settings-context';
+import { SettingsProvider, useSettings } from '@/stores/settings-context';
 import { SyncProvider } from '@/sync-context';
-import { preloadSpeech } from '@/speech';
+import { preloadSpeech } from '@/lib/speech';
 
 type Tab = 'play' | 'stats' | 'settings';
 

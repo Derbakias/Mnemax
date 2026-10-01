@@ -4,7 +4,7 @@ import { Section } from './section';
 import { SyncLog } from './sync-log';
 import { Pairing } from './sync-pairing';
 import { PeerRow } from './sync-peer';
-import { useSettings } from '@/settings-context';
+import { useSettings } from '@/stores/settings-context';
 import { useSync } from '@/sync-context';
 import { cancelPairing, renameDevice } from '@/sync';
 

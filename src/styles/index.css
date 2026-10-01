@@ -1,6 +1,6 @@
 /* TODO: !important! Migrate everything to tailwind */
 
-/* Palette mirrors src/theme.ts */
+/* Palette mirrors src/lib/theme.ts */
 :root {
   --text: #000000;
   --background: #ffffff;

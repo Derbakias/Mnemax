@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { onRoundPlayed } from '@/storage';
+import { onRoundPlayed } from '@/lib/storage';
 import { syncStatus, type SyncPeer } from '@/sync';
 import { errorText } from '@/sync-messages';
 
