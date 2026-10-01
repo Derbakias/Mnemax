@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { DATE_LOCALE } from '@/lib/stats';
+import { FORGET_CONFIRM_MS } from '@/config/sync';
 import { useSync } from '@/stores/sync-context';
 import { forgetDevice, type SyncPeer } from '@/sync/sync';
-
-/** How long "Tap again" waits for the second tap. */
-const FORGET_CONFIRM_MS = 3000;
 
 /**
  * One paired device: its name, when it was paired and last synced, Sync (only on the device that connects) and

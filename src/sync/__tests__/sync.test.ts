@@ -1,14 +1,6 @@
+import { SYNC_API } from '@/config/sync';
 import { loadRounds } from '../../lib/storage';
-import {
-  SYNC_API,
-  apiMismatch,
-  groupCode,
-  readPairingText,
-  saveReceived,
-  syncWith,
-  typeAddress,
-  typeCode,
-} from '../sync';
+import { apiMismatch, groupCode, readPairingText, saveReceived, syncWith, typeAddress, typeCode } from '../sync';
 import type { RoundResult } from '../../game/types';
 
 const mockMemory = new Map<string, string>();

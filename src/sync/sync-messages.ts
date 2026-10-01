@@ -4,9 +4,7 @@
 import { useCallback, useState } from 'react';
 
 import type { SyncResult } from '@/sync/sync';
-
-/** The log keeps this many steps, the latest. */
-const MAX_LOG_LINES = 300;
+import { MAX_LOG_LINES } from '@/config/sync';
 
 /** A message under the Sync section. */
 export type Notice = { kind: 'info' | 'error'; text: string };

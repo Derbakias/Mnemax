@@ -1,10 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-
-/** How often the camera picture is checked for a QR code. */
-const LOOK_EVERY_MS = 150;
-/** Pictures are made this wide (at most) before looking for the code: big enough to read it, quick to check. */
-const LOOK_WIDTH = 640;
+import { LOOK_EVERY_MS, LOOK_WIDTH } from '@/config/sync';
 
 /**
  * While the camera looks for the QR code: a frame to aim with and Cancel. On a phone the camera shows behind the

@@ -19,9 +19,7 @@ import {
   type PairEvent,
   type ShownCode,
 } from '@/sync/sync';
-
-/** After pressing Pair, how long until it can be pressed again, even when the answer comes back at once. */
-const RETRY_AFTER_MS = 1000;
+import { RETRY_AFTER_MS } from '@/config/sync';
 
 type Step =
   /** This device shows its address and code (null until it has them), until `expiresAt`. */

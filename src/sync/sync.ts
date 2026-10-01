@@ -3,6 +3,7 @@
 
 import { Channel, invoke, isTauri } from '@tauri-apps/api/core';
 
+import { SYNC_API } from '@/config/sync';
 import { checkRound } from '@/game/round-check';
 import { loadRounds, mergeRounds } from '@/lib/storage';
 
@@ -15,12 +16,6 @@ export interface SyncPeer {
   pairedAt: number;
   lastSyncAt: number | null;
 }
-
-/**
- * The version of the Rust commands this page talks to: must match API_VERSION in src-tauri/src/sync/commands.rs.
- * During development this page reloads by itself but Rust only when the app is rebuilt.
- */
-export const SYNC_API = 5;
 
 export interface SyncStatus {
   api?: number;
