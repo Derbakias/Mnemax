@@ -3,6 +3,7 @@
 
 import type { StreamId } from '../game/types';
 import { STREAM_IDS } from '../game/types';
+import { DEFAULT_KEY_BINDINGS } from '@/config/ui';
 
 // The answer buttons always sit under the grid: two per row, or one per row. (Earlier builds also had
 // columns beside the grid, 'right' and 'left'; those saved choices now read as 'grid'.)
@@ -28,8 +29,6 @@ export interface AppPrefs {
   /** Sync with paired devices by itself while the app is open (see src/stores/sync-context.tsx). */
   autoSync: boolean;
 }
-
-export const DEFAULT_KEY_BINDINGS: Record<StreamId, string> = { position: 'F', color: 'D', number: 'J', audio: 'K' };
 
 const ARROW_LABELS: Record<string, string> = { ArrowLeft: '←', ArrowUp: '↑', ArrowRight: '→', ArrowDown: '↓' };
 

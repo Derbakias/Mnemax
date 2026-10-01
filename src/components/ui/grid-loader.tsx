@@ -1,11 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { COLOR_PALETTE, GRID_CELLS, GRID_CENTER_INDEX } from '@/config/game';
-
-/** The outer cells of the 3×3 grid in clockwise order, starting top-left. */
-const CLOCKWISE = [0, 1, 2, 5, 8, 7, 6, 3];
-/** One lap round the grid. */
-const LAP_MS = 1600;
+import { LOADER_CLOCKWISE, LOADER_LAP_MS } from '@/config/ui';
 
 /**
  * A loading indicator in the game's own look: a small 3×3 grid (centre empty) where a
@@ -18,12 +14,12 @@ export function GridLoader({ label = 'Loading', size = 'small' }: { label?: stri
       cells.push(<span key={i} className="grid-loader-cell center" />);
       continue;
     }
-    const step = CLOCKWISE.indexOf(i);
+    const step = LOADER_CLOCKWISE.indexOf(i);
     const style = {
       '--loader-color': COLOR_PALETTE[step % COLOR_PALETTE.length],
       // Negative delays start every cell mid-cycle, so the box is already travelling on the first frame.
-      '--loader-delay': `${(step / CLOCKWISE.length) * LAP_MS - LAP_MS}ms`,
-      '--loader-lap': `${LAP_MS}ms`,
+      '--loader-delay': `${(step / LOADER_CLOCKWISE.length) * LOADER_LAP_MS - LOADER_LAP_MS}ms`,
+      '--loader-lap': `${LOADER_LAP_MS}ms`,
     } as CSSProperties;
     cells.push(<span key={i} className="grid-loader-cell" style={style} />);
   }

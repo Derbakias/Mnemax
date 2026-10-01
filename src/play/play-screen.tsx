@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
 
 import { Icon } from '@/components/ui/icon';
 import { HudDropdown } from '@/components/ui/hud-dropdown';
-import { ResponseButtons, STREAM_ICONS } from '@/play/response-buttons';
+import { ResponseButtons } from '@/play/response-buttons';
+import { STREAM_ICONS } from '@/config/ui';
 import { RoundDetailTable } from '@/components/rounds/round-detail-table';
 import { RoundHistoryList } from '@/components/rounds/round-history-list';
 import { RoundSummaryCard } from '@/components/rounds/round-summary-card';

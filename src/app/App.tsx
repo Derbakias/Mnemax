@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { GridLoader } from '@/components/ui/grid-loader';
+import { SPLASH_FADE_MS, SPLASH_MAX_MS, SPLASH_MIN_MS } from '@/config/ui';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { PlayScreen, type PlayStage } from '@/play/play-screen';
 import { SettingsScreen } from '@/settings/settings-screen';
@@ -16,16 +17,6 @@ const TABS: { id: Tab; title: string; icon: IconName }[] = [
   { id: 'stats', title: 'Stats', icon: 'stats-chart-outline' },
   { id: 'settings', title: 'Settings', icon: 'settings-outline' },
 ];
-
-/**
- * The startup screen shows for a random time in this range (ms), and in any case until the settings are
- * loaded and the Play and Stats screens have loaded and drawn the saved rounds.
- */
-// TODO: Move inside a config
-const SPLASH_MIN_MS = 1500;
-const SPLASH_MAX_MS = 2500;
-/** Matches the fade-out transition of .splash in index.css. */
-const SPLASH_FADE_MS = 250;
 
 export default function App() {
   return (

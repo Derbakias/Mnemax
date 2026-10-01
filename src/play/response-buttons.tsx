@@ -1,30 +1,10 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
-import { Icon, type IconName } from '../components/ui/icon';
+import { Icon } from '../components/ui/icon';
+import { STREAM_ICONS, SWIPE_DEAD_ZONE, SWIPE_STEP, TRAIL_FADE_MS, TRAIL_WIDTH } from '@/config/ui';
 import type { StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
 import { keyLabel, normalizeKey, type ButtonLayout } from '@/lib/prefs';
-
-export const STREAM_ICONS: Record<StreamId, IconName> = {
-  position: 'grid-outline',
-  color: 'color-palette-outline',
-  number: 'calculator-outline',
-  audio: 'volume-high-outline',
-};
-
-// TODO: move to a config
-/**
- * Swipe: where three or four buttons meet, a slide corner to corner would clip the corners of the other two. A
- * square around each meeting point, this fraction of the smaller button side each way, doesn't count for any
- * button, so a slide through the middle only answers the button it comes out in.
- */
-const SWIPE_DEAD_ZONE = 0.3;
-/** Swipe: a fast slide is checked every 4 px along its path, so it can't skip past a button. */
-const SWIPE_STEP = 4;
-/** How long the swipe trail takes to fade once the finger lifts, in ms. */
-const TRAIL_FADE_MS = 250;
-/** The trail's width, in CSS px. */
-const TRAIL_WIDTH = 7;
 
 interface SwipeGesture {
   pointerId: number;

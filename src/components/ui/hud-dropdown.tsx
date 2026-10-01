@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
+import { DROPDOWN_EDGE_MARGIN, DROPDOWN_PANEL_GAP } from '@/config/ui';
+
 interface HudDropdownProps {
   /** What the chip shows. */
   chip: ReactNode;
@@ -16,11 +18,6 @@ interface HudDropdownProps {
   /** Panel contents; a function gets `close`, to dismiss the panel after a choice. */
   children: ReactNode | ((close: () => void) => ReactNode);
 }
-
-/** Gap kept between the panel and the window edge (or the tab bar). */
-const EDGE_MARGIN = 12;
-/** The panel's offset from the chip (`top: calc(100% + 8px)` in CSS). */
-const PANEL_GAP = 8;
 
 // A HUD chip that opens a small panel centred under the HUD row (or under the chip itself, with `underChip`). It closes on a second tap, a tap
 // outside, Escape, or when it becomes disabled (e.g. a round starts). The panel always fits on screen:
@@ -56,8 +53,8 @@ export function HudDropdown({
       // round).
       const bottomLimit =
         document.querySelector('.tab-bar:not([hidden])')?.getBoundingClientRect().top ?? window.innerHeight;
-      const below = bottomLimit - rowRect.bottom - PANEL_GAP - EDGE_MARGIN;
-      const above = rowRect.top - PANEL_GAP - EDGE_MARGIN;
+      const below = bottomLimit - rowRect.bottom - DROPDOWN_PANEL_GAP - DROPDOWN_EDGE_MARGIN;
+      const above = rowRect.top - DROPDOWN_PANEL_GAP - DROPDOWN_EDGE_MARGIN;
       const needed = panel.scrollHeight;
       const up = needed > below && above > below;
       // Centred on the chip, kept inside the window; relative to the row the panel is positioned in.
@@ -66,7 +63,10 @@ export function HudDropdown({
       if (underChip && button) {
         const width = panel.offsetWidth;
         const centred = button.left + button.width / 2 - width / 2;
-        const onScreen = Math.min(Math.max(centred, EDGE_MARGIN), window.innerWidth - EDGE_MARGIN - width);
+        const onScreen = Math.min(
+          Math.max(centred, DROPDOWN_EDGE_MARGIN),
+          window.innerWidth - DROPDOWN_EDGE_MARGIN - width,
+        );
         left = onScreen - rowRect.left;
       }
       setPlacement({ above: up, maxHeight: Math.max(0, Math.floor(up ? above : below)), left });
