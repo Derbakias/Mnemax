@@ -28,7 +28,7 @@ tauri-plugin-fs = "2.5.2"
 snow = { version = "0.10", default-features = false, features = ["use-chacha20poly1305", "use-blake2", "use-curve25519", "use-getrandom"] }
 spake2 = "0.4"
 tokio = { version = "1", features = ["net", "io-util", "time", "sync", "macros", "rt"] }
-getrandom = "0.2"
+getrandom = "0.4"
 qrcode = { version = "0.14", default-features = false }
 if-addrs = "0.15"
 zeroize = "1"
