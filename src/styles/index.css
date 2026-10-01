@@ -232,6 +232,9 @@ p {
 }
 
 .screen {
+  /* Anything placed inside a screen stays inside it. Without this, the screen-reader-only text
+     (.visually-hidden) was placed against the whole app, and stretched the page past the tab bar. */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
