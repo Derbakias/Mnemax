@@ -112,27 +112,33 @@ On desktop, `Space` starts, pauses and resumes a round, and `Esc` stops it. You 
 Mnemax/
 ├── index.html                 # The page Vite loads
 ├── src/                       # The app interface (React + TypeScript)
-│   ├── main.tsx               # Starts React
-│   ├── App.tsx                # Startup screen, tab bar and the three screens
-│   ├── index.css              # All styles, including light and dark themes
-│   ├── screens/               # Play, Stats and Settings
-│   ├── components/            # Grid, answer buttons, charts, loader..
+│   ├── app/                   # Starts React; startup screen and tab bar (App.tsx)
+│   ├── play/                  # Play screen: box grid, answer buttons, trial history
+│   ├── stats/                 # Stats screen: charts, calendar, levels
+│   ├── settings/              # Settings screen
+│   ├── sync/                  # Sync with your other devices (the network part is in src-tauri/src/sync)
+│   ├── components/            # Pieces used by more than one screen
+│   │   ├── ui/                #   icons, sections, steppers, dropdowns, loader
+│   │   ├── rounds/            #   round results and history
+│   │   └── charts/            #   the chart base (uPlot)
 │   ├── game/                  # Game logic, independent of React
 │   │   ├── config.ts          #   constants, speed presets, settings limits
 │   │   ├── generator.ts       #   builds each round's sequence with the right number of matches
 │   │   ├── engine.ts          #   runs a round: timing, answers, pause/resume
 │   │   ├── scoring.ts         #   marks each answer and calculates accuracy
-│   │   └── __tests__/
-│   ├── levels.ts              # Difficulty and level score
-│   ├── stats.ts               # Stats calculations
-│   ├── stats-io.ts            # JSON import and export
-│   ├── sync.ts                # Sync with your other devices (the network part is in src-tauri/src/sync)
-│   ├── prefs.ts               # App preferences (keys, button layout, daily target)
-│   ├── settings-context.tsx   # Shares settings across the app
-│   ├── storage.ts, kv.ts      # Saving data (Tauri store, or localStorage in a browser)
-│   ├── speech.ts              # Plays the letter sounds
+│   │   └── round-check.ts     #   checks rounds read from a file or another device
+│   ├── stores/                # Settings and sync state shared across the app
+│   ├── lib/                   # Helpers for the whole app
+│   │   ├── storage.ts, kv.ts  #   saving data (Tauri store, or localStorage in a browser)
+│   │   ├── prefs.ts           #   app preferences (keys, button layout, daily target)
+│   │   ├── stats.ts           #   stats calculations
+│   │   ├── stats-io.ts        #   JSON import and export
+│   │   ├── speech.ts          #   plays the letter sounds
+│   │   └── theme.ts           #   light and dark colours
+│   ├── hooks/                 # Small React helpers
+│   ├── styles/index.css       # All styles, including light and dark themes
 │   ├── assets/letters/        # Recorded letter sounds (WAV)
-│   └── __tests__/
+│   └── __tests__/             # Security checks on the app's own files (each folder has its own tests)
 ├── src-tauri/                 # Native part of the app (Rust)
 │   ├── src/lib.rs             # Plugin setup, moves data over from older versions of the app
 │   ├── src/sync/              # Sync: pairing, encryption, swapping rounds
