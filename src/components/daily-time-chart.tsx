@@ -133,7 +133,13 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
       scales: interaction.scales,
       axes: [
         dayDateAxis(theme),
-        axisStyle(theme, { scale: 'min', size: fitAxisSize(), label: 'Minutes', labelSize: 14, labelFont: '11px sans-serif' }),
+        axisStyle(theme, {
+          scale: 'min',
+          size: fitAxisSize(),
+          label: 'Minutes',
+          labelSize: 14,
+          labelFont: '11px sans-serif',
+        }),
         axisStyle(theme, {
           scale: 'lvl',
           side: 1,

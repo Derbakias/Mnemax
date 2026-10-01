@@ -89,7 +89,8 @@ function AppShell() {
         className="app"
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).closest('button')) e.preventDefault();
-        }}>
+        }}
+      >
         <main className="screen play-screen" hidden={tab !== 'play'}>
           {/* Keyboard shortcuts stay off under the startup screen, so Space can't start a round behind it. */}
           <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} onStageChange={setPlayStage} />
@@ -107,7 +108,8 @@ function AppShell() {
               type="button"
               className={tab === t.id ? 'tab on' : 'tab'}
               aria-current={tab === t.id ? 'page' : undefined}
-              onClick={() => setTab(t.id)}>
+              onClick={() => setTab(t.id)}
+            >
               <Icon name={t.icon} size={24} />
               <span>{t.title}</span>
             </button>

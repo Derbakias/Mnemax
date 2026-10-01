@@ -59,7 +59,8 @@
   --warning: #fb8c00;
   --danger: #e53935;
 
-  --font-display: 'Spline Sans', Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+  --font-display:
+    'Spline Sans', Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
@@ -316,8 +317,7 @@ p {
 .screen.stats-screen {
   background:
     radial-gradient(120% 55% at 0% 0%, var(--wash-blue), transparent 70%),
-    radial-gradient(110% 50% at 100% 100%, var(--wash-orange), transparent 70%),
-    var(--background);
+    radial-gradient(110% 50% at 100% 100%, var(--wash-orange), transparent 70%), var(--background);
 }
 
 /* A round fills the screen exactly, with nothing to scroll: the HUD and round progress at the top, the grid,
@@ -486,8 +486,7 @@ p {
   /* The tint is a layer of its own (only the last background layer can be a plain colour). */
   background:
     linear-gradient(160deg, var(--glass-sheen), transparent 55%),
-    linear-gradient(var(--accent-soft), var(--accent-soft)),
-    var(--glass-bg);
+    linear-gradient(var(--accent-soft), var(--accent-soft)), var(--glass-bg);
   box-shadow: 0 6px 18px -12px rgba(30, 136, 229, 0.45);
   color: var(--text);
 }
@@ -1189,11 +1188,7 @@ p {
   color: #ffffff;
 }
 .response-button.correct {
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--accent-fill) 80%, #ffffff) 0%,
-    var(--accent-fill) 60%
-  );
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent-fill) 80%, #ffffff) 0%, var(--accent-fill) 60%);
   box-shadow:
     var(--key-ring),
     inset 0 -6px 10px -8px var(--accent-strong),

@@ -109,7 +109,8 @@ export function HudDropdown({
         aria-expanded={open}
         title={title}
         disabled={disabled}
-        onClick={() => setOpen((v) => !v)}>
+        onClick={() => setOpen((v) => !v)}
+      >
         {chip}
       </button>
       {open && (
@@ -125,7 +126,8 @@ export function HudDropdown({
               : { visibility: 'hidden' }
           }
           role="dialog"
-          aria-label={label}>
+          aria-label={label}
+        >
           {typeof children === 'function' ? children(() => setOpen(false)) : children}
         </div>
       )}

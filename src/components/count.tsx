@@ -29,7 +29,8 @@ export function Count({ value, label, className }: { value: number; label: strin
           e.preventDefault();
           e.stopPropagation();
           toggle();
-        }}>
+        }}
+      >
         {short}
       </span>
       {open && (

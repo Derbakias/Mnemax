@@ -56,7 +56,8 @@ export function TrialHistory({
                     '--pill-shade': shade,
                   } as CSSProperties)
                 : undefined
-            }>
+            }
+          >
             {showPosition && (
               <span className={trial.stimulus.position === GRID_CENTER_INDEX ? 't-code arrow dot' : 't-code arrow'}>
                 {POSITION_ARROWS[trial.stimulus.position] ?? ''}

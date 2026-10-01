@@ -9,7 +9,8 @@ export const STREAM_LABELS: Record<StreamId, string> = {
   audio: 'Letter',
 };
 
-export interface TrialStimulus {  position: number;
+export interface TrialStimulus {
+  position: number;
   color: number;
   number: number;
   letter: string;

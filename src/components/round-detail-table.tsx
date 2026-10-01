@@ -87,8 +87,8 @@ export function RoundDetailTable({ result, legend = true }: { result: RoundResul
         </div>
       )}
       <p className="t-small secondary">
-        {result.stopped ? `Stopped after ${result.trials.length} of ${TRIALS_PER_ROUND}` : TRIALS_PER_ROUND} trials ·
-        N={s.nLevel} · {Math.round(s.trialDurationMs)} ms per trial
+        {result.stopped ? `Stopped after ${result.trials.length} of ${TRIALS_PER_ROUND}` : TRIALS_PER_ROUND} trials · N=
+        {s.nLevel} · {Math.round(s.trialDurationMs)} ms per trial
       </p>
       {legend && played && <OutcomeLegend />}
     </div>

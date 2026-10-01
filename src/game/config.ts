@@ -115,7 +115,9 @@ export function clampSettings(raw: Partial<GameSettings> | null | undefined): Ga
   const activeStreams = {} as Record<StreamId, boolean>;
   let anyActive = false;
   for (const stream of STREAM_IDS_TYPED) {
-    activeStreams[stream] = raw?.activeStreams ? raw.activeStreams[stream] === true : stream === 'position' || stream === 'audio';
+    activeStreams[stream] = raw?.activeStreams
+      ? raw.activeStreams[stream] === true
+      : stream === 'position' || stream === 'audio';
     if (activeStreams[stream]) anyActive = true;
   }
   if (!anyActive) {

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 
 import { Icon } from './icon';
 
@@ -76,7 +83,8 @@ export function InfoTip({ label, children }: { label: string; children: ReactNod
         className={pinned ? 'info-tip-button on' : 'info-tip-button'}
         aria-label={`About ${label}`}
         aria-expanded={open}
-        onClick={toggle}>
+        onClick={toggle}
+      >
         <Icon name="information-circle-outline" size={18} />
       </button>
       {open && (
@@ -96,7 +104,8 @@ export function ChartControlsTip() {
         <strong>Chart:</strong> scroll to zoom, drag to move, drag an axis to stretch it, double-click to reset.
       </p>
       <p className="zoom-hint-touch">
-        <strong>Chart:</strong> pinch to zoom, drag to move, drag along an axis to stretch it, double-tap to reset. Turn on the crosshair (the icon above the chart) to read values with one finger instead.
+        <strong>Chart:</strong> pinch to zoom, drag to move, drag along an axis to stretch it, double-tap to reset. Turn
+        on the crosshair (the icon above the chart) to read values with one finger instead.
       </p>
     </>
   );

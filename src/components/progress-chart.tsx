@@ -42,7 +42,15 @@ const HEIGHT = 220;
  * Hover or tap for a round's values; tap a stream in the legend to hide or show its line.
  */
 /** `zoom` comes from the parent (`useChartZoom`), which shows the crosshair switch and Reset zoom in the section header. */
-export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]; streams: StreamId[]; zoom: ChartZoom }) {
+export function ProgressChart({
+  rounds,
+  streams,
+  zoom,
+}: {
+  rounds: RoundResult[];
+  streams: StreamId[];
+  zoom: ChartZoom;
+}) {
   const theme = useTheme();
   const [metric, setMetric] = useState<Metric>('accuracy');
   const [days, setDays] = useState<number | null>(null);
@@ -69,8 +77,12 @@ export function ProgressChart({ rounds, streams, zoom }: { rounds: RoundResult[]
   const { perRound, averages } = useMemo(() => {
     const value = (p: (typeof allPoints)[number], s?: StreamId) =>
       metric === 'accuracy'
-        ? s ? (p.streamAccuracy[s] ?? null) : p.accuracy
-        : s ? (p.streamSpeedMs[s] ?? null) : p.speedMs;
+        ? s
+          ? (p.streamAccuracy[s] ?? null)
+          : p.accuracy
+        : s
+          ? (p.streamSpeedMs[s] ?? null)
+          : p.speedMs;
     const average = (values: (number | null)[]) => exponentialAverage(values, ROLLING_WINDOW).slice(start);
     return {
       perRound: allPoints.slice(start).map((p) => value(p)),

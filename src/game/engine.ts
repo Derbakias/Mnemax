@@ -53,10 +53,7 @@ interface RoundSequence {
  * `onProgress` gets the round so far as it starts and after each trial, already marked stopped, so it can
  * be saved and recorded as a stopped round if the app closes before the round ends.
  */
-export function useGameEngine(
-  onFinish: (result: RoundResult) => void,
-  onProgress?: (partial: RoundResult) => void,
-) {
+export function useGameEngine(onFinish: (result: RoundResult) => void, onProgress?: (partial: RoundResult) => void) {
   // TODO: Replace with zustand and check if there is a different way around all thse useRef
   const [state, setState] = useState<GameEngineState>(INITIAL_STATE);
 
@@ -171,7 +168,8 @@ export function useGameEngine(
     remainingVisibleMsRef.current = 0;
     remainingTrialMsRef.current = 0;
     const match = emptyResponses();
-    for (const stream of STREAM_IDS) match[stream] = round.settings.activeStreams[stream] && round.isMatch[stream][index];
+    for (const stream of STREAM_IDS)
+      match[stream] = round.settings.activeStreams[stream] && round.isMatch[stream][index];
     setState({
       phase: 'running',
       trialIndex: index,

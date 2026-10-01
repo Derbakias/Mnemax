@@ -77,7 +77,8 @@ function SyncPanel({ active }: { active: boolean }) {
             public ones, so nobody on a café or office Wi-Fi can reach it.
           </p>
         </>
-      }>
+      }
+    >
       {usable && (
         <div className="panel panel-pad stack-10">
           {nameDraft == null ? (
@@ -89,7 +90,8 @@ function SyncPanel({ active }: { active: boolean }) {
               <button
                 type="button"
                 className="text-button t-small secondary"
-                onClick={() => setNameDraft(status?.name ?? '')}>
+                onClick={() => setNameDraft(status?.name ?? '')}
+              >
                 Rename
               </button>
             </div>
@@ -142,14 +144,16 @@ function SyncPanel({ active }: { active: boolean }) {
                 type="button"
                 className="outline-button accent"
                 disabled={busy}
-                onClick={() => startPairing('show')}>
+                onClick={() => startPairing('show')}
+              >
                 Show a code
               </button>
               <button
                 type="button"
                 className="outline-button accent"
                 disabled={busy}
-                onClick={() => startPairing('enter')}>
+                onClick={() => startPairing('enter')}
+              >
                 Enter a code
               </button>
             </div>
@@ -177,7 +181,8 @@ function SyncPanel({ active }: { active: boolean }) {
           onClick={() => {
             dismiss();
             refresh();
-          }}>
+          }}
+        >
           Try again
         </button>
       )}
@@ -196,7 +201,8 @@ function SyncPanel({ active }: { active: boolean }) {
             type="button"
             className="text-button secondary sync-dismiss"
             aria-label={notice.kind === 'error' ? 'Dismiss error' : 'Dismiss message'}
-            onClick={dismiss}>
+            onClick={dismiss}
+          >
             Dismiss
           </button>
         </div>

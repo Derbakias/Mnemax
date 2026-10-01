@@ -189,6 +189,7 @@ describe('the packages the app is built from', () => {
       'eslint-plugin-react-hooks',
       'globals',
       'husky',
+      'prettier',
       'typescript',
       'typescript-eslint',
       'vite',

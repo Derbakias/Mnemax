@@ -273,7 +273,7 @@ export function ResponseButtons({
     // from the last position to this one.
     const { x: x0, y: y0 } = g.last;
     const steps = Math.max(1, Math.ceil(Math.hypot(x - x0, y - y0) / SWIPE_STEP));
-    //TODO: Check the whole codebase for statements like this and wrap in curly braces 
+    //TODO: Check the whole codebase for statements like this and wrap in curly braces
     for (let i = 1; i <= steps; i++) swipeAt(g, x0 + ((x - x0) * i) / steps, y0 + ((y - y0) * i) / steps);
     g.last = { x, y };
   };
@@ -340,7 +340,8 @@ export function ResponseButtons({
         // Fallback for a webview that delivers the tap as a click without a usable pointerdown.
         if (!answeredOnDown.current && !responded[stream]) onPress(stream);
         answeredOnDown.current = false;
-      }}>
+      }}
+    >
       <Icon name={STREAM_ICONS[stream]} />
       <span className={large ? 't-default response-label' : 't-small response-label'}>{STREAM_LABELS[stream]}</span>
       <kbd className="key-hint">{keyLabel(keys[stream])}</kbd>
@@ -363,7 +364,8 @@ export function ResponseButtons({
       // With the container holding the pointer the click lands here, not on the button, so reset here too.
       onClick={() => {
         answeredOnDown.current = false;
-      }}>
+      }}
+    >
       {swipeOn && <canvas ref={trail.canvasRef} className="swipe-trail" aria-hidden />}
       {streams.map(renderButton)}
     </div>

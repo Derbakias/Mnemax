@@ -1,0 +1,10 @@
+# Built, generated or downloaded: not ours to format.
+dist
+release
+src-tauri
+pnpm-lock.yaml
+.planning
+.claude
+# Docs and GitHub settings keep their hand-written layout.
+*.md
+.github

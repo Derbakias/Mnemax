@@ -10,7 +10,15 @@ const LOOK_WIDTH = 640;
  * While the camera looks for the QR code: a frame to aim with and Cancel. On a phone the camera shows behind the
  * page, so the page hides everything else; on a computer `children` is the camera picture.
  */
-export function ScanOverlay({ hint, onCancel, children }: { hint: string; onCancel: () => void; children?: ReactNode }) {
+export function ScanOverlay({
+  hint,
+  onCancel,
+  children,
+}: {
+  hint: string;
+  onCancel: () => void;
+  children?: ReactNode;
+}) {
   useEffect(() => {
     document.documentElement.classList.add('scanning');
     return () => document.documentElement.classList.remove('scanning');

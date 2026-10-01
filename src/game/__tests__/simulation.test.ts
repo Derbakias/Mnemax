@@ -86,9 +86,7 @@ describe('full round simulation', () => {
     const result = simulateRound(makeSettings({ nLevel: 5 }), 0.5);
     for (const stream of ['position', 'color', 'audio'] as StreamId[]) {
       const score = computeStreamScore(result.trials, stream);
-      expect(score.hits + score.misses + score.falseAlarms + score.correctRejections).toBe(
-        TRIALS_PER_ROUND,
-      );
+      expect(score.hits + score.misses + score.falseAlarms + score.correctRejections).toBe(TRIALS_PER_ROUND);
     }
   });
 });

@@ -8,15 +8,11 @@ import tseslint from 'typescript-eslint';
 // The React hooks checks. Breaking the main hooks rule stays an error;
 // every other check only warns for now, until we tidy those spots up.
 const hooks = reactHooks.configs.flat.recommended;
-const hookWarnings = Object.fromEntries(
-  Object.keys(hooks.rules).map((rule) => [rule, 'warn']),
-);
+const hookWarnings = Object.fromEntries(Object.keys(hooks.rules).map((rule) => [rule, 'warn']));
 
 export default defineConfig([
   // Folders that are built, downloaded, or not our web code.
-  globalIgnores([
-    'dist', 'release', 'src-tauri', 'node_modules', '.planning', '.claude',
-  ]),
+  globalIgnores(['dist', 'release', 'src-tauri', 'node_modules', '.planning', '.claude']),
   {
     files: ['**/*.{ts,tsx,js,mjs}'],
     extends: [js.configs.recommended, tseslint.configs.recommended, hooks],

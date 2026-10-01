@@ -18,12 +18,7 @@ export function evaluateTrial(
   return outcome;
 }
 
-export function balancedAccuracy(
-  hits: number,
-  misses: number,
-  correctRejections: number,
-  falseAlarms: number,
-): number {
+export function balancedAccuracy(hits: number, misses: number, correctRejections: number, falseAlarms: number): number {
   const matchTrials = hits + misses;
   const nonMatchTrials = correctRejections + falseAlarms;
   const components: number[] = [];
@@ -55,9 +50,7 @@ export function computeStreamScore(trials: TrialRecord[], stream: StreamId): Str
     else score.correctRejections++;
   }
   score.accuracy =
-    scored > 0
-      ? balancedAccuracy(score.hits, score.misses, score.correctRejections, score.falseAlarms)
-      : 0;
+    scored > 0 ? balancedAccuracy(score.hits, score.misses, score.correctRejections, score.falseAlarms) : 0;
   return score;
 }
 
@@ -68,8 +61,7 @@ export function summarizeRound(result: RoundResult): RoundSummary {
   if (result.stopped) {
     return { overallAccuracy: 0, scores: scores.map((s) => ({ ...s, accuracy: 0 })) };
   }
-  const overallAccuracy =
-    scores.length > 0 ? scores.reduce((sum, s) => sum + s.accuracy, 0) / scores.length : 0;
+  const overallAccuracy = scores.length > 0 ? scores.reduce((sum, s) => sum + s.accuracy, 0) / scores.length : 0;
   return { overallAccuracy, scores };
 }
 
@@ -79,9 +71,7 @@ export function buildTrials(
   activeStreams: Record<StreamId, boolean>,
   responsesPerTrial: Partial<Record<StreamId, boolean>>[],
 ): TrialRecord[] {
-  return stimuli.map((stimulus, i) =>
-    buildTrial(i, stimulus, isMatch, activeStreams, responsesPerTrial[i] ?? {}),
-  );
+  return stimuli.map((stimulus, i) => buildTrial(i, stimulus, isMatch, activeStreams, responsesPerTrial[i] ?? {}));
 }
 
 function buildTrial(

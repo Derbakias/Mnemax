@@ -1,4 +1,4 @@
-// TODO: !IMPORTANT! This one needs to be broken down it's too large 
+// TODO: !IMPORTANT! This one needs to be broken down it's too large
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
@@ -97,7 +97,8 @@ export function RangeChips({
           onClick={() => {
             onPick(range.days);
             zoom.reset();
-          }}>
+          }}
+        >
           {range.label}
         </button>
       ))}
@@ -134,7 +135,8 @@ function CrosshairToggle({ zoom }: { zoom: ChartZoom }) {
       aria-label="Crosshair"
       aria-pressed={zoom.crosshair}
       title={zoom.crosshair ? 'Crosshair on: one finger reads values' : 'Crosshair off: one finger moves the chart'}
-      onClick={() => zoom.setCrosshair((v) => !v)}>
+      onClick={() => zoom.setCrosshair((v) => !v)}
+    >
       <Icon name="locate-outline" size={22} />
     </button>
   );
@@ -561,7 +563,8 @@ export function chartInteraction({
           const rect = over.getBoundingClientRect();
           return { left: p.x - rect.left, top: p.y - rect.top };
         };
-        const spread = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
+        const spread = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+          Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
         over.addEventListener('pointerdown', (e) => {
           if (e.pointerType !== 'touch') return;
           // No emulated mouse events after it, which would move uPlot's cursor on their own.
@@ -762,7 +765,13 @@ const smoothLinePaths: uPlot.Series.PathBuilder = (u, seriesIdx, idx0, idx1) => 
     // Fritsch–Carlson tangents: the curve stays monotone between points, so it can't overshoot.
     const slope = px.slice(1).map((x, i) => (py[i + 1] - py[i]) / (x - px[i] || 1));
     const tangent = px.map((_, i) =>
-      i === 0 ? slope[0] : i === n - 1 ? slope[n - 2] : slope[i - 1] * slope[i] <= 0 ? 0 : (slope[i - 1] + slope[i]) / 2,
+      i === 0
+        ? slope[0]
+        : i === n - 1
+          ? slope[n - 2]
+          : slope[i - 1] * slope[i] <= 0
+            ? 0
+            : (slope[i - 1] + slope[i]) / 2,
     );
     for (let i = 0; i < n - 1; i++) {
       if (slope[i] === 0) {

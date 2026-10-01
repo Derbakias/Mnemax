@@ -216,7 +216,8 @@ export function Pairing({
       onClick={() => {
         note('Cancelled on this device.');
         end();
-      }}>
+      }}
+    >
       Cancel
     </button>
   );
@@ -267,7 +268,8 @@ export function Pairing({
         <button
           type="submit"
           className="outline-button sync-primary"
-          disabled={joining || address === '' || digits.length !== 9}>
+          disabled={joining || address === '' || digits.length !== 9}
+        >
           {joining ? 'Connecting…' : 'Pair'}
         </button>
       </div>
@@ -282,7 +284,8 @@ export function Pairing({
               type="button"
               className="text-button secondary sync-error-close"
               aria-label="Close the error"
-              onClick={() => setError(null)}>
+              onClick={() => setError(null)}
+            >
               <Icon name="close" size={18} />
             </button>
           </>
@@ -292,7 +295,11 @@ export function Pairing({
         (isPhone() ? (
           <ScanOverlay hint="Point the camera at the QR code on your other device" onCancel={cancelPhoneScan} />
         ) : (
-          <CameraScan onFound={(text) => void onScanned(text)} onCancel={() => void onScanned(null)} onFail={onScanFailed} />
+          <CameraScan
+            onFound={(text) => void onScanned(text)}
+            onCancel={() => void onScanned(null)}
+            onFail={onScanFailed}
+          />
         ))}
     </form>
   );
