@@ -179,13 +179,18 @@ describe('the packages the app is built from', () => {
       'uplot',
     ]);
     expect(Object.keys(pkg.devDependencies).sort()).toEqual([
+      '@eslint/js',
       '@tauri-apps/cli',
       '@types/node',
       '@types/react',
       '@types/react-dom',
       '@vitejs/plugin-react',
+      'eslint',
+      'eslint-plugin-react-hooks',
+      'globals',
       'husky',
       'typescript',
+      'typescript-eslint',
       'vite',
       'vitest',
     ]);
