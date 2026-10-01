@@ -236,7 +236,7 @@ export function SettingsScreen({ active }: { active: boolean }) {
           <>
             <p>
               Turn tutorial mode on with <Icon name="school-outline" size={16} /> on the Play screen. The round results
-              aren't saved and don't count towards the daily target. One of the tutorial options shoulbe be always on.
+              aren't saved and don't count towards the daily target. One of the tutorial options should be always on.
             </p>
             <p>
               <strong>History:</strong> every trial from the one N back to the current one, just above the grid. The one
