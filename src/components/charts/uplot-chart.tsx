@@ -4,8 +4,22 @@ import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
 import { Icon } from '../ui/icon';
+import {
+  AXIS_DRAG_SCALE,
+  AXIS_FONT,
+  AXIS_VALUE_PAD,
+  CHART_RANGES,
+  DATE_LABEL_SPACE,
+  MIN_ZOOM_ROUNDS,
+  PAGE_SCROLL_GRACE_MS,
+  PAN_Y_THRESHOLD,
+  WHEEL_ZOOM,
+  Y_HANDLE_WIDTH,
+  Y_MAX_SHARE,
+  Y_MIN_SHARE,
+} from '@/config/charts';
 import { useElementWidth } from '@/hooks/use-element-width';
-import { DATE_LOCALE } from '@/lib/stats';
+import { DATE_LOCALE } from '@/config/stats';
 import type { Theme } from '@/lib/theme';
 
 interface UPlotChartProps {
@@ -78,14 +92,6 @@ export function UPlotChart({ options, data, height, plotRef: externalRef, zoom }
   );
 }
 
-const RANGES: { label: string; days: number | null }[] = [
-  { label: '7d', days: 7 },
-  { label: '30d', days: 30 },
-  { label: '90d', days: 90 },
-  { label: '1y', days: 365 },
-  { label: 'all', days: null },
-];
-
 /**
  * The time range chips every chart has (the last `days` days, or all of them for null). While zoomed the
  * view is no range in particular, so none is shown as picked; picking one (even the same) starts unzoomed.
@@ -101,7 +107,7 @@ export function RangeChips({
 }) {
   return (
     <div className="chip-row">
-      {RANGES.map((range) => (
+      {CHART_RANGES.map((range) => (
         <button
           key={range.label}
           type="button"
@@ -154,8 +160,6 @@ function CrosshairToggle({ zoom }: { zoom: ChartZoom }) {
   );
 }
 
-const AXIS_FONT = '11px "Spline Sans", Inter, ui-sans-serif, system-ui, sans-serif';
-
 /** Axis styling shared by all charts. */
 export function axisStyle(theme: Theme, extra: Partial<uPlot.Axis> = {}): uPlot.Axis {
   return {
@@ -168,8 +172,6 @@ export function axisStyle(theme: Theme, extra: Partial<uPlot.Axis> = {}): uPlot.
   };
 }
 
-/** Room between an axis's widest value and its title (or the chart's edge), in CSS pixels. */
-const AXIS_VALUE_PAD = 6;
 let measureContext: CanvasRenderingContext2D | null = null;
 
 /**
@@ -190,9 +192,6 @@ export function fitAxisSize(min = 16): uPlot.Axis.Size {
     return Math.max(min, Math.ceil(widest) + 4 + AXIS_VALUE_PAD);
   };
 }
-
-/** Minimum room per date label on a round axis, in CSS pixels. */
-const DATE_LABEL_SPACE = 64;
 
 /**
  * X axis for charts that place rounds one after another (x = 1, 2, 3…, one per round, like Monkeytype's
@@ -315,22 +314,6 @@ export const snapToNearestPoint: uPlot.Cursor.MousePosRefiner = (u, left, top) =
   });
   return [u.valToPos(x, 'x'), bestTop];
 };
-
-/** Fewest rounds a zoomed-in chart shows. */
-const MIN_ZOOM_ROUNDS = 3;
-/** Wheel zoom step: one notch shows this share of the current range. */
-const WHEEL_ZOOM = 0.85;
-/** Pixels of axis drag that stretch or shrink the range by a factor of e. */
-const AXIS_DRAG_SCALE = 150;
-/** Vertical movement (px) before a click-and-hold drag starts moving the y axis too. */
-const PAN_Y_THRESHOLD = 8;
-/** The y axis can be stretched to between 1/20 and 4× its fitted range. */
-const Y_MIN_SHARE = 1 / 20;
-const Y_MAX_SHARE = 4;
-/** Width of the strip over a y axis that stretches it (matches `.axis-handle.y` in CSS). */
-const Y_HANDLE_WIDTH = 44;
-/** A chart ignores the wheel this long after the page scrolled, so scrolling past it doesn't zoom it. */
-const PAGE_SCROLL_GRACE_MS = 500;
 
 let lastPageScroll = 0;
 if (typeof document !== 'undefined') {

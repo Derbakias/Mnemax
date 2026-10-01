@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { DATE_LOCALE } from '@/lib/stats';
+import { DATE_LOCALE } from '@/config/stats';
 import { FORGET_CONFIRM_MS } from '@/config/sync';
 import { useSync } from '@/stores/sync-context';
 import { forgetDevice, type SyncPeer } from '@/sync/sync';

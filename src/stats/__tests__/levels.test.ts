@@ -1,5 +1,5 @@
+import { LEVEL_WINDOW } from '@/config/stats';
 import {
-  LEVEL_WINDOW,
   dailyStats,
   levelHistory,
   levelSummary,

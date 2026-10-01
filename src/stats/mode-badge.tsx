@@ -1,5 +1,5 @@
 import { Icon } from '../components/ui/icon';
-import { STREAM_ICONS } from '../play/response-buttons';
+import { STREAM_ICONS } from '@/config/ui';
 import { SPEED_PRESETS } from '@/config/game';
 import { speedPreset } from '@/game/rules';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';

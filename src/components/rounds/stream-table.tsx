@@ -1,7 +1,7 @@
 // Pieces of the per-stream tables (the Stats screen's By mode table and the Play screen's last round): a
 // header row of symbols over the columns, then a row per stream (`.stream-table` in CSS).
-import { Icon, type IconName } from '../ui/icon';
-import { STREAM_ICONS } from '../../play/response-buttons';
+import { Icon } from '../ui/icon';
+import { OUTCOME_ICONS, STREAM_ICONS } from '@/config/ui';
 import type { StreamId, StreamOutcome } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
 
@@ -14,14 +14,6 @@ export function StreamName({ stream }: { stream: StreamId }) {
     </span>
   );
 }
-
-/** The round tables' key symbols (✓ 〇 ✕ ■), as icons: see OUTCOME_HIT in the icons. */
-const OUTCOME_ICONS: Record<StreamOutcome, IconName> = {
-  hit: 'outcome-hit',
-  correctRejection: 'outcome-no-match',
-  miss: 'outcome-miss',
-  falseAlarm: 'outcome-false',
-};
 
 /** What each outcome is called, as in the round tables' key. */
 export const OUTCOME_LABELS: Record<StreamOutcome, string> = {

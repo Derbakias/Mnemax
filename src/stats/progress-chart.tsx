@@ -15,32 +15,22 @@ import {
   withAlpha,
   type ChartZoom,
 } from '../components/charts/uplot-chart';
+import {
+  MAX_ESTIMATE_HOURS,
+  PROGRESS_CHART_HEIGHT,
+  PROGRESS_ROLLING_WINDOW,
+  RATE_MIN_ROUNDS,
+  STREAM_CHART_COLORS,
+} from '@/config/charts';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
-import {
-  computeRoundPoints,
-  DATE_LOCALE,
-  exponentialAverage,
-  improvementRate,
-  type PerfectEstimate,
-} from '@/lib/stats';
-import { useTheme, type Theme } from '@/lib/theme';
+import { DATE_LOCALE } from '@/config/stats';
+import { computeRoundPoints, exponentialAverage, improvementRate, type PerfectEstimate } from '@/lib/stats';
+import { useTheme } from '@/lib/theme';
 
 type Metric = 'accuracy' | 'reaction';
 /** Every line in the legend can be hidden: the round dots, the overall average and each stream. */
 type SeriesKey = 'round' | 'avg' | StreamId;
-
-const STREAM_COLORS: Record<StreamId, keyof Theme> = {
-  position: 'accent',
-  color: 'success',
-  number: 'warning',
-  audio: 'danger',
-};
-
-const ROLLING_WINDOW = 10;
-/** The time-to-100% estimate (and the reaction-time rate) is noise on fewer rounds than this. */
-const RATE_MIN_ROUNDS = 20;
-const HEIGHT = 220;
 
 /**
  * Accuracy or reaction time over the rounds of one mode (all played with the same N, streams and speed,
@@ -77,9 +67,9 @@ export function ProgressChart({
   }, [allPoints, days]);
   const points = useMemo(() => allPoints.slice(start), [allPoints, start]);
 
-  // Values and their trends (exponential moving averages of ROLLING_WINDOW) for every round, then cut to
-  // the range. A trend only starts once there are ROLLING_WINDOW rounds, so the first rounds ever played
-  // don't show an average of fewer.
+  // Values and their trends (exponential moving averages of PROGRESS_ROLLING_WINDOW) for every round, then cut
+  // to the range. A trend only starts once there are PROGRESS_ROLLING_WINDOW rounds, so the first rounds ever
+  // played don't show an average of fewer.
   const { perRound, averages } = useMemo(() => {
     const value = (p: (typeof allPoints)[number], s?: StreamId) =>
       metric === 'accuracy'
@@ -89,7 +79,7 @@ export function ProgressChart({
         : s
           ? (p.streamSpeedMs[s] ?? null)
           : p.speedMs;
-    const average = (values: (number | null)[]) => exponentialAverage(values, ROLLING_WINDOW).slice(start);
+    const average = (values: (number | null)[]) => exponentialAverage(values, PROGRESS_ROLLING_WINDOW).slice(start);
     return {
       perRound: allPoints.slice(start).map((p) => value(p)),
       averages: [
@@ -128,12 +118,12 @@ export function ProgressChart({
       series: [
         {},
         { ...dotSeries('This round', mainColor, undefined, points.length), show: !hiddenRef.current.has('round') },
-        lineSeries(`Avg of ${ROLLING_WINDOW}`, mainColor, undefined, {
+        lineSeries(`Avg of ${PROGRESS_ROLLING_WINDOW}`, mainColor, undefined, {
           width: 2.5,
           show: !hiddenRef.current.has('avg'),
         }),
         ...streams.map((s) =>
-          lineSeries(STREAM_LABELS[s], withAlpha(theme[STREAM_COLORS[s]], 0.8), undefined, {
+          lineSeries(STREAM_LABELS[s], withAlpha(theme[STREAM_CHART_COLORS[s]], 0.8), undefined, {
             width: 1.5,
             dash: [4, 3],
             show: !hiddenRef.current.has(s),
@@ -158,7 +148,7 @@ export function ProgressChart({
             title,
             rows: [
               ['round', 'This round', perRound[idx]] as const,
-              ['avg', `Avg of ${ROLLING_WINDOW}`, averages[0][idx]] as const,
+              ['avg', `Avg of ${PROGRESS_ROLLING_WINDOW}`, averages[0][idx]] as const,
               ...streams.map((s, i) => [s, `${STREAM_LABELS[s]} avg`, averages[1 + i][idx]] as const),
             ]
               .filter(([key]) => !hiddenRef.current.has(key))
@@ -192,9 +182,16 @@ export function ProgressChart({
       <RangeChips days={days} zoom={zoom} onPick={setDays} />
 
       {hasData ? (
-        <UPlotChart key={zoom.chartKey} options={options} data={data} height={HEIGHT} plotRef={plotRef} zoom={zoom} />
+        <UPlotChart
+          key={zoom.chartKey}
+          options={options}
+          data={data}
+          height={PROGRESS_CHART_HEIGHT}
+          plotRef={plotRef}
+          zoom={zoom}
+        />
       ) : (
-        <div className="chart-box" style={{ height: HEIGHT }}>
+        <div className="chart-box" style={{ height: PROGRESS_CHART_HEIGHT }}>
           <span className="t-small secondary">
             {metric === 'reaction' && points.length > 0
               ? 'No reaction times yet. They come from the matches you catch.'
@@ -215,7 +212,7 @@ export function ProgressChart({
                 onToggle: () => toggleSeries('round'),
               },
               {
-                label: `Avg of ${ROLLING_WINDOW}`,
+                label: `Avg of ${PROGRESS_ROLLING_WINDOW}`,
                 color: mainColor,
                 mark: 'line',
                 shown: !hidden.has('avg'),
@@ -223,7 +220,7 @@ export function ProgressChart({
               },
               ...streams.map((s) => ({
                 label: STREAM_LABELS[s],
-                color: theme[STREAM_COLORS[s]],
+                color: theme[STREAM_CHART_COLORS[s]],
                 mark: 'dashed' as const,
                 shown: !hidden.has(s),
                 onToggle: () => toggleSeries(s),
@@ -247,10 +244,6 @@ export function ProgressChart({
     </div>
   );
 }
-
-/** Longer estimates than this are shown as "100h+": that far out the pace will have changed anyway. */
-// TODO: Make more flexible
-const MAX_ESTIMATE_HOURS = 100;
 
 function PerfectEstimateLabel({ estimate }: { estimate: PerfectEstimate }) {
   if (estimate.kind === 'reached') {

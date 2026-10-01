@@ -1,4 +1,5 @@
-import { DEFAULT_KEY_BINDINGS, clampPrefs } from '../prefs';
+import { clampPrefs } from '../prefs';
+import { DEFAULT_KEY_BINDINGS } from '@/config/ui';
 
 describe('clampPrefs key bindings', () => {
   it('defaults to F, D, J, K', () => {

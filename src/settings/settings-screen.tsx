@@ -3,28 +3,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Icon } from '@/components/ui/icon';
 import { Section } from '@/components/ui/section';
-import { STREAM_ICONS } from '@/play/response-buttons';
 import { Stepper } from '@/components/ui/stepper';
 import { SyncSection } from '@/sync/sync-section';
 import { BLANK_MS, MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND } from '@/config/game';
+import { RESET_CONFIRM_MS, STREAM_ICONS } from '@/config/ui';
 import { maxMatchesFor } from '@/game/rules';
 import type { StreamId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
-import {
-  MAX_DAILY_TARGET_MINUTES,
-  MIN_DAILY_TARGET_MINUTES,
-  STEP_DAILY_TARGET_MINUTES,
-  isBindableKey,
-  keyLabel,
-  type ButtonLayout,
-} from '@/lib/prefs';
+import { MAX_DAILY_TARGET_MINUTES, MIN_DAILY_TARGET_MINUTES, STEP_DAILY_TARGET_MINUTES } from '@/config/stats';
+import { isBindableKey, keyLabel, type ButtonLayout } from '@/lib/prefs';
 import { useSettings } from '@/stores/settings-context';
 import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/lib/stats-io';
 import { loadRounds, mergeRounds } from '@/lib/storage';
-
-// TODO: Move inside a config file to have everything together
-/** How long the tick on the reset button stays up. */
-const RESET_CONFIRM_MS = 2000;
 
 const BUTTON_LAYOUTS: { id: ButtonLayout; label: string }[] = [
   { id: 'grid', label: 'Two per row' },

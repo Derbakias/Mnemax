@@ -16,18 +16,10 @@ import { Section } from '@/components/ui/section';
 import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/rounds/stream-table';
 import { ChartZoomActions, useChartZoom } from '@/components/charts/uplot-chart';
 import type { RoundResult } from '@/game/types';
-import {
-  LEVEL_WINDOW,
-  MASTERY_ACCURACY,
-  RECENT_ROUNDS,
-  levelHistory,
-  levelSummary,
-  modeOf,
-  summarizeModes,
-  type ModeSummary,
-} from '@/stats/levels';
+import { DATE_LOCALE, LEVEL_WINDOW, MASTERY_ACCURACY, RECENT_ROUNDS } from '@/config/stats';
+import { levelHistory, levelSummary, modeOf, summarizeModes, type ModeSummary } from '@/stats/levels';
 import { useSettings } from '@/stores/settings-context';
-import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/lib/stats';
+import { aggregateStreams, collectionSummary, formatDuration } from '@/lib/stats';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
 import { useSync } from '@/stores/sync-context';
 import { accuracyColor, useTheme, type Theme } from '@/lib/theme';
