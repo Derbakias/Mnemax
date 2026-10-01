@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { COLOR_PALETTE, COLOR_SHADES, GRID_CELLS, NEUTRAL_COLOR, NEUTRAL_SHADE } from '@/game/config';
 import type { TrialStimulus } from '@/game/types';
 
-interface BoxGridProps {
+interface TrialGridProps {
   stimulus: TrialStimulus | null;
   visible: boolean;
   varyColor: boolean;
@@ -11,9 +11,9 @@ interface BoxGridProps {
   showPosition: boolean;
 }
 
-// Grid size and digit size are CSS-driven (see .box-grid in index.css) so the
+// Grid size and digit size are CSS-driven (see .trial-grid in index.css) so the
 // grid fits both a phone width and a short desktop window.
-export function BoxGrid({ stimulus, visible, varyColor, showNumbers, showPosition }: BoxGridProps) {
+export function TrialGrid({ stimulus, visible, varyColor, showNumbers, showPosition }: TrialGridProps) {
   const shown = stimulus && visible ? stimulus : null;
   const color = shown ? (varyColor ? COLOR_PALETTE[shown.color % COLOR_PALETTE.length] : NEUTRAL_COLOR) : undefined;
   const shade = shown ? (varyColor ? COLOR_SHADES[shown.color % COLOR_SHADES.length] : NEUTRAL_SHADE) : undefined;
@@ -36,12 +36,12 @@ export function BoxGrid({ stimulus, visible, varyColor, showNumbers, showPositio
   );
 
   if (!showPosition) {
-    return <div className="box-grid solo">{renderCell(0, 'cell', shown !== null)}</div>;
+    return <div className="trial-grid solo">{renderCell(0, 'cell', shown !== null)}</div>;
   }
 
   const cells = [];
   for (let i = 0; i < GRID_CELLS; i++) {
     cells.push(renderCell(i, 'cell', shown?.position === i));
   }
-  return <div className="box-grid">{cells}</div>;
+  return <div className="trial-grid">{cells}</div>;
 }

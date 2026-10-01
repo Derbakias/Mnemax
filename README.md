@@ -113,7 +113,7 @@ Mnemax/
 ├── index.html                 # The page Vite loads
 ├── src/                       # The app interface (React + TypeScript)
 │   ├── app/                   # Starts React; startup screen and tab bar (App.tsx)
-│   ├── play/                  # Play screen: box grid, answer buttons, trial history
+│   ├── play/                  # Play screen: trial grid, answer buttons, trial history
 │   ├── stats/                 # Stats screen: charts, calendar, levels
 │   ├── settings/              # Settings screen
 │   ├── sync/                  # Sync with your other devices (the network part is in src-tauri/src/sync)
