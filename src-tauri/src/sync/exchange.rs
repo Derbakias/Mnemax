@@ -17,7 +17,7 @@ use tokio::time::timeout;
 
 use super::store::{check_name, hex_encode};
 use super::trace::Trace;
-use super::wire::{self, Secure};
+use super::wire::{self, Purpose, Secure};
 use super::{Error, SYNC_PARAMS};
 
 /// A whole sync, from connecting to the last round.
@@ -25,7 +25,8 @@ const SYNC_TIME: Duration = Duration::from_secs(60);
 /// How long a device that connects here has to prove it's a paired device. A real one takes milliseconds,
 /// so a stranger can't keep this device busy for long.
 const PROVE_TIME: Duration = Duration::from_secs(5);
-const PROLOGUE: &[u8] = b"mnemax sync v4";
+/// Mixed into the handshake: the opening, so both devices must have seen the same version and purpose.
+const PROLOGUE: &[u8] = &wire::opening(Purpose::Sync);
 /// A name: 40 characters at most, 4 bytes each at most, plus a little room.
 const MAX_NAME_BYTES: usize = 512;
 /// More ids than a device keeps rounds (500), with room to spare.

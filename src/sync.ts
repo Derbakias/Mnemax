@@ -65,14 +65,18 @@ export type ListenEvent =
   /** What the listener is doing, for the log. */
   | { kind: 'step'; text: string };
 
+/** An iPhone or iPad. An iPad says it's a Mac, but a Mac has no touch screen. */
+const isIos = (): boolean =>
+  /iphone|ipad/i.test(navigator.userAgent) || (/macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
 /** A phone or tablet: the app sleeps in the background, and it scans QR codes with the system's scanner. */
-export const isPhone = (): boolean => /android|iphone|ipad/i.test(navigator.userAgent);
+export const isPhone = (): boolean => /android/i.test(navigator.userAgent) || isIos();
 
 /**
- * Sync needs the app (a browser can't open network connections). Not on iPhone yet: it still needs a way to
- * lock the secret key in the iPhone's keychain.
+ * Sync needs the app (a browser can't open network connections). Not on iPhone or iPad yet: it still needs a way
+ * to lock the secret key in the keychain there.
  */
-export const syncAvailable = (): boolean => isTauri() && !/iphone|ipad/i.test(navigator.userAgent);
+export const syncAvailable = (): boolean => isTauri() && !isIos();
 
 /** A failed sync command: a short name for the error, and the message to show. */
 export interface SyncFailure {

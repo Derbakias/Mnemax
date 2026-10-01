@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type SubmitEvent } from 'react';
 
 import { Icon } from './icon';
 import { CameraScan, ScanOverlay } from './sync-scan';
@@ -204,7 +204,7 @@ export function Pairing({
   };
   const digits = code.replace(/\D/g, '');
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     void join(address, digits, 'typed in');
   };

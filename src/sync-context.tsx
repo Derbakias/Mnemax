@@ -6,7 +6,8 @@
 // This device waits for connections only:
 // - in the app (a browser can't), and if a paired device connects to this one;
 // - on a phone, only while the app is on screen (phones put apps to sleep in the background anyway);
-// - with Sync automatically on, whenever the app is open; with it off, only while the Settings tab is open.
+// - with Sync automatically on, whenever the app is open; with it off, only while the Settings tab is open;
+// - never while a round is being played, so saving rounds from another device can't disturb its timing.
 //
 // It connects to its devices by itself (Sync automatically on) when the app opens or comes back on screen,
 // after a round is played, and every few minutes. Never while a round is being played. A sync that brings
@@ -48,6 +49,11 @@ import { errorText, syncedText, useSyncMessages, type LogLine, type Notice, type
 const AUTO_FAILURES_SHOWN = ['storage', 'keyStore'];
 /** Failures where pairing again may help: its address changed, or it forgot this device. */
 const RECONNECT_FAILURES = ['unreachable', 'refused'];
+/**
+ * Failures an automatic sync shows under the device: trying again won't help, the person has to do something (pair
+ * again, or update the app). Other ones, like the device not being open, only go in the log.
+ */
+const AUTO_PEER_FAILURES = ['refused'];
 /** How long a sync result stays under its device. An error stays until the next try. */
 const RESULT_SHOWN_MS = 30_000;
 
@@ -145,7 +151,7 @@ export function SyncProvider({
   const visible = usePageVisible();
   const awake = !isPhone() || visible;
   const ready = available && usable && prefsReady && awake;
-  const shouldListen = ready && waitsFor && (prefs.autoSync || settingsActive);
+  const shouldListen = ready && waitsFor && !playing && (prefs.autoSync || settingsActive);
 
   const onListen = useCallback(
     (event: ListenEvent) => {
@@ -155,7 +161,8 @@ export function SyncProvider({
         saveReceived(event.rounds).then(
           (result) => {
             note(`[listening] Saved ${result.added} new, skipped ${result.skipped} broken.`);
-            if (result.added > 0 || result.skipped > 0) {
+            // Broken rounds come again with every sync, so they alone aren't worth a message each time.
+            if (result.added > 0) {
               setPeerNote({ key: event.peer.key, kind: 'info', text: syncedText(result) });
             }
           },
@@ -173,18 +180,22 @@ export function SyncProvider({
   const listenQueue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
     if (!shouldListen) return;
+    // Turns false when this effect ends: a start that finishes after that must not say it's listening.
+    let wanted = true;
     const queue = (step: () => Promise<unknown>) => {
       listenQueue.current = listenQueue.current.then(step, step);
     };
     queue(async () => {
+      if (!wanted) return;
       try {
         await startListening((event) => onListenRef.current(event));
-        setListening(true);
+        if (wanted) setListening(true);
       } catch (error) {
         note(`Couldn't start listening: ${errorText(error)}`);
       }
     });
     return () => {
+      wanted = false;
       setListening(false);
       queue(() => stopListening().catch(() => {}));
     };
@@ -216,15 +227,18 @@ export function SyncProvider({
       try {
         const result = await syncWith(peer.key, step);
         step(`Saved ${result.added} new, skipped ${result.skipped} broken.`);
-        if (!auto || result.added > 0 || result.skipped > 0) {
+        // Broken rounds come again with every sync, so an automatic one doesn't mention them each time.
+        if (!auto || result.added > 0) {
           setPeerNote({ key: peer.key, kind: 'info', text: syncedText(result) });
         }
       } catch (error) {
+        const code = failureCode(error) ?? '';
         // A problem with this device itself (its key store, its storage) shows for the whole section.
-        if (AUTO_FAILURES_SHOWN.includes(failureCode(error) ?? '')) failWith(error, false);
-        else if (auto) step(`Didn't sync: ${errorText(error)}`);
+        if (AUTO_FAILURES_SHOWN.includes(code)) failWith(error, false);
+        else if (auto && !AUTO_PEER_FAILURES.includes(code)) step(`Didn't sync: ${errorText(error)}`);
         else {
-          const reconnect = RECONNECT_FAILURES.includes(failureCode(error) ?? '');
+          if (auto) step(`Didn't sync: ${errorText(error)}`);
+          const reconnect = RECONNECT_FAILURES.includes(code);
           setPeerNote({ key: peer.key, kind: 'error', text: errorText(error), reconnect });
         }
       } finally {

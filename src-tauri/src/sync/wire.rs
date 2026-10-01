@@ -2,7 +2,8 @@
 //!
 //! 1. The device that connects sends a short opening: "MNEMAX", the version, and whether it's here to pair or
 //!    to sync. Anything else (a port scan, a web browser) is dropped without a word.
-//! 2. Both run the encrypted handshake (Noise), which proves who is on the other end.
+//! 2. Both run the encrypted handshake (Noise), which proves who is on the other end. The opening is mixed into
+//!    it, so someone in between who changes the opening makes the handshake fail.
 //! 3. After that, every message is encrypted and sealed: a changed byte is noticed and the connection dropped.
 //!
 //! Each piece on the wire is a 2-byte length and at most 64 KB. Longer messages are cut into pieces; the
@@ -23,7 +24,7 @@ use super::Error;
 
 /// The version of what devices say to each other. Raise it with any change to that, so two devices with
 /// different versions say "update both" instead of failing in a confusing way.
-pub const PROTOCOL: u8 = 6;
+pub const PROTOCOL: u8 = 7;
 /// Every connection starts with these bytes.
 const MAGIC: &[u8; 6] = b"MNEMAX";
 /// Sent (unencrypted) by a device showing a pairing code when the other device has another version. It
@@ -42,10 +43,10 @@ pub enum Purpose {
 const MAX_PIECE: usize = 65535;
 /// The encryption adds 16 bytes to each piece.
 const MAX_CHUNK: usize = MAX_PIECE - 16;
-/// On a home network a connection takes milliseconds; 3 seconds means nobody is there.
+/// On a local network a connection takes milliseconds; 3 seconds means nobody is there.
 const CONNECT_TIME: Duration = Duration::from_secs(3);
-/// How long a new connection has to send its opening.
-pub const OPENING_TIME: Duration = Duration::from_secs(5);
+/// How long a new connection has to send its opening. A real device sends it right after connecting.
+pub const OPENING_TIME: Duration = Duration::from_secs(1);
 
 /// Connects to the other device and says what for.
 pub async fn open(addr: SocketAddr, purpose: Purpose, trace: &Trace) -> Result<TcpStream, Error> {
@@ -67,12 +68,12 @@ pub async fn open(addr: SocketAddr, purpose: Purpose, trace: &Trace) -> Result<T
     }
 }
 
-/// Waits for the first connection from the home network that opens for `purpose`. Others are dropped.
+/// Waits for the first connection from the local network that opens for `purpose`. Others are dropped.
 pub async fn accept(listener: &TcpListener, purpose: Purpose, trace: &Trace) -> Result<TcpStream, Error> {
     loop {
         let (mut stream, addr) = listener.accept().await?;
         if !is_local(addr.ip()) {
-            trace.step(format!("Ignored {addr}: not on the home network."));
+            trace.step(format!("Ignored {addr}: not on the local network."));
             continue;
         }
         match check_opening(&mut stream, purpose).await {
@@ -90,10 +91,10 @@ pub async fn accept(listener: &TcpListener, purpose: Purpose, trace: &Trace) -> 
     }
 }
 
-/// Reads the opening of a new connection (5 seconds at most) and checks it's Mnemax, our version, and here
+/// Reads the opening of a new connection (1 second at most) and checks it's Mnemax, our version, and here
 /// for `purpose`.
 pub async fn check_opening(stream: &mut TcpStream, purpose: Purpose) -> Result<(), Error> {
-    let mut opening = [0u8; MAGIC.len() + 2];
+    let mut opening = [0u8; OPENING_LEN];
     timeout(OPENING_TIME, stream.read_exact(&mut opening)).await.map_err(|_| Error::TimedOut)??;
     if &opening[..MAGIC.len()] != MAGIC {
         return Err(Error::Protocol("not a Mnemax connection"));
@@ -111,10 +112,16 @@ pub async fn check_opening(stream: &mut TcpStream, purpose: Purpose) -> Result<(
     Ok(())
 }
 
+const OPENING_LEN: usize = MAGIC.len() + 2;
+
+/// The opening for `purpose`: "MNEMAX", the version and the purpose.
+pub const fn opening(purpose: Purpose) -> [u8; OPENING_LEN] {
+    let [a, b, c, d, e, f] = *MAGIC;
+    [a, b, c, d, e, f, PROTOCOL, purpose as u8]
+}
+
 pub async fn write_opening(stream: &mut TcpStream, purpose: Purpose) -> Result<(), Error> {
-    let mut opening = MAGIC.to_vec();
-    opening.extend_from_slice(&[PROTOCOL, purpose as u8]);
-    stream.write_all(&opening).await?;
+    stream.write_all(&opening(purpose)).await?;
     Ok(())
 }
 
@@ -204,7 +211,9 @@ impl Secure {
         if len > max_len {
             return Err(Error::Protocol("message too big"));
         }
-        let mut msg = Vec::with_capacity(len);
+        // Room for one piece at first, not for what the message says it will be: until it really arrives,
+        // that's only a claim.
+        let mut msg = Vec::with_capacity(len.min(MAX_PIECE));
         msg.extend_from_slice(&plain[4..n]);
         while msg.len() < len {
             let n = self.read_chunk(&mut plain).await?;

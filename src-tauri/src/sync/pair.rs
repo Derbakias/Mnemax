@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use spake2::{Ed25519Group, Identity, Password, Spake2};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::time::timeout;
+use zeroize::Zeroizing;
 
 use super::store::check_name;
 use super::trace::Trace;
@@ -24,7 +25,8 @@ use super::{random_below, Error, PAIR_PARAMS};
 pub const CODE_LIFETIME: Duration = Duration::from_secs(60);
 /// From the first message to the end of pairing.
 const HANDSHAKE_TIME: Duration = Duration::from_secs(15);
-const PROLOGUE: &[u8] = b"mnemax pair v4";
+/// Mixed into the handshake: the opening, so both devices must have seen the same version and purpose.
+const PROLOGUE: &[u8] = &wire::opening(Purpose::Pair);
 /// A SPAKE2 message is always 33 bytes.
 const SPAKE_MSG_LEN: usize = 33;
 const CODE_DIGITS: usize = 9;
@@ -48,7 +50,7 @@ impl PairCode {
     }
 
     fn password(&self) -> Password {
-        Password::new(format!("mnemax pair v4:{self}"))
+        Password::new(Zeroizing::new(format!("mnemax pair v4:{self}")).as_bytes())
     }
 }
 
@@ -139,8 +141,9 @@ async fn pair(
     })
 }
 
-/// Swaps SPAKE2 messages. Both devices end up with the same secret only if they had the same code.
-async fn spake(stream: &mut TcpStream, joining: bool, code: PairCode) -> Result<[u8; 32], Error> {
+/// Swaps SPAKE2 messages. Both devices end up with the same secret only if they had the same code. The secret
+/// is wiped from memory when it's no longer needed.
+async fn spake(stream: &mut TcpStream, joining: bool, code: PairCode) -> Result<Zeroizing<[u8; 32]>, Error> {
     let (a, b) = (Identity::new(b"mnemax pair a"), Identity::new(b"mnemax pair b"));
     let (state, msg) = if joining {
         Spake2::<Ed25519Group>::start_a(&code.password(), &a, &b)
@@ -153,8 +156,13 @@ async fn spake(stream: &mut TcpStream, joining: bool, code: PairCode) -> Result<
     if theirs.len() != SPAKE_MSG_LEN {
         return Err(Error::Protocol("bad pairing message"));
     }
-    let key = state.finish(&theirs).map_err(|_| Error::Protocol("bad pairing message"))?;
-    key.try_into().map_err(|_| Error::Protocol("bad pairing key"))
+    let key = Zeroizing::new(state.finish(&theirs).map_err(|_| Error::Protocol("bad pairing message"))?);
+    let mut psk = Zeroizing::new([0u8; 32]);
+    if key.len() != psk.len() {
+        return Err(Error::Protocol("bad pairing key"));
+    }
+    psk.copy_from_slice(&key);
+    Ok(psk)
 }
 
 #[cfg(test)]

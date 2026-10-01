@@ -29,15 +29,19 @@ describe('what the page is allowed to do', () => {
   it('has only the permissions it needs', () => {
     expect(readdirSync(join(ROOT, 'src-tauri/capabilities')).sort()).toEqual(['default.json', 'mobile.json']);
     const permissions = (file: string) => JSON.parse(read(`src-tauri/capabilities/${file}`)).permissions;
-    // Files only through the open and save dialogs: the page can touch only the file the person picked.
+    // Files only through the open and save dialogs: the page can touch only the file the person picked (and
+    // check its size before reading it).
     expect(permissions('default.json')).toEqual([
       'core:default',
       'store:default',
       'dialog:allow-open',
       'dialog:allow-save',
       'fs:allow-read-text-file',
+      'fs:allow-stat',
       'fs:allow-write-text-file',
     ]);
+    // The QR scanner, only on Android: sync isn't on iPhone yet.
+    expect(JSON.parse(read('src-tauri/capabilities/mobile.json')).platforms).toEqual(['android']);
     expect(permissions('mobile.json')).toEqual([
       'barcode-scanner:allow-scan',
       'barcode-scanner:allow-cancel',

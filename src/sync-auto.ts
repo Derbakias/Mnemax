@@ -21,22 +21,32 @@ export function useAutoSync(
   const onRef = useRef(on);
   onRef.current = on;
   const running = useRef(false);
+  /** Why to sync again once the sync going on now ends (a round finished meanwhile, say). */
+  const again = useRef<string | null>(null);
   const syncAll = useCallback(
     async (why: string) => {
-      if (!onRef.current || running.current) return;
-      running.current = true;
-      try {
-        // The paired devices as they are now: one may have been paired or forgotten since.
-        const { peers } = await syncStatus();
-        for (const peer of peers.filter((p) => p.address != null)) {
-          if (!onRef.current) break;
-          await syncPeer(peer, true, why);
-        }
-      } catch (error) {
-        note(`[auto] Couldn't sync: ${errorText(error)}`);
-      } finally {
-        running.current = false;
+      if (!onRef.current) return;
+      if (running.current) {
+        again.current = why;
+        return;
       }
+      running.current = true;
+      let reason: string | null = why;
+      while (reason && onRef.current) {
+        try {
+          // The paired devices as they are now: one may have been paired or forgotten since.
+          const { peers } = await syncStatus();
+          for (const peer of peers.filter((p) => p.address != null)) {
+            if (!onRef.current) break;
+            await syncPeer(peer, true, reason);
+          }
+        } catch (error) {
+          note(`[auto] Couldn't sync: ${errorText(error)}`);
+        }
+        reason = again.current;
+        again.current = null;
+      }
+      running.current = false;
     },
     [syncPeer, note],
   );
@@ -49,8 +59,15 @@ export function useAutoSync(
       clearInterval(every);
     };
   }, [on, syncAll]);
-  useEffect(
-    () => onRoundPlayed(() => void setTimeout(() => void syncAll('A round was played'), AUTO_SYNC_DELAY_MS)),
-    [syncAll],
-  );
+  useEffect(() => {
+    let later: ReturnType<typeof setTimeout> | undefined;
+    const stopHearing = onRoundPlayed(() => {
+      clearTimeout(later);
+      later = setTimeout(() => void syncAll('A round was played'), AUTO_SYNC_DELAY_MS);
+    });
+    return () => {
+      stopHearing();
+      clearTimeout(later);
+    };
+  }, [syncAll]);
 }

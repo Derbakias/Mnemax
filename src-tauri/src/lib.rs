@@ -77,8 +77,8 @@ fn is_app_page(uri: &str) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default();
-    // Phones scan the QR code another device shows to pair with it.
-    #[cfg(mobile)]
+    // Phones scan the QR code another device shows to pair with it. Not on iPhone yet, as sync isn't there yet.
+    #[cfg(target_os = "android")]
     let builder = builder.plugin(tauri_plugin_barcode_scanner::init());
     builder
         .plugin(tauri_plugin_store::Builder::new().build())

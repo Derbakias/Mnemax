@@ -5,4 +5,5 @@
     <exclude domain="root" path="sync.json" />
     <exclude domain="root" path="sync.json.tmp" />
     <exclude domain="root" path="sync.json.broken" />
+    <exclude domain="root" path="sync.json.lost" />
 </full-backup-content>

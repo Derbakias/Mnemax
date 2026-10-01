@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type SubmitEvent } from 'react';
 
 import { Section } from './section';
 import { SyncLog } from './sync-log';
@@ -32,7 +32,7 @@ function SyncPanel({ active }: { active: boolean }) {
     setPairing({ how, hint });
   };
 
-  const onRename = async (e: FormEvent) => {
+  const onRename = async (e: SubmitEvent) => {
     e.preventDefault();
     if (nameDraft == null) return;
     try {

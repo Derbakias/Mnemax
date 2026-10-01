@@ -1,4 +1,4 @@
-//! Network addresses. Sync only ever talks to devices inside the home network, never the internet.
+//! Network addresses. Sync only ever talks to devices on the local network, never the internet.
 
 use std::net::{IpAddr, Ipv4Addr};
 
@@ -9,18 +9,20 @@ pub const PAIR_PORT: u16 = 47_391;
 /// The port a device listens on for its paired devices to sync.
 pub const SYNC_PORT: u16 = 47_392;
 
-/// Is this a home-network address? These are the "private" ranges routers hand out (192.168.x.x, 10.x.x.x and
-/// 172.16–31.x.x). They can't be reached from the internet.
+/// Is this a local-network address? These are the "private" ranges routers hand out (192.168.x.x, 10.x.x.x and
+/// 172.16–31.x.x). They can't be reached from the internet. They aren't only home networks: office or café
+/// Wi-Fi, a VPN or Docker use them too. That's fine, as only paired devices get anything.
 pub fn is_home(ip: Ipv4Addr) -> bool {
     ip.is_private()
 }
 
-/// Who a listening device lets in: home-network addresses, and this same computer (which tests use).
+/// Who a listening device lets in: local-network addresses. Tests also use this same computer; the app doesn't,
+/// so another app on the same phone can't use up a code or the listener's room for connections.
 pub fn is_local(ip: IpAddr) -> bool {
-    matches!(ip, IpAddr::V4(v4) if is_home(v4) || v4.is_loopback())
+    matches!(ip, IpAddr::V4(v4) if is_home(v4) || (cfg!(test) && v4.is_loopback()))
 }
 
-/// Reads an address the person typed or scanned, like `192.168.1.20`. Anything that isn't a home-network
+/// Reads an address the person typed or scanned, like `192.168.1.20`. Anything that isn't a local-network
 /// address is refused, so a fake QR code can't send us somewhere on the internet.
 pub fn parse_home(text: &str) -> Result<Ipv4Addr, Error> {
     let ip: Ipv4Addr = text.trim().parse().map_err(|_| Error::BadAddress)?;
@@ -31,7 +33,7 @@ pub fn parse_home(text: &str) -> Result<Ipv4Addr, Error> {
     }
 }
 
-/// This device's address on the home network, to show next to the pairing code.
+/// This device's address on the local network, to show next to the pairing code.
 pub fn own_address() -> Option<Ipv4Addr> {
     let interfaces = if_addrs::get_if_addrs().unwrap_or_default();
     let addresses = interfaces.into_iter().filter(|i| i.is_oper_up()).filter_map(|i| match i.addr {
@@ -63,6 +65,7 @@ mod tests {
 
     #[test]
     fn lets_in_only_local_connections() {
+        // 127.0.0.1 only in tests.
         for ip in ["192.168.1.20", "10.0.0.5", "127.0.0.1"] {
             assert!(is_local(ip.parse().unwrap()), "{ip}");
         }

@@ -1,9 +1,9 @@
 {
   "$schema": "../gen/schemas/mobile-schema.json",
   "identifier": "mobile",
-  "description": "Phones only: scanning the QR code another device shows to pair with it",
+  "description": "Android only (sync is not on iPhone yet): scanning the QR code another device shows to pair with it",
   "windows": ["main"],
-  "platforms": ["android", "iOS"],
+  "platforms": ["android"],
   "permissions": [
     "barcode-scanner:allow-scan",
     "barcode-scanner:allow-cancel",

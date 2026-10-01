@@ -1,5 +1,5 @@
 // TODO: !IMPORTANT! This one needs to be broken down it's too large 
-import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
@@ -14,7 +14,7 @@ interface UPlotChartProps {
   data: uPlot.AlignedData;
   height: number;
   /** Receives the live chart, e.g. to show or hide series without rebuilding it. */
-  plotRef?: MutableRefObject<uPlot | null>;
+  plotRef?: RefObject<uPlot | null>;
   /** For a chart built with `chartInteraction`: its crosshair switch (see CrosshairToggle) applies. */
   zoom?: ChartZoom;
 }

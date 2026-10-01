@@ -24,7 +24,8 @@ two of them together is known as *dual n-back*.
 
 The app is built with [Tauri v2](https://v2.tauri.app/), React and TypeScript, so the same code runs as a
 desktop app (Linux, Windows, macOS) and a mobile app (Android, iOS). Everything stays on your device.
-There are no accounts, no network requests, no tracking and it's freeee! 🤑
+There are no accounts, no servers, no tracking and it's freeee! 🤑 The only network use is the optional Sync
+with your own devices on the same Wi-Fi.
 
 ### How to play
 
@@ -73,9 +74,10 @@ On desktop, `Space` starts, pauses and resumes a round, and `Esc` stops it. You 
   the address and code. A code works once, for one minute. After that the second device connects to the first
   by itself whenever Mnemax is open on both (on a phone, while it's on screen): when it opens, after each
   round, and every few minutes; or turn Sync automatically off and tap Sync. Only paired devices can sync, only
-  on the home network, everything is encrypted, and sync only ever adds rounds. If a device's address changes,
+  on the local network (any Wi-Fi, so also office or café Wi-Fi), everything is encrypted, and sync only ever
+  adds rounds. Clearing the history on one device doesn't clear it on the others: they send the rounds back. If a device's address changes,
   tap Reconnect and connect them again. The first time, Windows and macOS ask whether Mnemax may use the
-  network, and every device but a Linux one asks for the camera when you first scan. Not on iPhone yet.
+  network, and every device but a Linux one asks for the camera when you first scan. Not on iPhone or iPad yet.
 - **Keeps timing accurate:** buttons respond the moment you press them rather than when you let go, and
   a round pauses by itself when you switch away from the app.
 
@@ -368,10 +370,9 @@ This should work with the standard Tauri commands, but it hasn't been tested (se
 ## Data and privacy
 
 Your rounds and settings are saved only on your device, in a file called `mnemax.json` in the app's data
-folder. Nothing is sent anywhere. To back up your rounds or move them to another device, use
-**Settings → Data → Export JSON**, then **Import JSON** on the other device.
-
-> Note: I'll implement soon a faster way to share the stats locally across the devices.
+folder. Nothing is sent to the internet. Sync sends your rounds (never your settings) only to the devices you
+paired with it, on the same Wi-Fi, encrypted. To back up your rounds, or move them to a device without
+Sync, use **Settings → Data → Export JSON**, then **Import JSON** on the other device.
 
 ## Reporting issues
 

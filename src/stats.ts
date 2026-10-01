@@ -25,6 +25,7 @@ export function playedOnDayMs(rounds: RoundResult[], day: Date): number {
  * The language dates are written in, the same on every device whatever the system is set to: 1 Oct 2026,
  * 15:00.
  */
+// TODO: Add in the settings
 export const DATE_LOCALE = 'en-GB';
 
 export function formatDuration(ms: number): string {

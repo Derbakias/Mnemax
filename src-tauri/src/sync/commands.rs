@@ -1,7 +1,7 @@
 //! The commands the page calls: pairing, syncing with a device, renaming and forgetting.
 //!
-//! They're all `async`, so they never run on the window's own thread: the first one may wait for the key
-//! store to be unlocked, and the window mustn't freeze meanwhile.
+//! They're all `async`, so they never run on the window's own thread, and the slow parts (the file, the key
+//! store) run on threads of their own (see `SyncState::run`): the app mustn't freeze meanwhile.
 
 use std::net::SocketAddr;
 
@@ -58,8 +58,8 @@ fn fail(trace: &Trace, e: Error) -> Failure {
     text(e)
 }
 
-fn status(state: &SyncState) -> Result<Status, Error> {
-    state.with_store(|s| Ok(Status { api: API_VERSION, name: s.name().to_string(), peers: s.peers().to_vec() }))
+async fn status(state: &SyncState) -> Result<Status, Error> {
+    state.with_store(|s| Ok(Status { api: API_VERSION, name: s.name().to_string(), peers: s.peers().to_vec() })).await
 }
 
 /// Opens a port for other devices to connect to.
@@ -71,30 +71,31 @@ pub async fn listen_on(port: u16) -> Result<TcpListener, Error> {
 }
 
 /// Keeps the name a device goes by now, if it changed.
-pub fn note_name(state: &SyncState, key: &[u8], name: Option<String>, trace: &Trace) {
+pub async fn note_name(state: &SyncState, key: &[u8], name: Option<String>, trace: &Trace) {
     let Some(name) = name else { return };
-    if let Err(e) = state.with_store(|s| s.rename_peer(key, &name)) {
+    let key = key.to_vec();
+    if let Err(e) = state.with_store(move |s| s.rename_peer(&key, &name)).await {
         trace.step(format!("Couldn't save its new name ({}).", e.detail()));
     }
 }
 
 #[tauri::command]
 pub async fn sync_status(state: State<'_, SyncState>) -> CommandResult<Status> {
-    status(&state).map_err(text)
+    status(&state).await.map_err(text)
 }
 
 #[tauri::command]
 pub async fn sync_rename(state: State<'_, SyncState>, name: String) -> CommandResult<Status> {
-    state.with_store(|s| s.set_name(&name)).map_err(text)?;
-    status(&state).map_err(text)
+    state.with_store(move |s| s.set_name(&name)).await.map_err(text)?;
+    status(&state).await.map_err(text)
 }
 
 /// Forgets the device `key` (hex) on this device. It can't sync with this one any more.
 #[tauri::command]
 pub async fn sync_forget(state: State<'_, SyncState>, key: String) -> CommandResult<Status> {
     let key = hex_decode(&key).ok_or(Error::UnknownPeer).map_err(text)?;
-    state.with_store(|s| s.forget(&key)).map_err(text)?;
-    status(&state).map_err(text)
+    state.with_store(move |s| s.forget(&key)).await.map_err(text)?;
+    status(&state).await.map_err(text)
 }
 
 #[derive(Clone, Serialize)]
@@ -137,11 +138,14 @@ fn qr(text: &str) -> Result<Qr, Error> {
 
 /// Shows a code: waits for the other device to connect, and returns the address and code to show.
 #[tauri::command]
-pub async fn pair_start(app: AppHandle, on_event: Channel<PairEvent>) -> CommandResult<ShownCode> {
-    let state = app.state::<SyncState>();
+pub async fn pair_start(
+    app: AppHandle,
+    state: State<'_, SyncState>,
+    on_event: Channel<PairEvent>,
+) -> CommandResult<ShownCode> {
     state.stop_pairing().await;
     let trace = pair_trace(&on_event);
-    let (private_key, name) = state.me().map_err(|e| fail(&trace, e))?;
+    let (private_key, name) = state.me().await.map_err(|e| fail(&trace, e))?;
     let address = own_address().ok_or(Error::NoNetwork).map_err(|e| fail(&trace, e))?;
     trace.step(format!("This device: {name:?} at {address}. Showing a code."));
     let code = PairCode::random().map_err(|e| fail(&trace, e))?;
@@ -152,7 +156,7 @@ pub async fn pair_start(app: AppHandle, on_event: Channel<PairEvent>) -> Command
     let task = tauri::async_runtime::spawn(async move {
         let result = pair::host(&listener, code, Me { private_key: &private_key, name: &name }, &trace).await;
         // The device that showed the code waits for the other one, so it doesn't keep an address.
-        finish_pairing(&task_app, result, None, &on_event, &trace);
+        finish_pairing(&task_app, result, None, &on_event, &trace).await;
     });
     *state.pairing.lock().unwrap_or_else(|e| e.into_inner()) = Some(task);
     let seconds = pair::CODE_LIFETIME.as_secs();
@@ -163,16 +167,16 @@ pub async fn pair_start(app: AppHandle, on_event: Channel<PairEvent>) -> Command
 #[tauri::command]
 pub async fn pair_join(
     app: AppHandle,
+    state: State<'_, SyncState>,
     address: String,
     code: String,
     on_event: Channel<PairEvent>,
 ) -> CommandResult<()> {
-    let state = app.state::<SyncState>();
     state.stop_pairing().await;
     let trace = pair_trace(&on_event);
     let code = PairCode::parse(&code).ok_or(Error::BadCode).map_err(|e| fail(&trace, e))?;
     let ip = parse_home(&address).map_err(|e| fail(&trace, e))?;
-    let (private_key, name) = state.me().map_err(|e| fail(&trace, e))?;
+    let (private_key, name) = state.me().await.map_err(|e| fail(&trace, e))?;
     trace.step(format!("This device: {name:?}. Pairing with the device at {ip}."));
     let task_app = app.clone();
     let task = tauri::async_runtime::spawn(async move {
@@ -184,7 +188,7 @@ pub async fn pair_join(
         }
         .await;
         // This device connected, so it keeps the address to connect to again for every sync.
-        finish_pairing(&task_app, result, Some(ip.to_string()), &on_event, &trace);
+        finish_pairing(&task_app, result, Some(ip.to_string()), &on_event, &trace).await;
     });
     *state.pairing.lock().unwrap_or_else(|e| e.into_inner()) = Some(task);
     Ok(())
@@ -203,7 +207,7 @@ fn pair_trace(events: &Channel<PairEvent>) -> Trace {
     })
 }
 
-fn finish_pairing(
+async fn finish_pairing(
     app: &AppHandle,
     result: Result<pair::Paired, Error>,
     address: Option<String>,
@@ -211,7 +215,10 @@ fn finish_pairing(
     trace: &Trace,
 ) {
     let state = app.state::<SyncState>();
-    let saved = result.and_then(|p| state.with_store(|s| s.add_peer(&p.key, &p.name, address, now_ms())));
+    let saved = match result {
+        Ok(p) => state.with_store(move |s| s.add_peer(&p.key, &p.name, address, now_ms())).await,
+        Err(e) => Err(e),
+    };
     let event = match saved {
         Ok(peer) => {
             trace.step(format!("Paired with {:?}.", peer.name));
@@ -241,14 +248,15 @@ pub async fn sync_now(
         let _ = on_step.send(text);
     });
     let key = hex_decode(&key).ok_or(Error::UnknownPeer).map_err(|e| fail(&trace, e))?;
-    let peer = state.with_store(|s| Ok(s.peer(&key).cloned())).map_err(|e| fail(&trace, e))?;
+    let wanted = key.clone();
+    let peer = state.with_store(move |s| Ok(s.peer(&wanted).cloned())).await.map_err(|e| fail(&trace, e))?;
     // Only a device this one connects to has an address; the others connect here by themselves.
     let Some((peer, Some(address))) = peer.map(|p| (p.clone(), p.address)) else {
         return Err(fail(&trace, Error::UnknownPeer));
     };
     // The saved address is checked again, like a typed one.
     let ip = parse_home(&address).map_err(|e| fail(&trace, e))?;
-    let (private_key, name) = state.me().map_err(|e| fail(&trace, e))?;
+    let (private_key, name) = state.me().await.map_err(|e| fail(&trace, e))?;
     trace.step(format!("This device: {name:?}. Syncing with {:?} at {ip}.", peer.name));
     let synced = async {
         let stream = wire::open(SocketAddr::from((ip, SYNC_PORT)), Purpose::Sync, &trace).await?;
@@ -260,8 +268,9 @@ pub async fn sync_now(
     if !state.is_paired(&key) {
         return Err(fail(&trace, Error::UnknownPeer));
     }
-    note_name(&state, &key, synced.name, &trace);
-    state.with_store(|s| s.synced(&key, now_ms())).map_err(|e| fail(&trace, e))?;
+    note_name(&state, &key, synced.name, &trace).await;
+    let done = key.clone();
+    state.with_store(move |s| s.synced(&done, now_ms())).await.map_err(|e| fail(&trace, e))?;
     trace.step(format!("Synced with {:?}.", peer.name));
     Ok(SyncOutcome { rounds: synced.rounds })
 }

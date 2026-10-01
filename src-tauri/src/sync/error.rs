@@ -14,9 +14,9 @@ pub enum Error {
     WrongCode,
     CodeExpired,
     BadCode,
-    /// The typed address isn't a home-network address.
+    /// The typed address isn't a local-network address.
     BadAddress,
-    /// This device isn't on a home network, so it has no address to show.
+    /// This device isn't on a local network, so it has no address to show.
     NoNetwork,
     /// Another program already uses this port.
     PortInUse(u16),
@@ -101,11 +101,12 @@ impl std::fmt::Display for Error {
                 Error::WrongCode => "That code didn't match. Make a new code and try again.",
                 Error::CodeExpired => "The code ran out. Make a new one.",
                 Error::BadCode => "A pairing code has 9 digits.",
-                Error::BadAddress => "That address isn't on a home network. It looks like 192.168.1.20.",
-                Error::NoNetwork => "This device isn't connected to a Wi\u{2011}Fi or home network.",
+                Error::BadAddress => "That address isn't on a local network. It looks like 192.168.1.20.",
+                Error::NoNetwork => "This device isn't connected to a Wi\u{2011}Fi or local network.",
                 Error::NotPaired => "A device that isn't paired with this one tried to sync.",
                 Error::Refused => {
-                    "The other device didn't accept this one. It may have forgotten this device, or need an update."
+                    "The other device didn't accept this one. It may have forgotten this device (tap Reconnect), or \
+                     have a different version of Mnemax (update both)."
                 }
                 Error::Unreachable => {
                     "Couldn't reach it. Check Mnemax is open on it and both devices are on the same Wi\u{2011}Fi. If it \
@@ -116,7 +117,7 @@ impl std::fmt::Display for Error {
                      Wi\u{2011}Fi."
                 }
                 Error::Random => "This device couldn't make a random number.",
-                Error::BadName => "A device name has 1 to 40 characters.",
+                Error::BadName => "A device name has 1 to 40 characters, and no invisible ones.",
                 Error::UnknownPeer => "That device isn't paired with this one.",
                 Error::Storage(_) => "Couldn't save the sync settings.",
                 Error::KeyStore(_) => {

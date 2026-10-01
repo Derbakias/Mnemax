@@ -59,11 +59,10 @@ export function CameraScan({
     void (async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error("This device can't open its camera here.");
-        const [{ default: jsQR }, opened] = await Promise.all([
-          import('jsqr'),
-          navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }),
-        ]);
-        stream = opened;
+        // The QR reader first: if it can't load, the camera is never turned on.
+        const { default: jsQR } = await import('jsqr');
+        if (closed) return;
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
         const view = video.current;
         if (closed || !view) return close();
         view.srcObject = stream;

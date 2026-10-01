@@ -72,7 +72,7 @@ async fn a_failed_sync_handshake_gets_nothing_back() {
 #[test]
 fn security_settings_have_not_changed() {
     // If one of these changes on purpose, update it here too, so the change is easy to see in review.
-    assert_eq!(OPENING_TIME, Duration::from_secs(5));
+    assert_eq!(OPENING_TIME, Duration::from_secs(1));
     assert_eq!(CONNECT_TIME, Duration::from_secs(3));
     assert_eq!(MAX_PIECE, 65535);
 }

@@ -3,7 +3,7 @@
 //! - Two devices sync only after they were paired, once, with a code (see `pair`).
 //! - The device that showed the code waits for connections; the other one remembers its address and
 //!   connects to it (see `commands` and `listen`).
-//! - Only devices on the home network are let in, and everything after the handshake is encrypted (see `wire`).
+//! - Only devices on the local network are let in, and everything after the handshake is encrypted (see `wire`).
 //! - Syncing only ever adds rounds (see `exchange`), and the page checks every round before saving it.
 //! - The secret key never leaves Rust, and on disk it's always locked by the system's key store (see `vault`).
 
@@ -63,9 +63,9 @@ pub fn now_ms() -> u64 {
 /// Everything sync keeps while the app runs.
 pub struct SyncState {
     dir: PathBuf,
-    vault: Box<dyn vault::Vault>,
-    /// Opened the first time it's needed (the key store may ask to be unlocked), and tried again after a failure.
-    store: Mutex<Option<Store>>,
+    vault: Arc<dyn vault::Vault>,
+    /// Read the first time it's needed, and tried again after a failure.
+    store: Arc<Mutex<Option<Store>>>,
     /// The rounds a device that syncs with this one gets. The page keeps it up to date while listening.
     rounds: Arc<Mutex<Vec<Value>>>,
     pairing: Mutex<Option<JoinHandle<()>>>,
@@ -73,34 +73,55 @@ pub struct SyncState {
 }
 
 impl SyncState {
-    fn new(dir: &Path, vault: Box<dyn vault::Vault>) -> Self {
+    fn new(dir: &Path, vault: Arc<dyn vault::Vault>) -> Self {
         Self {
             dir: dir.to_path_buf(),
             vault,
-            store: Mutex::default(),
+            store: Arc::default(),
             rounds: Arc::default(),
             pairing: Mutex::default(),
             listening: Mutex::default(),
         }
     }
 
-    fn with_store<T>(&self, f: impl FnOnce(&mut Store) -> Result<T, Error>) -> Result<T, Error> {
-        let mut guard = self.store.lock().unwrap_or_else(|e| e.into_inner());
-        if guard.is_none() {
-            let store = Store::open(&self.dir, store::default_device_name(), self.vault.as_ref())
-                .inspect_err(|e| eprintln!("sync: can't open the sync settings: {e} ({})", e.detail()))?;
-            *guard = Some(store);
-        }
-        f(guard.as_mut().expect("opened above"))
+    /// Runs `f` on the sync settings, on a thread of its own: reading and saving the file, and above all the
+    /// key store (which may wait for a password), can take a while, and the rest of the app mustn't wait.
+    async fn run<T: Send + 'static>(
+        &self,
+        f: impl FnOnce(&mut Store, &dyn vault::Vault) -> Result<T, Error> + Send + 'static,
+    ) -> Result<T, Error> {
+        let (dir, vault, store) = (self.dir.clone(), self.vault.clone(), self.store.clone());
+        let task = tauri::async_runtime::spawn_blocking(move || {
+            let mut guard = store.lock().unwrap_or_else(|e| e.into_inner());
+            if guard.is_none() {
+                let opened = Store::open(&dir, store::default_device_name())
+                    .inspect_err(|e| eprintln!("sync: can't open the sync settings: {e} ({})", e.detail()))?;
+                *guard = Some(opened);
+            }
+            f(guard.as_mut().expect("opened above"), vault.as_ref())
+        });
+        task.await.map_err(|e| Error::Storage(e.to_string()))?
     }
 
-    /// This device's secret key and name.
-    fn me(&self) -> Result<(PrivateKey, String), Error> {
-        self.with_store(|s| Ok((s.private_key(), s.name().to_string())))
+    /// Reads or changes the sync settings. Never asks the key store.
+    async fn with_store<T: Send + 'static>(
+        &self,
+        f: impl FnOnce(&mut Store) -> Result<T, Error> + Send + 'static,
+    ) -> Result<T, Error> {
+        self.run(|store, _| f(store)).await
     }
 
+    /// This device's secret key and name. The first time, the key store unlocks the key.
+    async fn me(&self) -> Result<(PrivateKey, String), Error> {
+        self.run(|store, vault| Ok((store.unlock(vault)?, store.name().to_string()))).await
+    }
+
+    /// Is `key` a paired device? Asked in the middle of a handshake, so it can't wait for a thread of its own.
+    /// It doesn't need one: by then the settings are read and the key is unlocked, so they're never held for
+    /// long.
     fn is_paired(&self, key: &[u8]) -> bool {
-        self.with_store(|s| Ok(s.peer(key).is_some())).unwrap_or(false)
+        let guard = self.store.lock().unwrap_or_else(|e| e.into_inner());
+        guard.as_ref().is_some_and(|s| s.peer(key).is_some())
     }
 
     /// Stops a pairing, and waits until it has let go of its port.
@@ -109,6 +130,7 @@ impl SyncState {
         stop(task).await;
     }
 
+    /// Stops listening, and every sync with a device that had connected.
     async fn stop_listening(&self) {
         let task = self.listening.lock().unwrap_or_else(|e| e.into_inner()).take();
         stop(task).await;
@@ -122,18 +144,27 @@ async fn stop(task: Option<JoinHandle<()>>) {
     }
 }
 
-/// Sets up sync with this system's key store.
+/// Sets up sync with this system's key store. If that fails, the app still starts, without sync (its
+/// commands then answer with an error).
 pub fn plugin() -> tauri::plugin::TauriPlugin<tauri::Wry> {
     tauri::plugin::Builder::new("mnemax-sync")
         .setup(|app, _api| {
-            #[cfg(target_os = "android")]
-            let vault = Box::new(vault::KeystoreVault(_api.register_android_plugin("app.mnemax", "KeyVaultPlugin")?));
-            #[cfg(target_os = "ios")]
-            let vault = Box::new(vault::NoVault);
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
-            let vault = Box::new(vault::SystemVault);
-            let dir = app.path().app_data_dir()?;
-            app.manage(SyncState::new(&dir, vault));
+            let setup = || -> Result<SyncState, Box<dyn std::error::Error>> {
+                #[cfg(target_os = "android")]
+                let vault =
+                    Arc::new(vault::KeystoreVault(_api.register_android_plugin("app.mnemax", "KeyVaultPlugin")?));
+                #[cfg(target_os = "ios")]
+                let vault = Arc::new(vault::NoVault);
+                #[cfg(not(any(target_os = "android", target_os = "ios")))]
+                let vault = Arc::new(vault::SystemVault);
+                Ok(SyncState::new(&app.path().app_data_dir()?, vault))
+            };
+            match setup() {
+                Ok(state) => {
+                    app.manage(state);
+                }
+                Err(e) => eprintln!("sync: couldn't set up sync, so it's off: {e}"),
+            }
             Ok(())
         })
         .build()
