@@ -1,14 +1,5 @@
-import {
-  BLANK_MS,
-  COLOR_PALETTE,
-  COLOR_SHADES,
-  clampSettings,
-  defaultSettings,
-  maxMatchesFor,
-  speedOf,
-  speedPreset,
-  stimulusVisibleMs,
-} from '../config';
+import { BLANK_MS, COLOR_PALETTE, COLOR_SHADES } from '@/config/game';
+import { clampSettings, defaultSettings, maxMatchesFor, speedOf, speedPreset, stimulusVisibleMs } from '../rules';
 
 describe('stimulusVisibleMs', () => {
   it('shows the box for all of a trial except the fixed blank', () => {

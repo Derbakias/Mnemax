@@ -1,6 +1,6 @@
 import * as AsyncStorage from './kv';
 
-import { clampSettings } from '../game/config';
+import { clampSettings } from '@/game/rules';
 import type { GameSettings, RoundResult } from '../game/types';
 import { clampPrefs, type AppPrefs } from './prefs';
 

@@ -1,5 +1,5 @@
 import { AccuracyHeading, OutcomeHeading, StreamName } from './stream-table';
-import { TRIALS_PER_ROUND } from '@/game/config';
+import { TRIALS_PER_ROUND } from '@/config/game';
 import { summarizeRound } from '@/game/scoring';
 import type { RoundResult } from '@/game/types';
 import { accuracyColor, useTheme } from '@/lib/theme';

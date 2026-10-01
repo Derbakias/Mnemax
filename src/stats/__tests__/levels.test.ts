@@ -11,7 +11,7 @@ import {
   streamFactor,
   summarizeModes,
 } from '../levels';
-import { speedPreset } from '../../game/config';
+import { speedPreset } from '@/game/rules';
 import type { GameSettings, RoundResult, SpeedId, StreamId, TrialRecord } from '../../game/types';
 
 const DAY = 86400000;

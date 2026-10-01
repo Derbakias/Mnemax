@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import { COLOR_PALETTE, GRID_CELLS, GRID_CENTER_INDEX } from '@/game/config';
+import { COLOR_PALETTE, GRID_CELLS, GRID_CENTER_INDEX } from '@/config/game';
 
 /** The outer cells of the 3×3 grid in clockwise order, starting top-left. */
 const CLOCKWISE = [0, 1, 2, 5, 8, 7, 6, 3];

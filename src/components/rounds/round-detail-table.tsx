@@ -1,7 +1,7 @@
 import { Icon } from '../ui/icon';
 import { STREAM_ICONS } from '../../play/response-buttons';
 import { OUTCOME_LABELS, OutcomeIcon } from './stream-table';
-import { COLOR_NAMES, COLOR_PALETTE, TRIALS_PER_ROUND } from '@/game/config';
+import { COLOR_NAMES, COLOR_PALETTE, TRIALS_PER_ROUND } from '@/config/game';
 import type { RoundResult, StreamId, StreamOutcome, TrialRecord } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
 

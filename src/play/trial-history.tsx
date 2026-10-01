@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import { COLOR_PALETTE, COLOR_SHADES, GRID_CENTER_INDEX, POSITION_ARROWS } from '@/game/config';
+import { COLOR_PALETTE, COLOR_SHADES, GRID_CENTER_INDEX, POSITION_ARROWS } from '@/config/game';
 import type { TrialStimulus } from '@/game/types';
 
 export interface TrialHistoryItem {
