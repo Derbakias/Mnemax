@@ -16,11 +16,10 @@ import {
   withAlpha,
   type ChartZoom,
 } from '../components/charts/uplot-chart';
+import { LEVEL_CHART_HEIGHT } from '@/config/charts';
 import { LEVEL_WINDOW, roundMode, type LevelPoint } from '@/stats/levels';
 import { DATE_LOCALE, exponentialAverage } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
-
-const HEIGHT = 200;
 
 /**
  * Round scores (dots) and their trend, an exponential moving average of LEVEL_WINDOW (line), over the rounds
@@ -114,9 +113,9 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
     <div className="stack-8">
       <RangeChips days={days} zoom={zoom} onPick={setDays} />
       {history.length > 0 ? (
-        <UPlotChart key={zoom.chartKey} options={options} data={data} height={HEIGHT} zoom={zoom} />
+        <UPlotChart key={zoom.chartKey} options={options} data={data} height={LEVEL_CHART_HEIGHT} zoom={zoom} />
       ) : (
-        <div className="chart-box" style={{ height: HEIGHT }}>
+        <div className="chart-box" style={{ height: LEVEL_CHART_HEIGHT }}>
           <span className="t-small secondary">No rounds in this time range.</span>
         </div>
       )}

@@ -14,26 +14,18 @@ import {
   withAlpha,
   type ChartZoom,
 } from '../components/charts/uplot-chart';
+import { DAILY_TIME_CHART_HEIGHT, MIN_ALL_DAYS, MIN_ZOOM_DAYS, MINUTE_STEPS } from '@/config/charts';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
 import { DATE_LOCALE, formatDuration } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
 
-const HEIGHT = 240;
 const DAY_MS = 86400000;
-/** Zooming in stops at this many days across. */
-const MIN_ZOOM_DAYS = 3;
-
-/** Top of the minutes axis: the next of these above the longest day (then whole hours). */
-const MINUTE_STEPS = [1, 2, 3, 5, 10, 15, 20, 30, 45, 60, 90, 120];
 
 function minutesCeiling(maxMinutes: number): number {
   const target = maxMinutes * 1.15;
   return MINUTE_STEPS.find((step) => step >= target) ?? Math.ceil(target / 60) * 60;
 }
-
-/** "all" still spans at least this many days, so a short history isn't stretched across the chart. */
-const MIN_ALL_DAYS = 7;
 
 /**
  * Least-squares line through (x, y) points, evaluated at each x in `at` between the first and last point
@@ -212,11 +204,11 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
       <RangeChips days={rangeDays} zoom={zoom} onPick={setRangeDays} />
 
       {played.length === 0 ? (
-        <div className="chart-box" style={{ height: HEIGHT }}>
+        <div className="chart-box" style={{ height: DAILY_TIME_CHART_HEIGHT }}>
           <span className="t-small secondary">No play time in this range.</span>
         </div>
       ) : (
-        <UPlotChart key={zoom.chartKey} options={options} data={data} height={HEIGHT} zoom={zoom} />
+        <UPlotChart key={zoom.chartKey} options={options} data={data} height={DAILY_TIME_CHART_HEIGHT} zoom={zoom} />
       )}
 
       <ChartLegend
