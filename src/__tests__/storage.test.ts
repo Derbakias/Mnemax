@@ -3,6 +3,7 @@ import {
   clearRoundInProgress,
   clearRounds,
   loadRounds,
+  mergeRounds,
   recoverRoundInProgress,
   saveRoundInProgress,
 } from '../storage';
@@ -94,5 +95,78 @@ describe('storage', () => {
     await clearRoundInProgress();
     await recoverRoundInProgress();
     await expect(loadRounds()).resolves.toEqual([]);
+  });
+
+  describe('mergeRounds', () => {
+    const at = (id: string, finishedAt: number): RoundResult => ({ ...sampleRound(id), finishedAt });
+
+    it('adds the rounds from both devices, newest first', async () => {
+      // Yesterday on the desktop, today on the phone.
+      await appendRound(at('desktop-1', 1000));
+      await appendRound(at('desktop-2', 2000));
+      const { added } = await mergeRounds([at('phone-2', 4000), at('phone-1', 3000)]);
+      expect(added).toBe(2);
+      expect((await loadRounds()).map((r) => r.id)).toEqual(['phone-2', 'phone-1', 'desktop-2', 'desktop-1']);
+    });
+
+    it('adds nothing the second time', async () => {
+      await mergeRounds([at('a', 1000)]);
+      await expect(mergeRounds([at('a', 1000)])).resolves.toEqual({ added: 0 });
+      expect((await loadRounds()).length).toBe(1);
+    });
+
+    it('never changes a saved round', async () => {
+      await appendRound(at('a', 1000));
+      await mergeRounds([{ ...at('a', 1000), stopped: true, trials: [] }]);
+      expect(await loadRounds()).toEqual([at('a', 1000)]);
+    });
+
+    it('keeps the first of two incoming rounds with one id', async () => {
+      const { added } = await mergeRounds([at('a', 2000), at('a', 1000)]);
+      expect(added).toBe(1);
+      expect((await loadRounds()).map((r) => r.finishedAt)).toEqual([2000]);
+    });
+
+    it('ends with the same rounds whichever device merges', async () => {
+      const desktop = [at('d1', 1000), at('same-b', 5000), at('d2', 3000)];
+      const phone = [at('p1', 2000), at('same-a', 5000), at('p2', 4000)];
+
+      await mergeRounds(desktop);
+      await mergeRounds(phone);
+      const desktopFirst = await loadRounds();
+      mockMemory.clear();
+      await mergeRounds(phone);
+      await mergeRounds(desktop);
+
+      expect(await loadRounds()).toEqual(desktopFirst);
+      expect(desktopFirst.map((r) => r.id)).toEqual(['same-a', 'same-b', 'p2', 'd2', 'p1', 'd1']);
+    });
+
+    it('keeps the same newest 500 on both devices, ties broken by id', async () => {
+      // 499 newer rounds, then two that finished at the same moment: only one of them fits.
+      const newer = Array.from({ length: 499 }, (_, i) => at(`n${i}`, 10_000 + i));
+      await mergeRounds([...newer, at('tie-b', 5000)]);
+      await mergeRounds([at('tie-a', 5000)]);
+      const one = await loadRounds();
+      mockMemory.clear();
+      await mergeRounds([...newer, at('tie-a', 5000)]);
+      await mergeRounds([at('tie-b', 5000)]);
+      const other = await loadRounds();
+
+      expect(one.length).toBe(500);
+      expect(other).toEqual(one);
+      expect(one[499].id).toBe('tie-a');
+    });
+
+    it('counts only the rounds it kept', async () => {
+      await mergeRounds(Array.from({ length: 500 }, (_, i) => at(`n${i}`, 10_000 + i)));
+      await expect(mergeRounds([at('old', 1000)])).resolves.toEqual({ added: 0 });
+      expect((await loadRounds()).some((r) => r.id === 'old')).toBe(false);
+    });
+
+    it('loses nothing when a round ends while a sync saves', async () => {
+      await Promise.all([mergeRounds([at('from-phone', 1000)]), appendRound(at('just-played', 2000))]);
+      expect((await loadRounds()).map((r) => r.id)).toEqual(['just-played', 'from-phone']);
+    });
   });
 });

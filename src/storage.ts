@@ -19,6 +19,18 @@ function notifyRoundsChanged() {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUNDS_CHANGED_EVENT));
 }
 
+/**
+ * Fired on `window` when a round played on this device is saved (not when rounds come from a file or another
+ * device), so sync can pass it on without syncing again over rounds it just got.
+ */
+export const ROUND_PLAYED_EVENT = 'mnemax:round-played';
+
+/** Calls `onPlayed` after a round played on this device is saved; returns the unsubscribe function. */
+export function onRoundPlayed(onPlayed: () => void): () => void {
+  window.addEventListener(ROUND_PLAYED_EVENT, onPlayed);
+  return () => window.removeEventListener(ROUND_PLAYED_EVENT, onPlayed);
+}
+
 /** Calls `onChange` after every change to the saved rounds; returns the unsubscribe function. */
 export function onRoundsChanged(onChange: () => void): () => void {
   window.addEventListener(ROUNDS_CHANGED_EVENT, onChange);
@@ -71,43 +83,77 @@ export async function loadRounds(): Promise<RoundResult[]> {
   }
 }
 
-export async function appendRound(round: RoundResult): Promise<RoundResult[]> {
-  const rounds = await loadRounds();
-  const next = [round, ...rounds].slice(0, MAX_ROUNDS);
-  try {
-    await AsyncStorage.setItem(ROUNDS_KEY, JSON.stringify(next));
-  } catch {
-    // persistence failure is non-fatal
-  }
-  notifyRoundsChanged();
-  return next;
+// Every change to the saved rounds reads them, changes them, and writes them back. Two at the same time (a
+// round ending while a sync saves, say) would each write their own copy, and one change would be lost. So
+// they wait in line: each one starts only after the one before has finished.
+let roundsLine: Promise<unknown> = Promise.resolve();
+
+function inLine<T>(change: () => Promise<T>): Promise<T> {
+  const done = roundsLine.then(change, change);
+  roundsLine = done.catch(() => {});
+  return done;
 }
 
-export async function clearRounds(): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(ROUNDS_KEY);
-  } catch {
-    // non-fatal
-  }
-  notifyRoundsChanged();
+export function appendRound(round: RoundResult): Promise<RoundResult[]> {
+  return inLine(async () => {
+    const rounds = await loadRounds();
+    const next = [round, ...rounds].slice(0, MAX_ROUNDS);
+    try {
+      await AsyncStorage.setItem(ROUNDS_KEY, JSON.stringify(next));
+    } catch {
+      // persistence failure is non-fatal
+    }
+    notifyRoundsChanged();
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(ROUND_PLAYED_EVENT));
+    return next;
+  });
 }
 
-// TODO: add test cases
-export async function mergeRounds(incoming: RoundResult[]): Promise<{ added: number }> {
+export function clearRounds(): Promise<void> {
+  return inLine(async () => {
+    try {
+      await AsyncStorage.removeItem(ROUNDS_KEY);
+    } catch {
+      // non-fatal
+    }
+    notifyRoundsChanged();
+  });
+}
+
+/** Newest first; rounds that finished at the same time go by id, so every device keeps the same 500. */
+function newestFirst(a: RoundResult, b: RoundResult): number {
+  return b.finishedAt - a.finishedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+}
+
+/**
+ * Adds the rounds whose id isn't saved yet; a saved round is never changed. A round with the id of one already
+ * saved (or earlier in `incoming`) is dropped. Past 500 the oldest rounds go, as when a round is played.
+ */
+export function mergeRounds(incoming: RoundResult[]): Promise<{ added: number }> {
+  return inLine(() => mergeNow(incoming));
+}
+
+async function mergeNow(incoming: RoundResult[]): Promise<{ added: number }> {
   const existing = await loadRounds();
   const knownIds = new Set(existing.map((r) => r.id));
-  const fresh = incoming.filter((r) => !knownIds.has(r.id));
+  const fresh = incoming.filter((r) => {
+    if (knownIds.has(r.id)) return false;
+    knownIds.add(r.id);
+    return true;
+  });
   if (fresh.length === 0) return { added: 0 };
-  const merged = [...fresh, ...existing]
-    .sort((a, b) => b.finishedAt - a.finishedAt)
-    .slice(0, MAX_ROUNDS);
+  const merged = [...fresh, ...existing].sort(newestFirst).slice(0, MAX_ROUNDS);
+  // Only the ones still there after the cap: older ones than the newest 500 aren't kept.
+  const freshIds = new Set(fresh.map((r) => r.id));
+  const added = merged.filter((r) => freshIds.has(r.id)).length;
+  if (added === 0) return { added: 0 };
   try {
     await AsyncStorage.setItem(ROUNDS_KEY, JSON.stringify(merged));
   } catch {
     // persistence failure is non-fatal
   }
   notifyRoundsChanged();
-  return { added: fresh.length };
+  return { added };
 }
 
 // The round being played is saved after every trial, so a round the app closed in the middle of (quit,

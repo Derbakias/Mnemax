@@ -25,6 +25,8 @@ export interface AppPrefs {
    */
   tutorialHistory: boolean;
   tutorialSolution: boolean;
+  /** Sync with paired devices by itself while the app is open (see src/sync-context.tsx). */
+  autoSync: boolean;
 }
 
 export const DEFAULT_KEY_BINDINGS: Record<StreamId, string> = { position: 'F', color: 'D', number: 'J', audio: 'K' };
@@ -83,6 +85,7 @@ export function clampPrefs(raw: Partial<AppPrefs> | null | undefined): AppPrefs 
     keyBindings: clampKeyBindings(raw?.keyBindings),
     tutorialHistory: raw?.tutorialHistory !== false || !tutorialSolution,
     tutorialSolution,
+    autoSync: raw?.autoSync !== false,
   };
 }
 

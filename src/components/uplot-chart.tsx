@@ -1,10 +1,11 @@
 // TODO: !IMPORTANT! This one needs to be broken down it's too large 
-import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
 import { Icon } from './icon';
 import { useElementWidth } from '@/hooks/use-element-width';
+import { DATE_LOCALE } from '@/stats';
 import type { Theme } from '@/theme';
 
 interface UPlotChartProps {
@@ -13,7 +14,7 @@ interface UPlotChartProps {
   data: uPlot.AlignedData;
   height: number;
   /** Receives the live chart, e.g. to show or hide series without rebuilding it. */
-  plotRef?: MutableRefObject<uPlot | null>;
+  plotRef?: RefObject<uPlot | null>;
   /** For a chart built with `chartInteraction`: its crosshair switch (see CrosshairToggle) applies. */
   zoom?: ChartZoom;
 }
@@ -213,8 +214,8 @@ export function roundDateAxis(theme: Theme, times: number[]): uPlot.Axis {
         if (time == null) return '';
         const date = new Date(time);
         return oneDay
-          ? date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-          : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          ? date.toLocaleTimeString(DATE_LOCALE, { hour: '2-digit', minute: '2-digit' })
+          : date.toLocaleDateString(DATE_LOCALE, { month: 'short', day: 'numeric' });
       });
     },
   });
@@ -251,7 +252,7 @@ export function dayDateAxis(theme: Theme): uPlot.Axis {
       return kept;
     },
     values: (_u, splits) =>
-      splits.map((x) => new Date(x * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
+      splits.map((x) => new Date(x * 1000).toLocaleDateString(DATE_LOCALE, { month: 'short', day: 'numeric' })),
   });
 }
 

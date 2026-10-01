@@ -39,7 +39,8 @@
       }
     },
     "macOS": {
-      "signingIdentity": "-"
+      "signingIdentity": "-",
+      "entitlements": "Entitlements.plist"
     }
   },
   "mainBinaryName": "mnemax"

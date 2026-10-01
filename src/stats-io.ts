@@ -2,6 +2,7 @@
 
 import { isTauri } from '@tauri-apps/api/core';
 
+import { checkRound } from '@/game/round-check';
 import type { RoundResult } from '@/game/types';
 
 export function statsFilename(): string {
@@ -52,17 +53,24 @@ function downloadStatsWeb(json: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+/** Far above what 500 rounds take (8 MB at most); a bigger file isn't an export, and reading it could stall the app. */
+const MAX_FILE_BYTES = 32 * 1024 * 1024;
+
+const tooBig = () => new Error('That file is too big to be a stats export.');
+
+/** Its size is checked before it's read, so a huge file is never loaded. */
 export async function pickStatsFileText(): Promise<string | null> {
   if (!isTauri()) return pickWebFileText();
   const { open } = await import('@tauri-apps/plugin-dialog');
-  const { readTextFile } = await import('@tauri-apps/plugin-fs');
+  const { readTextFile, stat } = await import('@tauri-apps/plugin-fs');
   const path = await open({ multiple: false, directory: false, filters: JSON_FILTERS() });
   if (path == null) return null;
+  if ((await stat(path)).size > MAX_FILE_BYTES) throw tooBig();
   return readTextFile(path);
 }
 
 function pickWebFileText(): Promise<string | null> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json,.json';
@@ -70,6 +78,10 @@ function pickWebFileText(): Promise<string | null> {
       const file = input.files?.[0];
       if (!file) {
         resolve(null);
+        return;
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        reject(tooBig());
         return;
       }
       const reader = new FileReader();
@@ -82,8 +94,9 @@ function pickWebFileText(): Promise<string | null> {
   });
 }
 
-// TODO: needs better sanitisation
-export function parseStatsPayload(text: string): RoundResult[] {
+/** The file's rounds that pass every check, and how many didn't. */
+export function parseStatsPayload(text: string): { rounds: RoundResult[]; skipped: number } {
+  if (text.length > MAX_FILE_BYTES) throw tooBig();
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -98,26 +111,10 @@ export function parseStatsPayload(text: string): RoundResult[] {
   if (!candidate) {
     throw new Error('No "rounds" array found in that file.');
   }
-  const rounds = candidate.filter(isValidRound);
+  const now = Date.now();
+  const rounds = candidate.flatMap((value) => checkRound(value, now) ?? []);
   if (rounds.length === 0) {
     throw new Error('No valid rounds found in that file.');
   }
-  return rounds;
+  return { rounds, skipped: candidate.length - rounds.length };
 }
-
-function isValidRound(value: unknown): value is RoundResult {
-  // TODO: only check if it's an object, not what it's inside
-  if (typeof value !== 'object' || value == null) return false;
-  const round = value as Partial<RoundResult>;
-  return (
-    typeof round.id === 'string' &&
-    round.id.length > 0 &&
-    typeof round.finishedAt === 'number' &&
-    Number.isFinite(round.finishedAt) &&
-    Array.isArray(round.trials) &&
-    typeof round.settings === 'object' &&
-    round.settings != null
-  );
-}
-
-// TODO: feature idea -> add also local sync on the same network for the stats to make it easier

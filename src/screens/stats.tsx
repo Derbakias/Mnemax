@@ -27,8 +27,9 @@ import {
   type ModeSummary,
 } from '@/levels';
 import { useSettings } from '@/settings-context';
-import { aggregateStreams, collectionSummary, formatDuration } from '@/stats';
+import { aggregateStreams, collectionSummary, DATE_LOCALE, formatDuration } from '@/stats';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/storage';
+import { useSync } from '@/sync-context';
 import { accuracyColor, useTheme, type Theme } from '@/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
@@ -40,6 +41,7 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
   const [loaded, setLoaded] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const paired = (useSync().status?.peers.length ?? 0) > 0;
   // Each chart's zoom lives here, so its crosshair switch and Reset zoom can go in the section header.
   const levelZoom = useChartZoom();
   const modeZoom = useChartZoom();
@@ -337,14 +339,19 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
 
       <Section
         title="Round history"
-        info={<p>Every round, newest first. Tap one to see each trial and how you answered it.</p>}
+        info={
+          <p>
+            Every round, newest first. Tap one to see each trial and how you answered it. Clearing deletes the rounds
+            on this device only: a paired device sends them back at the next sync.
+          </p>
+        }
         action={
           <button
             type="button"
             className="text-button t-small"
             style={{ color: confirmClear ? theme.danger : theme.textSecondary }}
             onClick={onClear}>
-            {confirmClear ? 'Tap again to delete all' : 'Clear history'}
+            {confirmClear ? (paired ? 'Tap again (paired devices send them back)' : 'Tap again to clear') : 'Clear history'}
           </button>
         }>
         <div className="panel panel-pad">
@@ -399,7 +406,7 @@ function ModesTable({
 }
 
 function shortDate(time: number): string {
-  return new Date(time).toLocaleDateString(undefined, {
+  return new Date(time).toLocaleDateString(DATE_LOCALE, {
     day: 'numeric',
     month: 'short',
   });
