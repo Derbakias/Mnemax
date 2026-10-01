@@ -1,4 +1,4 @@
-import { useHoverOrTap } from './info-tip';
+import { useHoverOrTap } from './ui/info-tip';
 import { formatCount } from '@/lib/stats';
 
 /**

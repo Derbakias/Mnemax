@@ -92,7 +92,7 @@ describe('what the page is allowed to do', () => {
       [],
     );
     // Only the app's built-in icons go in as raw SVG.
-    expect(filesUsing(page, /dangerouslySetInnerHTML/)).toEqual(['src/components/icon.tsx']);
+    expect(filesUsing(page, /dangerouslySetInnerHTML/)).toEqual(['src/components/ui/icon.tsx']);
   });
 });
 

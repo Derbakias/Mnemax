@@ -1,6 +1,6 @@
 // Pieces of the per-stream tables (the Stats screen's By mode table and the Play screen's last round): a
 // header row of symbols over the columns, then a row per stream (`.stream-table` in CSS).
-import { Icon, type IconName } from './icon';
+import { Icon, type IconName } from './ui/icon';
 import { STREAM_ICONS } from './response-buttons';
 import type { StreamId, StreamOutcome } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';

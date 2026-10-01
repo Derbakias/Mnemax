@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { GridLoader } from '@/components/grid-loader';
-import { Icon, type IconName } from '@/components/icon';
+import { GridLoader } from '@/components/ui/grid-loader';
+import { Icon, type IconName } from '@/components/ui/icon';
 import { PlayScreen, type PlayStage } from '@/screens/play';
 import { SettingsScreen } from '@/screens/settings';
 import { StatsScreen } from '@/screens/stats';

@@ -1,13 +1,13 @@
 // TODO: !IMPORTANT! This one also needs to be broken down (the round view and the start screen)
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
-import { Icon } from '@/components/icon';
-import { HudDropdown } from '@/components/hud-dropdown';
+import { Icon } from '@/components/ui/icon';
+import { HudDropdown } from '@/components/ui/hud-dropdown';
 import { ResponseButtons, STREAM_ICONS } from '@/components/response-buttons';
 import { RoundDetailTable } from '@/components/round-detail-table';
 import { RoundHistoryList } from '@/components/round-history-list';
 import { RoundSummaryCard } from '@/components/round-summary-card';
-import { Stepper } from '@/components/stepper';
+import { Stepper } from '@/components/ui/stepper';
 import { StimulusGrid } from '@/components/stimulus-grid';
 import { TrialHistory } from '@/components/trial-history';
 import { MAX_N, MIN_N, SPEED_PRESETS, TRIALS_PER_ROUND, speedOf, speedPreset, stimulusVisibleMs } from '@/game/config';

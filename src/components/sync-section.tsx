@@ -1,6 +1,6 @@
 import { useEffect, useState, type SubmitEvent } from 'react';
 
-import { Section } from './section';
+import { Section } from './ui/section';
 import { SyncLog } from './sync-log';
 import { Pairing } from './sync-pairing';
 import { PeerRow } from './sync-peer';
