@@ -117,7 +117,7 @@ export const settingsCopy = {
     ),
     /** Shown under the buttons after an export or import. `n` is a number of rounds. */
     nothingToExport: 'Nothing to export yet — play a round first.',
-    exported: (n: number) => `Exported ${n} rounds.`,
+    exported: (n: number) => `Exported ${n} round${n === 1 ? '' : 's'}.`,
     exportFailed: 'Export failed.',
     imported: (n: number) => `Imported ${n} new round${n === 1 ? '' : 's'}.`,
     nothingNew: 'No new rounds found.',
