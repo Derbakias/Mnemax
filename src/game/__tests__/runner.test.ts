@@ -122,6 +122,26 @@ describe('round runner', () => {
     expect(onFinish.mock.calls[0][0].durationMs).toBe(TRIAL_MS * TRIALS_PER_ROUND);
   });
 
+  it('keeps the timing across two pauses in one trial, and times answers without the pauses', () => {
+    runner.startRound(makeSettings());
+    vi.advanceTimersByTime(300);
+    runner.pauseRound();
+    vi.advanceTimersByTime(5_000);
+    runner.resumeRound();
+    vi.advanceTimersByTime(300);
+    runner.pauseRound();
+    vi.advanceTimersByTime(5_000);
+    runner.resumeRound();
+
+    // 600 ms of play so far in this trial, pauses left out.
+    runner.respond('position');
+    vi.advanceTimersByTime(TRIAL_MS - 600 - 1);
+    expect(useRoundStore.getState().trialIndex).toBe(0);
+    vi.advanceTimersByTime(1);
+    expect(useRoundStore.getState().trialIndex).toBe(1);
+    expect(useRoundStore.getState().history[0].responseTimesMs?.position).toBe(600);
+  });
+
   it('reports a stopped round with only the trials already finished', () => {
     runner.startRound(makeSettings());
     vi.advanceTimersByTime(TRIAL_MS * 3 + 500);

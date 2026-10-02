@@ -215,7 +215,8 @@ export function createRoundRunner({ now = Date.now }: { now?: () => number } = {
     const index = snapshot.trialIndex;
     // Paused in the blank: answers stay closed until the next trial.
     trialActive = remainingVisibleMs > 0;
-    trialStart = now();
+    // The trial "started" as long ago as it has been played, so a later pause and the answer times skip the pause.
+    trialStart = now() - (current.settings.trialDurationMs - remainingTrialMs);
     segmentStart = now();
     setState((prev) => ({ ...prev, paused: false }));
 
