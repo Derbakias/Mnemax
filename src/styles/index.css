@@ -2154,7 +2154,7 @@ p {
 /* Round charts pan with click-and-hold and stretch an axis when dragged along it. */
 .uplot-box .u-over.pannable {
   cursor: grab;
-  /* Pinches and sideways drags go to the chart (crosshair, zoom; see chartInteraction); vertical swipes still scroll. */
+  /* Pinches and sideways drags go to the chart (crosshair, zoom; see addTouchControls); vertical swipes still scroll. */
   touch-action: pan-y;
 }
 /* Zoomed in, a finger moves the chart up and down as well, so vertical swipes on it no longer scroll the

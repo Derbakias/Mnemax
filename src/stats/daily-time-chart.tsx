@@ -2,18 +2,11 @@ import { useMemo, useState } from 'react';
 import uPlot from 'uplot';
 
 import { ChartLegend } from './chart-legend';
-import {
-  RangeChips,
-  UPlotChart,
-  axisStyle,
-  chartInteraction,
-  dayDateAxis,
-  fitAxisSize,
-  fittedRange,
-  tooltipPlugin,
-  withAlpha,
-  type ChartZoom,
-} from '../components/charts/uplot-chart';
+import { RangeChips, UPlotChart } from '@/components/charts/uplot-chart';
+import { axisStyle, dayDateAxis, fitAxisSize } from '@/components/charts/axes';
+import { fittedRange, withAlpha } from '@/components/charts/series';
+import { tooltipPlugin } from '@/components/charts/tooltip';
+import { chartInteraction, type ChartZoom } from '@/components/charts/zoom';
 import { DAILY_TIME_CHART_HEIGHT, MIN_ALL_DAYS, MIN_ZOOM_DAYS, MINUTE_STEPS } from '@/config/charts';
 import { statsCopy } from '@/copy/stats';
 import type { RoundResult } from '@/game/types';

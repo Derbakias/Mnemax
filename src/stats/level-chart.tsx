@@ -3,19 +3,11 @@ import type uPlot from 'uplot';
 
 import { ChartLegend } from './chart-legend';
 import { modeLabel } from './mode-badge';
-import {
-  RangeChips,
-  UPlotChart,
-  axisStyle,
-  dotSeries,
-  fittedRange,
-  lineSeries,
-  roundChartInteraction,
-  roundDateAxis,
-  tooltipPlugin,
-  withAlpha,
-  type ChartZoom,
-} from '../components/charts/uplot-chart';
+import { RangeChips, UPlotChart } from '@/components/charts/uplot-chart';
+import { axisStyle, roundDateAxis } from '@/components/charts/axes';
+import { dotSeries, fittedRange, lineSeries, withAlpha } from '@/components/charts/series';
+import { tooltipPlugin } from '@/components/charts/tooltip';
+import { roundChartInteraction, type ChartZoom } from '@/components/charts/zoom';
 import { LEVEL_CHART_HEIGHT } from '@/config/charts';
 import { statsCopy } from '@/copy/stats';
 import { DATE_LOCALE, LEVEL_WINDOW } from '@/config/stats';
