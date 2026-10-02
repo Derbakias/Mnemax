@@ -57,8 +57,8 @@ export function syncPlan(now: SyncInputs): { listen: boolean; auto: boolean } {
   };
 }
 
-/** Starts watching, once, when the app starts (only in the app). */
-export function startSyncDriver(): void {
+/** Starts watching, once, when the app starts (only in the app). Returns how to stop everything (for tests). */
+export function startSyncDriver(): () => void {
   let listen = false;
   let auto = false;
   let stopListen: (() => void) | null = null;
@@ -137,18 +137,29 @@ export function startSyncDriver(): void {
 
   // After a round is played, a sync a moment later (it does nothing while syncing by itself is off).
   let later: ReturnType<typeof setTimeout> | undefined;
-  onRoundPlayed(() => {
+  const stopHearingRounds = onRoundPlayed(() => {
     clearTimeout(later);
     later = setTimeout(() => void syncAll('A round was played'), AUTO_SYNC_DELAY_MS);
   });
 
-  useSyncStore.getState().setScreen({ visible: document.visibilityState === 'visible' });
-  document.addEventListener('visibilitychange', () =>
-    useSyncStore.getState().setScreen({ visible: document.visibilityState === 'visible' }),
-  );
-  useSyncStore.subscribe(update);
-  useSettingsStore.subscribe(update);
+  const onVisibility = () => useSyncStore.getState().setScreen({ visible: document.visibilityState === 'visible' });
+  onVisibility();
+  document.addEventListener('visibilitychange', onVisibility);
+  const stopWatchingSync = useSyncStore.subscribe(update);
+  const stopWatchingSettings = useSettingsStore.subscribe(update);
   update();
+
+  return () => {
+    stopWatchingSync();
+    stopWatchingSettings();
+    document.removeEventListener('visibilitychange', onVisibility);
+    stopHearingRounds();
+    clearTimeout(later);
+    listen = false;
+    auto = false;
+    stopListen?.();
+    stopAuto?.();
+  };
 }
 
 // Starting and stopping one after the other, in order: a stop still on its way mustn't end a later start.
