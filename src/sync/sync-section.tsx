@@ -5,7 +5,7 @@ import { syncCopy } from '@/copy/sync';
 import { SyncLog } from './sync-log';
 import { Pairing } from './sync-pairing';
 import { PeerRow } from './sync-peer';
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 import { useSync } from '@/stores/sync-context';
 import { cancelPairing, renameDevice } from '@/sync/sync';
 
@@ -18,7 +18,8 @@ export function SyncSection({ active }: { active: boolean }) {
 }
 
 function SyncPanel({ active }: { active: boolean }) {
-  const { prefs, setAutoSync } = useSettings();
+  const autoSync = useSettingsStore((s) => s.prefs.autoSync);
+  const setAutoSync = useSettingsStore((s) => s.setAutoSync);
   const { status, setStatus, usable, listening, refresh, notice, failWith, dismiss, log, syncing } = useSync();
   const [pairing, setPairing] = useState<{ how: 'show' | 'enter'; hint?: string } | null>(null);
   const [nameDraft, setNameDraft] = useState<string | null>(null);
@@ -141,11 +142,11 @@ function SyncPanel({ active }: { active: boolean }) {
               type="checkbox"
               role="switch"
               className="switch"
-              checked={prefs.autoSync}
+              checked={autoSync}
               onChange={(e) => setAutoSync(e.target.checked)}
             />
           </label>
-          {peers.length > 0 && <p className="t-small secondary">{reachText(listening, prefs.autoSync)}</p>}
+          {peers.length > 0 && <p className="t-small secondary">{reachText(listening, autoSync)}</p>}
         </div>
       )}
       {!usable && status == null && notice?.kind === 'error' && (

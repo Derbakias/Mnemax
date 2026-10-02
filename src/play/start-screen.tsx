@@ -13,7 +13,7 @@ import { MAX_N, MIN_N } from '@/config/game';
 import type { GamePhase } from '@/game/engine';
 import type { GameSettings, RoundResult, StreamId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 
 /**
  * The screen between rounds: the HUD (daily target, N level, speed, tutorial mode), the streams to play,
@@ -40,7 +40,9 @@ export function StartScreen({
   loaded: boolean;
   onMain: () => void;
 }) {
-  const { setNLevel, setSpeed, toggleStream } = useSettings();
+  const setNLevel = useSettingsStore((s) => s.setNLevel);
+  const setSpeed = useSettingsStore((s) => s.setSpeed);
+  const toggleStream = useSettingsStore((s) => s.toggleStream);
   const showLatest = phase === 'finished' && sessionRounds.length > 0;
 
   return (

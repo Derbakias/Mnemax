@@ -25,7 +25,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 import { useAutoSync } from '@/sync/sync-auto';
 import { onRoundsChanged } from '@/lib/storage';
 import {
@@ -109,7 +109,8 @@ export function SyncProvider({
   children: ReactNode;
 }) {
   const available = syncAvailable();
-  const { prefs, ready: prefsReady } = useSettings();
+  const autoSync = useSettingsStore((s) => s.prefs.autoSync);
+  const prefsReady = useSettingsStore((s) => s.ready);
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const { notice, log, note, restart, inform, failWith, dismiss } = useSyncMessages();
   const [listening, setListening] = useState(false);
@@ -149,7 +150,7 @@ export function SyncProvider({
   const visible = usePageVisible();
   const awake = !isPhone() || visible;
   const ready = available && usable && prefsReady && awake;
-  const shouldListen = ready && waitsFor && !playing && (prefs.autoSync || settingsActive);
+  const shouldListen = ready && waitsFor && !playing && (autoSync || settingsActive);
 
   const onListen = useCallback(
     (event: ListenEvent) => {
@@ -267,7 +268,7 @@ export function SyncProvider({
   const syncWithPeer = useCallback((peer: SyncPeer) => syncPeer(peer, false), [syncPeer]);
 
   // Syncing by itself.
-  useAutoSync(ready && connectsTo && prefs.autoSync && !playing, syncPeer, note);
+  useAutoSync(ready && connectsTo && autoSync && !playing, syncPeer, note);
 
   const value = useMemo<SyncContextValue>(
     () => ({

@@ -6,7 +6,7 @@ import { useGameEngine } from '@/game/engine';
 import type { GameSettings, RoundResult } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
 import { normalizeKey } from '@/lib/prefs';
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 import { primeSpeech } from '@/lib/speech';
 import { playedOnDayMs, roundDurationMs } from '@/lib/stats';
 import {
@@ -34,7 +34,8 @@ export function PlayScreen({
   onReady?: () => void;
   onStageChange?: (stage: PlayStage) => void;
 }) {
-  const { settings, prefs } = useSettings();
+  const settings = useSettingsStore((s) => s.settings);
+  const prefs = useSettingsStore((s) => s.prefs);
   const [sessionRounds, setSessionRounds] = useState<RoundResult[]>([]);
   // Null until the saved rounds have loaded, so the daily target doesn't flash 0% on start.
   const [savedRounds, setSavedRounds] = useState<RoundResult[] | null>(null);

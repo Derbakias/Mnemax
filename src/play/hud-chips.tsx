@@ -7,11 +7,11 @@ import { SPEED_PRESETS } from '@/config/game';
 import { speedPreset } from '@/game/rules';
 import type { SpeedId } from '@/game/types';
 import { formatDuration } from '@/lib/format';
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 
 // The daily target chip, with today's play against the goal (from Settings) in its panel.
 export function DailyTargetChip({ loaded, todayMs }: { loaded: boolean; todayMs: number }) {
-  const minutes = useSettings().prefs.dailyTargetMinutes;
+  const minutes = useSettingsStore((s) => s.prefs.dailyTargetMinutes);
   const targetMs = minutes * 60_000;
   const percent = Math.floor((todayMs / targetMs) * 100);
   const reached = todayMs >= targetMs;

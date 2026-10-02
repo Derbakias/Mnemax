@@ -7,7 +7,7 @@ import { appCopy } from '@/copy/app';
 import { PlayScreen, type PlayStage } from '@/play/play-screen';
 import { SettingsScreen } from '@/settings/settings-screen';
 import { StatsScreen } from '@/stats/stats-screen';
-import { SettingsProvider, useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 import { SyncProvider } from '@/stores/sync-context';
 import { preloadSpeech } from '@/lib/speech';
 
@@ -19,24 +19,16 @@ const TABS: { id: Tab; icon: IconName }[] = [
   { id: 'settings', icon: 'settings-outline' },
 ];
 
-export default function App() {
-  return (
-    <SettingsProvider>
-      <AppShell />
-    </SettingsProvider>
-  );
-}
-
 type SplashState = 'showing' | 'fading' | 'gone';
 
-function AppShell() {
+export default function App() {
   const [tab, setTab] = useState<Tab>('play');
   // A round takes the whole screen: no tab bar while it runs. When it's paused the tab bar comes back over
   // the bottom of the screen, without moving the game under it.
   const [playStage, setPlayStage] = useState<PlayStage>('start');
   const tabBarHidden = tab === 'play' && playStage === 'playing';
   const tabBarOverlay = tab === 'play' && playStage === 'paused';
-  const { ready: settingsReady } = useSettings();
+  const settingsReady = useSettingsStore((s) => s.ready);
   const [splash, setSplash] = useState<SplashState>('showing');
   const [minTimeDone, setMinTimeDone] = useState(false);
   const [playReady, setPlayReady] = useState(false);
