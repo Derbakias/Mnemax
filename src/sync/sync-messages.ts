@@ -1,10 +1,7 @@
 // What the Sync section tells the person: the latest message (what happened, or what went wrong), and the
-// step-by-step log of the latest pairing or sync, for when something fails.
-
-import { useCallback, useState } from 'react';
+// step-by-step log of the latest pairing or sync, for when something fails. They're kept in src/stores/sync.ts.
 
 import type { SyncResult } from '@/sync/sync';
-import { MAX_LOG_LINES } from '@/config/sync';
 import { syncCopy } from '@/copy/sync';
 
 /** A message under the Sync section. */
@@ -19,38 +16,6 @@ export type PeerNote = Notice & { key: string; reconnect?: boolean };
 export interface LogLine {
   at: number;
   text: string;
-}
-
-export function useSyncMessages() {
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const [log, setLog] = useState<{ start: number; lines: LogLine[] }>({ start: Date.now(), lines: [] });
-
-  const note = useCallback((text: string) => {
-    setLog((l) => ({ ...l, lines: [...l.lines.slice(-(MAX_LOG_LINES - 1)), { at: Date.now(), text }] }));
-  }, []);
-  /**
-   * Starts the log over: a new attempt. The message stays until the attempt brings its own, so nothing on the
-   * page disappears and comes back (which made everything below it jump).
-   */
-  const restart = useCallback((text: string) => {
-    const start = Date.now();
-    setLog({ start, lines: [{ at: start, text }] });
-  }, []);
-  const inform = useCallback((text: string) => setNotice({ kind: 'info', text }), []);
-  /** Shows the error, and notes it in the log unless `noteIt` is false (Rust notes its own). */
-  const failWith = useCallback(
-    (error: unknown, noteIt = true) => {
-      const text = errorText(error);
-      setNotice({ kind: 'error', text });
-      if (noteIt) {
-        note(`Failed: ${text}`);
-      }
-    },
-    [note],
-  );
-  const dismiss = useCallback(() => setNotice(null), []);
-
-  return { notice, log, note, restart, inform, failWith, dismiss };
 }
 
 export function syncedText({ added, skipped }: SyncResult): string {

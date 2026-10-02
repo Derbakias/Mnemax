@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type SubmitEvent } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { syncCopy } from '@/copy/sync';
 import { EnterCode } from './sync-enter-code';
 import { ShowCode } from './sync-show-code';
-import { useSync } from '@/stores/sync-context';
+import { useSyncStore } from '@/stores/sync';
 import { errorText } from '@/sync/sync-messages';
 import {
   cancelPairing,
@@ -45,7 +46,15 @@ export function Pairing({
   active: boolean;
   onEnd: () => void;
 }) {
-  const { note, restart, inform, failWith, refresh } = useSync();
+  const { note, restart, inform, failWith, refresh } = useSyncStore(
+    useShallow((s) => ({
+      note: s.note,
+      restart: s.restart,
+      inform: s.inform,
+      failWith: s.failWith,
+      refresh: s.refresh,
+    })),
+  );
   const [step, setStep] = useState<Step>({ step: 'entering' });
   const [address, setAddress] = useState('');
   const [code, setCode] = useState('');

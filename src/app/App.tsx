@@ -8,7 +8,7 @@ import { PlayScreen, type PlayStage } from '@/play/play-screen';
 import { SettingsScreen } from '@/settings/settings-screen';
 import { StatsScreen } from '@/stats/stats-screen';
 import { useSettingsStore } from '@/stores/settings';
-import { SyncProvider } from '@/stores/sync-context';
+import { useSyncStore } from '@/stores/sync';
 import { preloadSpeech } from '@/lib/speech';
 
 type Tab = 'play' | 'stats' | 'settings';
@@ -39,6 +39,11 @@ export default function App() {
   const [audioReady, setAudioReady] = useState(false);
   const dataReady = settingsReady && playReady && statsReady && audioReady;
 
+  // Sync needs to know when the Settings tab is open and when a round is being played (see src/sync/sync-auto.ts).
+  useEffect(() => {
+    useSyncStore.getState().setScreen({ settingsActive: tab === 'settings', playing: playStage === 'playing' });
+  }, [tab, playStage]);
+
   useEffect(() => {
     // Settles on failure too (letters then load on Play), so the startup screen can't hang on it.
     preloadSpeech().finally(() => setAudioReady(true));
@@ -68,50 +73,47 @@ export default function App() {
 
   // All screens stay mounted (like the Expo tab navigator) so a running round survives tab switches.
   return (
-    // Sync runs app-wide: it listens and syncs by itself while the app is open, never during a round.
-    <SyncProvider settingsActive={tab === 'settings'} playing={playStage === 'playing'}>
-      {/* Buttons don't take focus from a mouse click or tap (Tab still reaches them): a focused button,
-          like the Play button or the Play tab, would catch the answer keys, so arrow keys moved focus and
-          showed a focus ring instead of answering. Only buttons: sliders and inputs still need the press. */}
-      <div
-        className="app"
-        onMouseDown={(e) => {
-          if ((e.target as HTMLElement).closest('button')) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <main className="screen play-screen" hidden={tab !== 'play'}>
-          {/* Keyboard shortcuts stay off under the startup screen, so Space can't start a round behind it. */}
-          <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} onStageChange={setPlayStage} />
-        </main>
-        <main className="screen stats-screen" hidden={tab !== 'stats'}>
-          <StatsScreen onReady={onStatsReady} />
-        </main>
-        <main className="screen" hidden={tab !== 'settings'}>
-          <SettingsScreen active={tab === 'settings'} />
-        </main>
-        <nav className={tabBarOverlay ? 'tab-bar overlay' : 'tab-bar'} hidden={tabBarHidden}>
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={tab === t.id ? 'tab on' : 'tab'}
-              aria-current={tab === t.id ? 'page' : undefined}
-              onClick={() => setTab(t.id)}
-            >
-              <Icon name={t.icon} size={24} />
-              <span>{appCopy.tabs[t.id]}</span>
-            </button>
-          ))}
-        </nav>
-        {splash !== 'gone' && (
-          <div className={splash === 'fading' ? 'splash fading' : 'splash'}>
-            <GridLoader label="Loading" size="large" />
-            <span className="splash-title">{appCopy.splashTitle}</span>
-          </div>
-        )}
-      </div>
-    </SyncProvider>
+    // Buttons don't take focus from a mouse click or tap (Tab still reaches them): a focused button,
+    // like the Play button or the Play tab, would catch the answer keys, so arrow keys moved focus and
+    // showed a focus ring instead of answering. Only buttons: sliders and inputs still need the press.
+    <div
+      className="app"
+      onMouseDown={(e) => {
+        if ((e.target as HTMLElement).closest('button')) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <main className="screen play-screen" hidden={tab !== 'play'}>
+        {/* Keyboard shortcuts stay off under the startup screen, so Space can't start a round behind it. */}
+        <PlayScreen active={tab === 'play' && splash === 'gone'} onReady={onPlayReady} onStageChange={setPlayStage} />
+      </main>
+      <main className="screen stats-screen" hidden={tab !== 'stats'}>
+        <StatsScreen onReady={onStatsReady} />
+      </main>
+      <main className="screen" hidden={tab !== 'settings'}>
+        <SettingsScreen active={tab === 'settings'} />
+      </main>
+      <nav className={tabBarOverlay ? 'tab-bar overlay' : 'tab-bar'} hidden={tabBarHidden}>
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            className={tab === t.id ? 'tab on' : 'tab'}
+            aria-current={tab === t.id ? 'page' : undefined}
+            onClick={() => setTab(t.id)}
+          >
+            <Icon name={t.icon} size={24} />
+            <span>{appCopy.tabs[t.id]}</span>
+          </button>
+        ))}
+      </nav>
+      {splash !== 'gone' && (
+        <div className={splash === 'fading' ? 'splash fading' : 'splash'}>
+          <GridLoader label="Loading" size="large" />
+          <span className="splash-title">{appCopy.splashTitle}</span>
+        </div>
+      )}
+    </div>
   );
 }
