@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import uPlot from 'uplot';
 
 import { ChartLegend } from './chart-legend';
@@ -20,6 +20,20 @@ const DAY_MS = 86400000;
 function minutesCeiling(maxMinutes: number): number {
   const target = maxMinutes * 1.15;
   return MINUTE_STEPS.find((step) => step >= target) ?? Math.ceil(target / 60) * 60;
+}
+
+/** The start of today, which moves on at midnight (the Stats screen stays mounted). */
+function useToday(): number {
+  const [today, setToday] = useState(() => startOfDay(Date.now()));
+  useEffect(() => {
+    const d = new Date(today);
+    // The next midnight by the calendar, so a daylight-saving day (23 or 25 hours) still works. At least
+    // `next`, in case the timer fires a moment early; later if the device slept through midnight.
+    const next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+    const timer = setTimeout(() => setToday(Math.max(next, startOfDay(Date.now()))), next - Date.now());
+    return () => clearTimeout(timer);
+  }, [today]);
+  return today;
 }
 
 /**
@@ -54,8 +68,7 @@ function trendLine(points: { x: number; y: number }[], at: number[]): (number | 
 export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: ChartZoom }) {
   const theme = useTheme();
   const [rangeDays, setRangeDays] = useState<number | null>(30);
-  // Read on every render (the Stats screen stays mounted), so the chart moves on past midnight.
-  const today = startOfDay(Date.now());
+  const today = useToday();
 
   const allDays = useMemo(() => dailyStats(rounds), [rounds]);
 
@@ -191,7 +204,7 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
         }),
       ],
     };
-    // chartKey: a reset rebuilds the chart, and the rebuilt one needs fresh zoom state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chartKey: a reset rebuilds the chart, which needs fresh zoom state.
   }, [days, theme, zoom.setZoomed, zoom.reset, zoom.chartKey]);
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
@@ -12,19 +12,17 @@ interface UPlotChartProps {
   options: Omit<uPlot.Options, 'width' | 'height'>;
   data: uPlot.AlignedData;
   height: number;
-  /** Receives the live chart, e.g. to show or hide series without rebuilding it. */
-  plotRef?: RefObject<uPlot | null>;
+  /** Which data series to show (entry i is series i + 1); changing it doesn't rebuild the chart. */
+  seriesShown?: boolean[];
   /** For a chart built with `chartInteraction`: its crosshair switch (see CrosshairToggle) applies. */
   zoom?: ChartZoom;
 }
 
 // uPlot draws on a canvas, so it can't follow CSS: the chart is rebuilt whenever its options or data
 // change (theme colors come in through the options), and only resized when the width changes.
-export function UPlotChart({ options, data, height, plotRef: externalRef, zoom }: UPlotChartProps) {
+export function UPlotChart({ options, data, height, seriesShown, zoom }: UPlotChartProps) {
   const [boxRef, width] = useElementWidth<HTMLDivElement>();
   const plotRef = useRef<uPlot | null>(null);
-  const externalRefRef = useRef(externalRef);
-  externalRefRef.current = externalRef;
   const widthRef = useRef(width);
   widthRef.current = width;
   const hasWidth = width > 0;
@@ -36,17 +34,22 @@ export function UPlotChart({ options, data, height, plotRef: externalRef, zoom }
     }
     const plot = new uPlot({ ...options, width: widthRef.current, height }, data, el);
     plotRef.current = plot;
-    if (externalRefRef.current) {
-      externalRefRef.current.current = plot;
-    }
     return () => {
       plot.destroy();
       plotRef.current = null;
-      if (externalRefRef.current) {
-        externalRefRef.current.current = null;
-      }
     };
   }, [boxRef, options, data, height, hasWidth]);
+
+  // Shows or hides series on the live chart. It runs after the one above with the same triggers, so a
+  // rebuilt chart gets the hidden series hidden again.
+  useEffect(() => {
+    const plot = plotRef.current;
+    seriesShown?.forEach((show, i) => {
+      if (plot && plot.series[i + 1].show !== show) {
+        plot.setSeries(i + 1, { show });
+      }
+    });
+  }, [boxRef, options, data, height, hasWidth, seriesShown]);
 
   useEffect(() => {
     if (width > 0) {

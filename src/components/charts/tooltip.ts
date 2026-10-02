@@ -39,9 +39,10 @@ export interface TooltipContent {
 
 /**
  * A floating tooltip that follows the cursor (or a tap) and shows details for the data point under it.
- * Charts using it usually hide uPlot's legend (`legend: { show: false }`).
+ * Charts using it usually hide uPlot's legend (`legend: { show: false }`). `render` also gets the chart, e.g.
+ * to skip hidden series.
  */
-export function tooltipPlugin(render: (idx: number) => TooltipContent | null): uPlot.Plugin {
+export function tooltipPlugin(render: (idx: number, u: uPlot) => TooltipContent | null): uPlot.Plugin {
   let tip: HTMLDivElement | null = null;
   return {
     hooks: {
@@ -56,7 +57,7 @@ export function tooltipPlugin(render: (idx: number) => TooltipContent | null): u
           return;
         }
         const { idx, left, top } = u.cursor;
-        const content = idx == null || left == null || left < 0 ? null : render(idx);
+        const content = idx == null || left == null || left < 0 ? null : render(idx, u);
         if (!content || left == null) {
           tip.style.display = 'none';
           return;

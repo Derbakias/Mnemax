@@ -23,8 +23,10 @@ import { useTheme } from '@/lib/theme';
  */
 export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[]; zoom: ChartZoom }) {
   const theme = useTheme();
-  const [days, setDays] = useState<number | null>(null);
-  // The range is worked out when the history or range change (not once at mount), so it doesn't go stale.
+  // The picked range, and its cutoff: worked out when it's picked, so it doesn't go stale.
+  const [range, setRange] = useState<{ days: number | null; since: number }>({ days: null, since: -Infinity });
+  const pickRange = (days: number | null) =>
+    setRange({ days, since: days == null ? -Infinity : Date.now() - days * 86400000 });
   // The trend over every round ever played (it starts at the LEVEL_WINDOW-th, so the first rounds don't
   // show an average of fewer), cut to the range below.
   const allTrend = useMemo(
@@ -36,16 +38,14 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
     [allHistory],
   );
   const { history, trend } = useMemo(() => {
-    const now = Date.now();
-    const cutoff = days == null ? -Infinity : now - days * 86400000;
     // History is oldest first, so the range is its tail.
-    const start = allHistory.findIndex((p) => p.finishedAt >= cutoff);
+    const start = allHistory.findIndex((p) => p.finishedAt >= range.since);
     const from = start === -1 ? allHistory.length : start;
     return {
       history: allHistory.slice(from),
       trend: allTrend.slice(from),
     };
-  }, [allHistory, allTrend, days]);
+  }, [allHistory, allTrend, range.since]);
 
   const data = useMemo<uPlot.AlignedData>(
     () => [history.map((_, i) => i + 1), history.map((p) => p.score), trend],
@@ -100,12 +100,12 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
         }),
       ],
     };
-    // chartKey: a reset rebuilds the chart, and the rebuilt one needs fresh zoom state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chartKey: a reset rebuilds the chart, which needs fresh zoom state.
   }, [history, trend, theme, zoom.setZoomed, zoom.reset, zoom.chartKey]);
 
   return (
     <div className="stack-8">
-      <RangeChips days={days} zoom={zoom} onPick={setDays} />
+      <RangeChips days={range.days} zoom={zoom} onPick={pickRange} />
       {history.length > 0 ? (
         <UPlotChart key={zoom.chartKey} options={options} data={data} height={LEVEL_CHART_HEIGHT} zoom={zoom} />
       ) : (
