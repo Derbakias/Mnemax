@@ -2,19 +2,11 @@ import { useMemo, useRef, useState } from 'react';
 import type uPlot from 'uplot';
 
 import { ChartLegend } from './chart-legend';
-import {
-  RangeChips,
-  UPlotChart,
-  axisStyle,
-  dotSeries,
-  fittedRange,
-  lineSeries,
-  roundChartInteraction,
-  roundDateAxis,
-  tooltipPlugin,
-  withAlpha,
-  type ChartZoom,
-} from '../components/charts/uplot-chart';
+import { RangeChips, UPlotChart } from '@/components/charts/uplot-chart';
+import { axisStyle, roundDateAxis } from '@/components/charts/axes';
+import { dotSeries, fittedRange, lineSeries, withAlpha } from '@/components/charts/series';
+import { tooltipPlugin } from '@/components/charts/tooltip';
+import { roundChartInteraction, type ChartZoom } from '@/components/charts/zoom';
 import {
   MAX_ESTIMATE_HOURS,
   PROGRESS_CHART_HEIGHT,
