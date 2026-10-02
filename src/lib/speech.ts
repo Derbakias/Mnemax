@@ -17,9 +17,8 @@ let buffers: Map<string, AudioBuffer> | null = null;
 let loading: Promise<void> | null = null;
 let current: AudioBufferSourceNode | null = null;
 
-// TODO: Check this out, looks like a code smell
-/** Bumped by every speakLetter/stopSpeech, so a letter waiting for the clips to load can tell it's stale. */
-let requestId = 0;
+/** The letter waiting for the clips to finish loading. A newer letter replaces it; stopping clears it. */
+let pendingLetter: string | null = null;
 
 function getContext(): AudioContext | null {
   if (context) {
@@ -74,16 +73,19 @@ export function primeSpeech(): void {
 }
 
 export function speakLetter(letter: string): void {
-  const id = ++requestId;
   if (!buffers) {
-    // Still loading: play once ready, unless the trial has moved on (another letter, or stopped) by then.
+    // Still loading: play the latest letter once ready, unless the trial was stopped by then.
+    pendingLetter = letter;
     loadClips().then(() => {
-      if (id === requestId) {
-        play(letter);
+      if (pendingLetter !== null) {
+        const next = pendingLetter;
+        pendingLetter = null;
+        play(next);
       }
     });
     return;
   }
+  pendingLetter = null;
   play(letter);
 }
 
@@ -105,7 +107,7 @@ function play(letter: string): void {
 }
 
 export function stopSpeech(): void {
-  requestId++;
+  pendingLetter = null;
   try {
     current?.stop();
   } catch {

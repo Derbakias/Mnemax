@@ -10,7 +10,7 @@ import { RoundSummaryCard } from '@/components/rounds/round-summary-card';
 import { Stepper } from '@/components/ui/stepper';
 import { playCopy } from '@/copy/play';
 import { MAX_N, MIN_N } from '@/config/game';
-import type { GamePhase } from '@/game/engine';
+import type { GamePhase } from '@/stores/round';
 import type { GameSettings, RoundResult, StreamId } from '@/game/types';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
 import { useSettingsStore } from '@/stores/settings';

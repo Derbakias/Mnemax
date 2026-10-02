@@ -8,7 +8,7 @@ import { TrialGrid } from '@/play/trial-grid';
 import { TrialHistory } from '@/play/trial-history';
 import { TRIALS_PER_ROUND } from '@/config/game';
 import { speedOf, stimulusVisibleMs } from '@/game/rules';
-import type { GameEngineState } from '@/game/engine';
+import type { GameEngineState } from '@/stores/round';
 import type { GameSettings, StreamId } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
 import type { AppPrefs } from '@/lib/prefs';
