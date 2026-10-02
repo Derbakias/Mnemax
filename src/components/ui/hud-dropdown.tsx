@@ -1,6 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { DROPDOWN_EDGE_MARGIN, DROPDOWN_PANEL_GAP } from '@/config/ui';
+import { cn } from '@/lib/cn';
+
+const styles = {
+  // Centred under the chip row, or opening upwards when there's more room above (data-above).
+  popover: [
+    'absolute top-[calc(100%+8px)] left-1/2 z-10 transform-[translateX(-50%)]',
+    'data-[above=true]:top-auto data-[above=true]:bottom-[calc(100%+8px)]',
+    'flex flex-col items-center gap-2 px-3.5 pt-2.5 pb-3.5',
+    'rounded-[14px] border border-background-selected bg-background shadow-popover',
+    // max-height is set from the room left on screen, and the width stops at the screen less the page's 16px
+    // sides; contents bigger than that scroll inside the panel, never the page.
+    'max-w-[calc(100cqw-32px)] overflow-auto',
+  ],
+};
 
 interface HudDropdownProps {
   /** What the chip shows. */
@@ -109,7 +123,9 @@ export function HudDropdown({
   }, [open]);
 
   return (
-    <div className="hud-dropdown" ref={rootRef}>
+    <div className="contents" ref={rootRef}>
+      {/* The chip's look is the HUD's .hud-chip and .interactive rules in index.css, shared with chips that
+          aren't dropdowns (see src/play/hud-chips.tsx). */}
       <button
         ref={chipRef}
         type="button"
@@ -124,9 +140,11 @@ export function HudDropdown({
         {chip}
       </button>
       {open && (
+        // `hud-popover` has no look of its own: it's the name the Stats mode picker's CSS uses to place it.
         <div
           ref={panelRef}
-          className={placement?.above ? 'hud-popover above' : 'hud-popover'}
+          className={cn('hud-popover', styles.popover)}
+          data-above={placement?.above}
           style={
             placement
               ? {

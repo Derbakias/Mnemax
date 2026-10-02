@@ -5,7 +5,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 // ones (from the @theme block in src/styles/index.css) for shadow colours, and keep both `shadow-chip`
 // and `shadow-none` instead of dropping the first. Our colour names work without help.
 const twMerge = extendTailwindMerge({
-  extend: { theme: { shadow: ['chip', 'surface', 'tile-drop', 'tile-rest'] } },
+  extend: { theme: { shadow: ['chip', 'popover', 'surface', 'tile-drop', 'tile-rest'] } },
 });
 
 // Joins class names into one string. Falsy values are dropped, so `active && 'x'` works. When two classes

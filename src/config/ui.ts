@@ -35,8 +35,8 @@ export const TRAIL_WIDTH = 7;
 /** Gap kept between the panel and the window edge (or the tab bar). */
 export const DROPDOWN_EDGE_MARGIN = 12;
 
-/** TODO: DROPDOWN_PANEL_GAP is used for available-space calculations, but src/styles/index.css:800,819 still renders the panel with a hard-coded 8px gap. Any config change makes the calculated max height disagree with the actual panel position, which can cause overflow or wasted space. Pass this value to CSS (for example through a custom property) so both calculations share one source. */
-/** The panel's offset from the chip (`top: calc(100% + 8px)` in CSS). */
+/** TODO: DROPDOWN_PANEL_GAP is used for available-space calculations, but the popover classes in src/components/ui/hud-dropdown.tsx still render the panel with a hard-coded 8px gap. Any config change makes the calculated max height disagree with the actual panel position, which can cause overflow or wasted space. Pass this value to CSS (for example through a custom property) so both calculations share one source. */
+/** The panel's offset from the chip (`top-[calc(100%+8px)]` in src/components/ui/hud-dropdown.tsx). */
 export const DROPDOWN_PANEL_GAP = 8;
 
 // Loader

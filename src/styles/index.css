@@ -65,6 +65,8 @@
   --color-surface: #ffffff;
   --color-surface-border: rgba(15, 23, 42, 0.07);
   --shadow-surface: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -14px rgba(15, 23, 42, 0.16);
+  /* Panels that open over the page: the ⓘ notes and the HUD's dropdowns. */
+  --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.18);
   --color-accent-ink: #1565c0;
   --color-success: #43a047;
   --color-warning: #fb8c00;
@@ -74,6 +76,36 @@
     'Spline Sans', Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* The grid loader's animations (src/components/ui/grid-loader.tsx). inline: the step one uses each cell's own
+   --loader-lap and --loader-delay, so its value goes into the class as written, not into a page-wide
+   variable where those don't exist. */
+@theme inline {
+  --animate-grid-loader-in: grid-loader-in 0.2s ease-out 0.15s both;
+  --animate-grid-loader-step: grid-loader-step var(--loader-lap) ease-out var(--loader-delay) infinite;
+
+  @keyframes grid-loader-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  /* Lit for one step of the lap (1/8), then fading out behind the moving box. */
+  @keyframes grid-loader-step {
+    0% {
+      opacity: 1;
+    }
+    12.5% {
+      opacity: 1;
+    }
+    40%,
+    100% {
+      opacity: 0;
+    }
+  }
 }
 
 @layer theme {
@@ -568,79 +600,6 @@
   gap: 8px;
 }
 
-/* A section title with its ⓘ note, and an optional action on the right. When they don't all fit (a long
-   title with a chart's crosshair switch and Reset zoom), the action moves under them, starting at the left
-   (space-between puts a line's only item at the start), rather than the title or the buttons breaking. */
-.section-header {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 4px;
-}
-.section-heading {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.section-header .section-action {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-/* The note opens under the whole section header (not the icon), so it always fits the content width. */
-.info-tip {
-  display: inline-flex;
-}
-/* Sized so the circle is as tall as the heading's capitals, and centred on them. */
-.section-header .info-tip-button {
-  transform: translateY(0.33px);
-}
-.info-tip-button {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 50%;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-.info-tip-button.on {
-  color: var(--color-text);
-  background: var(--color-background-element);
-}
-@media (hover: hover) {
-  .info-tip-button:hover {
-    color: var(--color-text);
-    background: var(--color-background-element);
-  }
-}
-.info-tip-panel {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 2px);
-  left: 0;
-  width: min(360px, 100%);
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--color-background-selected);
-  background: var(--color-background);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  color: var(--color-text);
-  text-align: left;
-}
-.info-tip-panel p {
-  margin: 0;
-}
-.info-tip-panel strong {
-  font-weight: 600;
-}
-
 .row-between {
   display: flex;
   justify-content: space-between;
@@ -664,24 +623,6 @@
   flex-direction: column;
   align-self: stretch;
   gap: 10px;
-}
-
-.icon {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-/* Same rules the <ion-icon> web component applies to its SVGs. */
-.icon svg {
-  width: 100%;
-  height: 100%;
-  fill: currentColor;
-  stroke: currentColor;
-}
-.icon .ionicon-fill-none {
-  fill: none;
-}
-.icon .ionicon-stroke-width {
-  stroke-width: 32px;
 }
 
 /* ---------- Play ---------- */
@@ -799,9 +740,6 @@
 .hud-row {
   position: relative;
 }
-.hud-dropdown {
-  display: contents;
-}
 .hud-chip.interactive:not(:disabled) {
   cursor: pointer;
 }
@@ -813,31 +751,6 @@
     background: var(--color-background-selected);
   }
 }
-.hud-popover {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--color-background-selected);
-  background: var(--color-background);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  /* max-height is set from the room left on screen, and the width stops at the screen less the page's 16px
-     sides; contents bigger than that scroll inside the panel, never the page. */
-  max-width: calc(100cqw - 32px);
-  overflow: auto;
-}
-.hud-popover.above {
-  top: auto;
-  bottom: calc(100% + 8px);
-}
-
 .target-panel {
   display: flex;
   flex-direction: column;
@@ -1496,58 +1409,6 @@
 
 /* ---------- Stats ---------- */
 
-/* Loader: a lit box travels clockwise round a small 3×3 grid, changing colour at each cell. */
-.grid-loader {
-  display: flex;
-  justify-content: center;
-  padding: 72px 0;
-  /* Only appears if loading takes a moment, so a fast load doesn't flash it. */
-  animation: grid-loader-in 0.2s ease-out 0.15s both;
-}
-.grid-loader-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 22px);
-  grid-template-rows: repeat(3, 22px);
-  gap: 5px;
-}
-.grid-loader-cell {
-  border-radius: 6px;
-  background: var(--color-background-element);
-  position: relative;
-}
-.grid-loader-cell::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--loader-color);
-  opacity: 0;
-  animation: grid-loader-step var(--loader-lap) ease-out var(--loader-delay) infinite;
-}
-.grid-loader-cell.center {
-  background: transparent;
-}
-/* Lit for one step of the lap (1/8), then fading out behind the moving box. */
-@keyframes grid-loader-step {
-  0% {
-    opacity: 1;
-  }
-  12.5% {
-    opacity: 1;
-  }
-  40%,
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes grid-loader-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 /* The startup screen: a big loader over the whole app, fading out once it's ready. */
 .splash {
   position: fixed;
@@ -1571,26 +1432,6 @@
   letter-spacing: 0.02em;
   color: var(--color-text-secondary);
 }
-.grid-loader.large {
-  padding: 0;
-  /* Shown straight away: it is the startup screen, not a fallback for slow loads. */
-  animation: none;
-}
-.grid-loader.large .grid-loader-grid {
-  grid-template-columns: repeat(3, 48px);
-  grid-template-rows: repeat(3, 48px);
-  gap: 10px;
-}
-.grid-loader.large .grid-loader-cell {
-  border-radius: 12px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .grid-loader-cell::after {
-    animation: none;
-    opacity: 0.35;
-  }
-}
-
 .empty-state {
   text-align: center;
   margin-top: 40px;
@@ -1808,9 +1649,6 @@
     height: calc(0.7em + 2px);
     width: calc((0.7em + 2px) * 480 / 448);
   }
-}
-.info-tip-panel .icon {
-  vertical-align: -2px;
 }
 .stream-slot {
   display: inline-flex;
@@ -2157,23 +1995,6 @@
   color: var(--color-text);
   font-weight: 600;
 }
-/* The mouse controls; touch screens get their own (pinch) hint. */
-.zoom-hint {
-  display: none;
-}
-@media (hover: hover) and (pointer: fine) {
-  .zoom-hint {
-    display: block;
-  }
-}
-.zoom-hint-touch {
-  display: none;
-}
-@media (hover: none) {
-  .zoom-hint-touch {
-    display: block;
-  }
-}
 /* Round charts pan with click-and-hold and stretch an axis when dragged along it. */
 .uplot-box .u-over.pannable {
   cursor: grab;
@@ -2372,32 +2193,6 @@
 }
 .switch:checked::after {
   transform: translateX(18px);
-}
-
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.stepper.disabled {
-  opacity: 0.45;
-}
-.stepper-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--color-background-selected);
-  background: var(--color-background-element);
-}
-.stepper-button:disabled {
-  opacity: 0.35;
-}
-.stepper-value {
-  min-width: 56px;
-  text-align: center;
 }
 
 .slider {
