@@ -6,7 +6,7 @@ import { playCopy } from '@/copy/play';
 import { SPEED_PRESETS } from '@/config/game';
 import { speedPreset } from '@/game/rules';
 import type { SpeedId } from '@/game/types';
-import { formatDuration } from '@/lib/stats';
+import { formatDuration } from '@/lib/format';
 import { useSettings } from '@/stores/settings-context';
 
 // The daily target chip, with today's play against the goal (from Settings) in its panel.

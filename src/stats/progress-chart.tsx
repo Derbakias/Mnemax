@@ -18,7 +18,8 @@ import { statsCopy } from '@/copy/stats';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
-import { computeRoundPoints, exponentialAverage, improvementRate, type PerfectEstimate } from '@/lib/stats';
+import { computeRoundPoints, exponentialAverage } from '@/lib/stats';
+import { improvementRate, type PerfectEstimate } from '@/stats/improvement';
 import { useTheme } from '@/lib/theme';
 
 type Metric = 'accuracy' | 'reaction';

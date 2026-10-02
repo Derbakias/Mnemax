@@ -12,7 +12,7 @@ import { statsCopy } from '@/copy/stats';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
 import { DATE_LOCALE } from '@/config/stats';
-import { formatDuration } from '@/lib/stats';
+import { formatDuration } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 
 const DAY_MS = 86400000;

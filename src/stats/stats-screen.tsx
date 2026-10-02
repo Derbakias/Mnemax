@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ActivityCalendar } from '@/stats/activity-calendar';
 import { statsCopy } from '@/copy/stats';
@@ -6,23 +6,25 @@ import { Count } from '@/stats/count';
 import { DailyTimeChart } from '@/stats/daily-time-chart';
 import { GridLoader } from '@/components/ui/grid-loader';
 import { HudDropdown } from '@/components/ui/hud-dropdown';
-import { Icon, type IconName } from '@/components/ui/icon';
 import { LevelChart } from '@/stats/level-chart';
+import { ModesTable } from '@/stats/modes-table';
 import { ModeBadge } from '@/stats/mode-badge';
 import { ProgressChart } from '@/stats/progress-chart';
 import { RoundHistoryList } from '@/components/rounds/round-history-list';
 import { Section } from '@/components/ui/section';
+import { StatTile } from '@/stats/stat-tile';
 import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/rounds/stream-table';
 import { ChartZoomActions } from '@/components/charts/uplot-chart';
 import { useChartZoom } from '@/components/charts/zoom';
 import type { RoundResult } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
-import { levelHistory, levelSummary, modeOf, summarizeModes, type ModeSummary } from '@/stats/levels';
+import { levelHistory, levelSummary, modeOf, summarizeModes } from '@/stats/levels';
 import { useSettings } from '@/stores/settings-context';
-import { aggregateStreams, collectionSummary, formatDuration } from '@/lib/stats';
+import { aggregateStreams, collectionSummary } from '@/lib/stats';
+import { formatDuration } from '@/lib/format';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
 import { useSync } from '@/stores/sync-context';
-import { accuracyColor, useTheme, type Theme } from '@/lib/theme';
+import { accuracyColor, useTheme } from '@/lib/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
 export function StatsScreen({ onReady }: { onReady?: () => void }) {
@@ -290,69 +292,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
   );
 }
 
-function ModesTable({
-  modes,
-  selectedKey,
-  onSelect,
-  theme,
-}: {
-  modes: ModeSummary[];
-  selectedKey: string;
-  onSelect: (key: string) => void;
-  theme: Theme;
-}) {
-  return (
-    <div className="panel mode-table">
-      <div className="mode-row header t-code">
-        <span>N</span>
-        <span>Streams</span>
-        <span>Speed</span>
-        <span>Rounds</span>
-        <span>Recent</span>
-        <span />
-        <span className="best">Best</span>
-      </div>
-      {modes.map((m) => (
-        <button
-          key={m.mode.key}
-          type="button"
-          className={m.mode.key === selectedKey ? 'mode-row on' : 'mode-row'}
-          onClick={() => onSelect(m.mode.key)}
-        >
-          <ModeBadge mode={m.mode} aligned />
-          <Count className="t-code" value={m.rounds.length} label="rounds" />
-          <span className="t-code" style={{ color: accuracyColor(m.recentAccuracy, theme) }}>
-            {Math.round(m.recentAccuracy)}%
-          </span>
-          <span className="t-code mastered" title={m.mastered ? 'Mastered' : undefined}>
-            {m.mastered && <Icon name="star-tight" />}
-          </span>
-          <span className="t-code best">{Math.round(m.bestAccuracy)}%</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function shortDate(time: number): string {
   return new Date(time).toLocaleDateString(DATE_LOCALE, {
     day: 'numeric',
     month: 'short',
   });
-}
-
-/** A headline number, with an icon beside its label. */
-function StatTile({ icon, label, value, sub }: { icon: IconName; label: string; value: string; sub?: ReactNode }) {
-  return (
-    <div className="panel stat-tile">
-      <div className="stat-tile-head">
-        <span className="stat-tile-icon">
-          <Icon name={icon} size={18} />
-        </span>
-        <span className="t-small secondary stat-tile-label">{label}</span>
-      </div>
-      <span className="stat-tile-value">{value}</span>
-      <span className="t-small secondary stat-tile-sub">{sub}</span>
-    </div>
-  );
 }
