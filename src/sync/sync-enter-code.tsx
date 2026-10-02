@@ -65,6 +65,8 @@ export function EnterCode({
             placeholder="192.168.1.20"
             autoFocus={!isPhone()}
             readOnly={joining}
+            // TODO: For event listeners like this one we need a function named something like handleAddressInput and place on the top.
+            // Check the whole repo for cases like this one.
             onChange={(e) => onAddress(e.target.value)}
           />
         </label>
