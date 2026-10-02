@@ -19,9 +19,19 @@ export type Theme = Record<ThemeColor, string>;
 
 function readTheme(): Theme {
   const style = getComputedStyle(document.documentElement);
+  // The build may write a colour short (#fa0) or as a name (orange). A canvas gives those (and rgb()) back
+  // as #rrggbb, the one form the charts can fade (withAlpha). Keep the palette in hex, rgb() or names:
+  // newer forms like oklch() come back unchanged, and the charts would draw them without fading.
+  const canvas = document.createElement('canvas').getContext('2d');
   const theme = {} as Theme;
   for (const key of Object.keys(NAMES) as ThemeColor[]) {
-    theme[key] = style.getPropertyValue(`--color-${NAMES[key]}`).trim();
+    const color = style.getPropertyValue(`--color-${NAMES[key]}`).trim();
+    if (canvas && CSS.supports('color', color)) {
+      canvas.fillStyle = color;
+      theme[key] = String(canvas.fillStyle);
+    } else {
+      theme[key] = color;
+    }
   }
   return theme;
 }
