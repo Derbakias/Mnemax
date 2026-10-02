@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type SubmitEvent } from 'react';
 
 import { Icon } from '../components/ui/icon';
+import { syncCopy } from '@/copy/sync';
 import { CameraScan, ScanOverlay } from './sync-scan';
 import { ShowCode } from './sync-show-code';
 import { useSync } from '@/stores/sync-context';
@@ -99,11 +100,11 @@ export function Pairing({
       if (event.kind === 'step') {
         note(event.text);
       } else if (event.kind === 'paired') {
-        inform(`Paired with ${event.peer.name}.`);
+        inform(syncCopy.pairing.paired(event.peer.name));
         refresh();
         onEnd();
       } else if (event.kind === 'expired') {
-        setStep((s) => (s.step === 'showing' ? { ...s, ended: 'The code ran out.' } : s));
+        setStep((s) => (s.step === 'showing' ? { ...s, ended: syncCopy.showCode.ranOut } : s));
       } else {
         // On the device showing the code, a failed try has used it up.
         setStep((s) => (s.step === 'showing' ? { ...s, ended: event.message } : s));
@@ -186,7 +187,7 @@ export function Pairing({
     const read = readPairingText(text);
     if (read == null) {
       setStep({ step: 'entering' });
-      showError("That isn't a Mnemax pairing code. Scan the one under Show a code on your other device.");
+      showError(syncCopy.pairing.notACode);
       return;
     }
     // Shown in the boxes too, so it's clear where it's connecting, and easy to try again.
@@ -196,7 +197,7 @@ export function Pairing({
   };
   const onScanFailed = (e: unknown) => {
     setStep({ step: 'entering' });
-    showError(`Couldn't scan: ${errorText(e)}`);
+    showError(syncCopy.pairing.scanFailed(errorText(e)));
   };
 
   // Pasting the copied text into either field fills both.
@@ -237,16 +238,14 @@ export function Pairing({
   return (
     <form className="card sync-pairing" onSubmit={onSubmit}>
       <ol className="t-small secondary sync-steps">
-        <li>{hint ?? 'On your other device, open Sync and tap Show a code.'}</li>
-        <li>Scan the QR code it shows, or type its address and code and tap Pair.</li>
+        <li>{hint ?? syncCopy.pairing.stepShowCode}</li>
+        <li>{syncCopy.pairing.stepScan}</li>
       </ol>
-      <p className="t-small secondary sync-note">
-        Only use a code from your own device: a code from someone else's device would send them your rounds.
-      </p>
+      <p className="t-small secondary sync-note">{syncCopy.pairing.ownCodeOnly}</p>
       <button type="button" className="outline-button accent" disabled={joining} onClick={onScan}>
         Scan QR code
       </button>
-      <p className="t-small secondary sync-or">or type what it shows</p>
+      <p className="t-small secondary sync-or">{syncCopy.pairing.orType}</p>
       <div className="sync-pair-row">
         <label className="sync-field">
           <span className="t-small secondary">Address</span>
@@ -288,7 +287,7 @@ export function Pairing({
         {error && (
           <>
             <p className="t-small sync-error">
-              <strong>Didn't pair:</strong> {error}
+              <strong>{syncCopy.pairing.failedLead}</strong> {error}
             </p>
             <button
               type="button"
@@ -303,7 +302,7 @@ export function Pairing({
       </div>
       {step.step === 'scanning' &&
         (isPhone() ? (
-          <ScanOverlay hint="Point the camera at the QR code on your other device" onCancel={cancelPhoneScan} />
+          <ScanOverlay hint={syncCopy.pairing.phoneScanHint} onCancel={cancelPhoneScan} />
         ) : (
           <CameraScan
             onFound={(text) => void onScanned(text)}

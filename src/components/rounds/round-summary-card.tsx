@@ -1,5 +1,5 @@
 import { AccuracyHeading, OutcomeHeading, StreamName } from './stream-table';
-import { TRIALS_PER_ROUND } from '@/config/game';
+import { roundsCopy } from '@/copy/rounds';
 import { summarizeRound } from '@/game/scoring';
 import type { RoundResult } from '@/game/types';
 import { accuracyColor, useTheme } from '@/lib/theme';
@@ -30,11 +30,7 @@ export function RoundSummaryCard({ result, compact = false }: RoundSummaryCardPr
         </span>
         <span className="t-small secondary">overall accuracy</span>
       </div>
-      {result.stopped && (
-        <p className="t-small secondary">
-          Stopped after {result.trials.length} of {TRIALS_PER_ROUND} trials, so this round scores 0.
-        </p>
-      )}
+      {result.stopped && <p className="t-small secondary">{roundsCopy.summary.stopped(result.trials.length)}</p>}
       {/* Like the Stats screen's stream table: the symbols head the columns, the rows hold just the numbers. */}
       <div className="stream-table five">
         <div className="stream-table-row header t-code">

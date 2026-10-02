@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { syncCopy } from '@/copy/sync';
 import { DATE_LOCALE } from '@/config/stats';
 import { FORGET_CONFIRM_MS } from '@/config/sync';
 import { useSync } from '@/stores/sync-context';
@@ -25,7 +26,7 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
     setConfirming(false);
     try {
       setStatus(await forgetDevice(peer.key));
-      inform(`Forgot ${peer.name} on this device. On ${peer.name}, tap Forget too.`);
+      inform(syncCopy.peer.forgot(peer.name));
     } catch (error) {
       failWith(error);
     }
@@ -37,7 +38,7 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
       <div className="row-between">
         <div>
           <div className="t-default">{peer.name}</div>
-          <div className="t-small secondary">Paired {day(peer.pairedAt)}</div>
+          <div className="t-small secondary">{syncCopy.peer.pairedOn(day(peer.pairedAt))}</div>
           <PeerState peer={peer} />
         </div>
         <div className="sync-peer-actions">
@@ -81,10 +82,12 @@ export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boo
 
 /** When it last synced. */
 function PeerState({ peer }: { peer: SyncPeer }) {
-  let text = peer.lastSyncAt == null ? 'Not synced yet' : `Last synced ${when(peer.lastSyncAt)}`;
-  // The device that showed the code doesn't start syncs (it has no Sync button): the other one does.
-  if (peer.address == null && peer.lastSyncAt == null) {
-    text += '. It connects to this device by itself.';
+  let text = syncCopy.peer.notSynced;
+  if (peer.lastSyncAt != null) {
+    text = syncCopy.peer.lastSynced(when(peer.lastSyncAt));
+  } else if (peer.address == null) {
+    // The device that showed the code doesn't start syncs (it has no Sync button): the other one does.
+    text = syncCopy.peer.notSyncedWaits;
   }
   return <div className="t-small secondary">{text}</div>;
 }

@@ -15,14 +15,6 @@ export function StreamName({ stream }: { stream: StreamId }) {
   );
 }
 
-/** What each outcome is called, as in the round tables' key. */
-export const OUTCOME_LABELS: Record<StreamOutcome, string> = {
-  hit: 'matched',
-  correctRejection: 'no match',
-  miss: 'missed',
-  falseAlarm: 'false match',
-};
-
 /** An answer's outcome as its symbol, in its colour: green for right answers, red for wrong ones. */
 export function OutcomeIcon({ outcome }: { outcome: StreamOutcome }) {
   return (

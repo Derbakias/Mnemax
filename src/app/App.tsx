@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { GridLoader } from '@/components/ui/grid-loader';
 import { SPLASH_FADE_MS, SPLASH_MAX_MS, SPLASH_MIN_MS } from '@/config/ui';
 import { Icon, type IconName } from '@/components/ui/icon';
+import { appCopy } from '@/copy/app';
 import { PlayScreen, type PlayStage } from '@/play/play-screen';
 import { SettingsScreen } from '@/settings/settings-screen';
 import { StatsScreen } from '@/stats/stats-screen';
@@ -12,10 +13,10 @@ import { preloadSpeech } from '@/lib/speech';
 
 type Tab = 'play' | 'stats' | 'settings';
 
-const TABS: { id: Tab; title: string; icon: IconName }[] = [
-  { id: 'play', title: 'Play', icon: 'play-circle-outline' },
-  { id: 'stats', title: 'Stats', icon: 'stats-chart-outline' },
-  { id: 'settings', title: 'Settings', icon: 'settings-outline' },
+const TABS: { id: Tab; icon: IconName }[] = [
+  { id: 'play', icon: 'play-circle-outline' },
+  { id: 'stats', icon: 'stats-chart-outline' },
+  { id: 'settings', icon: 'settings-outline' },
 ];
 
 export default function App() {
@@ -108,14 +109,14 @@ function AppShell() {
               onClick={() => setTab(t.id)}
             >
               <Icon name={t.icon} size={24} />
-              <span>{t.title}</span>
+              <span>{appCopy.tabs[t.id]}</span>
             </button>
           ))}
         </nav>
         {splash !== 'gone' && (
           <div className={splash === 'fading' ? 'splash fading' : 'splash'}>
             <GridLoader label="Loading" size="large" />
-            <span className="splash-title">Mnemax</span>
+            <span className="splash-title">{appCopy.splashTitle}</span>
           </div>
         )}
       </div>

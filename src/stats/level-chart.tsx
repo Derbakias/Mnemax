@@ -17,6 +17,7 @@ import {
   type ChartZoom,
 } from '../components/charts/uplot-chart';
 import { LEVEL_CHART_HEIGHT } from '@/config/charts';
+import { statsCopy } from '@/copy/stats';
 import { DATE_LOCALE, LEVEL_WINDOW } from '@/config/stats';
 import { roundMode, type LevelPoint } from '@/stats/levels';
 import { exponentialAverage } from '@/lib/stats';
@@ -117,7 +118,7 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
         <UPlotChart key={zoom.chartKey} options={options} data={data} height={LEVEL_CHART_HEIGHT} zoom={zoom} />
       ) : (
         <div className="chart-box" style={{ height: LEVEL_CHART_HEIGHT }}>
-          <span className="t-small secondary">No rounds in this time range.</span>
+          <span className="t-small secondary">{statsCopy.noRoundsInRange}</span>
         </div>
       )}
       <ChartLegend

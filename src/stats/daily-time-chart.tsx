@@ -15,6 +15,7 @@ import {
   type ChartZoom,
 } from '../components/charts/uplot-chart';
 import { DAILY_TIME_CHART_HEIGHT, MIN_ALL_DAYS, MIN_ZOOM_DAYS, MINUTE_STEPS } from '@/config/charts';
+import { statsCopy } from '@/copy/stats';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
 import { DATE_LOCALE } from '@/config/stats';
@@ -206,7 +207,7 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
 
       {played.length === 0 ? (
         <div className="chart-box" style={{ height: DAILY_TIME_CHART_HEIGHT }}>
-          <span className="t-small secondary">No play time in this range.</span>
+          <span className="t-small secondary">{statsCopy.timePlayed.noPlayTime}</span>
         </div>
       ) : (
         <UPlotChart key={zoom.chartKey} options={options} data={data} height={DAILY_TIME_CHART_HEIGHT} zoom={zoom} />

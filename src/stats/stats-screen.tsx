@@ -1,13 +1,12 @@
-// TODO: All the info text should be in one place maybe in a state to have everything together
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { ActivityCalendar } from '@/stats/activity-calendar';
+import { statsCopy } from '@/copy/stats';
 import { Count } from '@/stats/count';
 import { DailyTimeChart } from '@/stats/daily-time-chart';
 import { GridLoader } from '@/components/ui/grid-loader';
 import { HudDropdown } from '@/components/ui/hud-dropdown';
 import { Icon, type IconName } from '@/components/ui/icon';
-import { ChartControlsTip } from '@/components/ui/info-tip';
 import { LevelChart } from '@/stats/level-chart';
 import { ModeBadge } from '@/stats/mode-badge';
 import { ProgressChart } from '@/stats/progress-chart';
@@ -16,7 +15,7 @@ import { Section } from '@/components/ui/section';
 import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/rounds/stream-table';
 import { ChartZoomActions, useChartZoom } from '@/components/charts/uplot-chart';
 import type { RoundResult } from '@/game/types';
-import { DATE_LOCALE, LEVEL_WINDOW, MASTERY_ACCURACY, RECENT_ROUNDS } from '@/config/stats';
+import { DATE_LOCALE } from '@/config/stats';
 import { levelHistory, levelSummary, modeOf, summarizeModes, type ModeSummary } from '@/stats/levels';
 import { useSettings } from '@/stores/settings-context';
 import { aggregateStreams, collectionSummary, formatDuration } from '@/lib/stats';
@@ -107,7 +106,7 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
   if (rounds.length === 0 || !level || !selected) {
     return (
       <div className="content stats">
-        <p className="t-default secondary empty-state">Play a few rounds to build up your stats.</p>
+        <p className="t-default secondary empty-state">{statsCopy.empty}</p>
       </div>
     );
   }
@@ -154,53 +153,16 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
         />
       </div>
 
-      <Section
-        title="Level"
-        action={<ChartZoomActions zoom={levelZoom} />}
-        info={
-          <>
-            <p>Your overall skill, comparable across every mode.</p>
-            <p>
-              Each round scores <strong>difficulty × accuracy</strong>. Harder settings are worth more: a higher N, more
-              streams, a faster speed.
-            </p>
-            <p>For example, a perfect Position + Color 2-back at Normal speed scores 2.</p>
-            <p>Your level is the average of your last {LEVEL_WINDOW} rounds.</p>
-            <ChartControlsTip />
-          </>
-        }
-      >
+      <Section title={statsCopy.level.title} action={<ChartZoomActions zoom={levelZoom} />} info={statsCopy.level.info}>
         <div className="panel panel-pad">
           <LevelChart history={history} zoom={levelZoom} />
         </div>
       </Section>
 
       <Section
-        title="By mode"
+        title={statsCopy.byMode.title}
         action={<ChartZoomActions zoom={modeZoom} />}
-        info={
-          <>
-            <p>
-              A mode is one exact setup: <strong>N, streams and speed</strong>. Pick one to see how you're doing in it
-              over time.
-            </p>
-            <p>
-              <strong>Accuracy:</strong> 100% is perfect, 0% is no better than guessing.
-            </p>
-            <p>
-              <strong>Reaction time:</strong> how quickly you press when you spot a match.
-            </p>
-            <p>
-              <strong>Time to 100%:</strong> an estimate from how fast your accuracy has been rising. Progress slows as
-              you get close to 100%, and the estimate allows for that.
-            </p>
-            <p>
-              <strong>Matched:</strong> you pressed on a match. <strong>Missed:</strong> you didn't match.{' '}
-              <strong>False:</strong> you pressed when there was no match.
-            </p>
-            <ChartControlsTip />
-          </>
-        }
+        info={statsCopy.byMode.info}
       >
         <div className="mode-picker-row">
           <div className="mode-picker">
@@ -281,58 +243,20 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
         </div>
       </Section>
 
-      <Section
-        title="Modes played"
-        info={
-          <>
-            <p>Every mode you've played, most recent first. Tap one to show it in By mode.</p>
-            <p>
-              <strong>Recent:</strong> your average accuracy over the last {RECENT_ROUNDS} rounds.
-            </p>
-            <p>
-              <strong>Best:</strong> your best single round.
-            </p>
-            <p>
-              <Icon name="star" size={14} color={theme.warning} /> <strong>Mastered:</strong> {MASTERY_ACCURACY}% or
-              more recently. Time to try something harder.
-            </p>
-          </>
-        }
-      >
+      <Section title={statsCopy.modesPlayed.title} info={statsCopy.modesPlayed.info(theme.warning)}>
         <ModesTable modes={modes} selectedKey={selected.mode.key} onSelect={setSelectedKey} theme={theme} />
       </Section>
 
-      <Section
-        title="Activity"
-        info={
-          <p>
-            Each square is a day: the darker it is, the more rounds you played. Hover over or tap a day to see its
-            count.
-          </p>
-        }
-      >
+      <Section title={statsCopy.activity.title} info={statsCopy.activity.info}>
         <div className="panel panel-pad">
           <ActivityCalendar rounds={rounds} />
         </div>
       </Section>
 
       <Section
-        title="Time played vs level"
+        title={statsCopy.timePlayed.title}
         action={<ChartZoomActions zoom={timeZoom} />}
-        info={
-          <>
-            <p>
-              <strong>Bars:</strong> minutes played each day.
-            </p>
-            <p>
-              <strong>Dotted line:</strong> whether you're playing more or less over time.
-            </p>
-            <p>
-              <strong>Solid line:</strong> your average level that day.
-            </p>
-            <ChartControlsTip />
-          </>
-        }
+        info={statsCopy.timePlayed.info}
       >
         <div className="panel panel-pad">
           <DailyTimeChart rounds={rounds} zoom={timeZoom} />
@@ -340,13 +264,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
       </Section>
 
       <Section
-        title="Round history"
-        info={
-          <p>
-            Every round, newest first. Tap one to see each trial and how you answered it. Clearing deletes the rounds on
-            this device only: a paired device sends them back at the next sync.
-          </p>
-        }
+        title={statsCopy.roundHistory.title}
+        info={statsCopy.roundHistory.info}
         action={
           <button
             type="button"
@@ -356,9 +275,9 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
           >
             {confirmClear
               ? paired
-                ? 'Tap again (paired devices send them back)'
-                : 'Tap again to clear'
-              : 'Clear history'}
+                ? statsCopy.roundHistory.confirmClearPaired
+                : statsCopy.roundHistory.confirmClear
+              : statsCopy.roundHistory.clear}
           </button>
         }
       >
