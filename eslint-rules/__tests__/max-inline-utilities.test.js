@@ -36,5 +36,8 @@ tester.run('max-inline-utilities', rule, {
     { code: `<div className={cn('${seven}', x)} />`, errors: [error(7)] },
     { code: `<div className={on ? 'a b' : '${seven} h'} />`, errors: [error(8)] },
     { code: `<div className={cn(on ? '${seven}' : 'a')} />`, errors: [error(7)] },
+    { code: `<div className={on && '${seven}'} />`, errors: [error(7)] },
+    { code: `<div className={cn(styles.a, active && '${seven}')} />`, errors: [error(7)] },
+    { code: `<div className={cn(name || '${seven}')} />`, errors: [error(7)] },
   ],
 });

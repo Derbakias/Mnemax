@@ -21,6 +21,10 @@ function classTexts(node) {
   if (node.type === 'ConditionalExpression') {
     return [...classTexts(node.consequent), ...classTexts(node.alternate)];
   }
+  // `on && 'a b'` or `name || 'a b'`: the classes are on the right.
+  if (node.type === 'LogicalExpression') {
+    return classTexts(node.right);
+  }
   return [];
 }
 
