@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 
 import { Icon } from '@/components/ui/icon';
 import { Chip, SpeedBolts } from '@/play/hud-chips';
-import { ResponseButtons } from '@/play/response-buttons';
+import { ResponseButtons } from '@/play/response-buttons/buttons';
 import { playCopy } from '@/copy/play';
 import { TrialGrid } from '@/play/trial-grid';
 import { TrialHistory } from '@/play/trial-history';
