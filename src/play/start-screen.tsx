@@ -1,8 +1,8 @@
-import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
 import { Icon } from '@/components/ui/icon';
 import { HudDropdown } from '@/components/ui/hud-dropdown';
-import { SpeedChip } from '@/play/hud-chips';
+import { DailyTargetChip, SpeedChip } from '@/play/hud-chips';
 import { STREAM_ICONS } from '@/config/ui';
 import { RoundDetailTable } from '@/components/rounds/round-detail-table';
 import { RoundHistoryList } from '@/components/rounds/round-history-list';
@@ -26,7 +26,8 @@ export function StartScreen({
   sessionRounds,
   tutorial,
   setTutorial,
-  targetChip,
+  todayMs,
+  loaded,
   onMain,
 }: {
   settings: GameSettings;
@@ -35,7 +36,8 @@ export function StartScreen({
   sessionRounds: RoundResult[];
   tutorial: boolean;
   setTutorial: Dispatch<SetStateAction<boolean>>;
-  targetChip: ReactNode;
+  todayMs: number;
+  loaded: boolean;
   onMain: () => void;
 }) {
   const { setNLevel, setSpeed, toggleStream } = useSettings();
@@ -45,7 +47,7 @@ export function StartScreen({
     <div className="content play">
       <div className="start-stage">
         <div className="hud-row">
-          {targetChip}
+          <DailyTargetChip loaded={loaded} todayMs={todayMs} />
           <HudDropdown
             underChip
             label={`N-back level: ${settings.nLevel}`}

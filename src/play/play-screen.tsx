@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useState } from 'react';
 
-import { DailyTargetChip } from '@/play/hud-chips';
 import { RoundView } from '@/play/round-view';
 import { StartScreen } from '@/play/start-screen';
 import { useGameEngine } from '@/game/engine';
@@ -88,6 +87,7 @@ export function PlayScreen({
     handleProgress,
   );
 
+  // TODO: Rename to something else, busy is very generic
   const busy = state.phase === 'running';
   const stage: PlayStage = busy ? (state.paused ? 'paused' : 'playing') : 'start';
   useEffect(() => {
@@ -100,14 +100,8 @@ export function PlayScreen({
     pendingRound && !savedRounds?.some((r) => r.id === pendingRound.id) ? roundDurationMs(pendingRound) : 0;
   const liveMs = tutorial ? 0 : currentPlayedMs();
   const todayMs = playedOnDayMs(savedRounds ?? [], new Date()) + pendingMs + liveMs;
-  const targetChip = (
-    <DailyTargetChip
-      loaded={savedRounds !== null}
-      todayMs={todayMs}
-      targetMs={prefs.dailyTargetMinutes * 60_000}
-      minutes={prefs.dailyTargetMinutes}
-    />
-  );
+  // False until the saved rounds have loaded, so the chip shows –% rather than a wrong 0%.
+  const loaded = savedRounds !== null;
 
   // During a round everything follows the settings it started with.
   const shown = busy ? roundSettings : settings;
@@ -134,57 +128,60 @@ export function PlayScreen({
     }
   };
 
-  // Keyboard and visibility listeners are attached once; they read the latest render's values.
-  const keys = prefs.keyBindings;
-  const latest = useRef({ onMain, stopRound, respond, respondDisabled, busy, paused: state.paused, pauseRound, keys });
-  latest.current = { onMain, stopRound, respond, respondDisabled, busy, paused: state.paused, pauseRound, keys };
+  // What each key does: Space plays or pauses, Esc stops, and the answer keys answer.
+  // useEffectEvent makes sure it always uses the current round and key bindings.
+  const onKey = useEffectEvent((e: KeyboardEvent) => {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) {
+      return;
+    }
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+      return;
+    }
+    if (e.key === ' ') {
+      e.preventDefault();
+      onMain();
+    } else if (e.key === 'Escape') {
+      if (busy) {
+        stopRound();
+      }
+    } else {
+      const stream = STREAM_IDS.find((s) => prefs.keyBindings[s] === normalizeKey(e.key));
+      // During a round, an answer key prevents its default behaviour, like an arrow key scrolling the
+      // screen or jumping to a button. This holds even when it can't answer yet (the first trials, or paused).
+      if (stream && (busy || !respondDisabled)) {
+        e.preventDefault();
+      }
+      if (stream && !respondDisabled) {
+        respond(stream);
+      }
+    }
+  });
 
+  // Listen for key presses whenever the Play tab is on screen (the start screen and during a round),
+  // and stop when another tab is opened.
   useEffect(() => {
     if (!active) {
       return;
     }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) {
-        return;
-      }
-      const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
-        return;
-      }
-      const l = latest.current;
-      if (e.key === ' ') {
-        e.preventDefault();
-        l.onMain();
-      } else if (e.key === 'Escape') {
-        if (l.busy) {
-          l.stopRound();
-        }
-      } else {
-        const stream = STREAM_IDS.find((s) => l.keys[s] === normalizeKey(e.key));
-        // During a round an answer key is always ours, even while it can't answer (first trial, paused):
-        // otherwise an arrow key would scroll the page or move focus.
-        if (stream && (l.busy || !l.respondDisabled)) {
-          e.preventDefault();
-        }
-        if (stream && !l.respondDisabled) {
-          l.respond(stream);
-        }
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const listener = (e: KeyboardEvent) => onKey(e);
+    window.addEventListener('keydown', listener);
+    return () => window.removeEventListener('keydown', listener);
   }, [active]);
 
-  // Background tabs / apps throttle timers, which would corrupt trial timing.
+  // Pause the round when the app goes to the background. Phones and browsers slow down timers there,
+  // which would make the trial timing wrong.
+  const onVisibility = useEffectEvent(() => {
+    if (document.hidden && busy && !state.paused) {
+      pauseRound();
+    }
+  });
+
+  // Listen for the app going to the background.
   useEffect(() => {
-    const onVisibility = () => {
-      const l = latest.current;
-      if (document.hidden && l.busy && !l.paused) {
-        l.pauseRound();
-      }
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    const listener = () => onVisibility();
+    document.addEventListener('visibilitychange', listener);
+    return () => document.removeEventListener('visibilitychange', listener);
   }, []);
 
   if (busy) {
@@ -199,7 +196,8 @@ export function PlayScreen({
         tutorial={tutorial}
         prefs={prefs}
         roundCount={roundCount}
-        targetChip={targetChip}
+        todayMs={todayMs}
+        loaded={loaded}
         onMain={onMain}
         stopRound={stopRound}
         respond={respond}
@@ -215,7 +213,8 @@ export function PlayScreen({
       sessionRounds={sessionRounds}
       tutorial={tutorial}
       setTutorial={setTutorial}
-      targetChip={targetChip}
+      todayMs={todayMs}
+      loaded={loaded}
       onMain={onMain}
     />
   );

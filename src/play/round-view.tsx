@@ -1,7 +1,7 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 
 import { Icon } from '@/components/ui/icon';
-import { Chip, SpeedBolts } from '@/play/hud-chips';
+import { Chip, DailyTargetChip, SpeedBolts } from '@/play/hud-chips';
 import { ResponseButtons } from '@/play/response-buttons/buttons';
 import { playCopy } from '@/copy/play';
 import { TrialGrid } from '@/play/trial-grid';
@@ -28,7 +28,8 @@ export function RoundView({
   tutorial,
   prefs,
   roundCount,
-  targetChip,
+  todayMs,
+  loaded,
   onMain,
   stopRound,
   respond,
@@ -42,7 +43,8 @@ export function RoundView({
   tutorial: boolean;
   prefs: AppPrefs;
   roundCount: number;
-  targetChip: ReactNode;
+  todayMs: number;
+  loaded: boolean;
   onMain: () => void;
   stopRound: () => void;
   respond: (stream: StreamId) => void;
@@ -65,7 +67,7 @@ export function RoundView({
       <div className={`play-stage ${prefs.buttonLayout}${showHistory ? ' with-history' : ''}`}>
         <div className="hud-row">
           {/* Tutorial rounds don't count towards it. */}
-          {!tutorial && targetChip}
+          {!tutorial && <DailyTargetChip loaded={loaded} todayMs={todayMs} />}
           <Chip title={playCopy.hud.nLevel.chipTitle(n)}>
             <span className="chip-icon-blue">
               <Icon name="counter-clockwise" size={18} />
