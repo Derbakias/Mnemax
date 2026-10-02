@@ -56,4 +56,4 @@ webkit2gtk = { version = "=2.0.2", features = ["v2_8"] }
 # The sync key's vault on computers: the system's key store (see src/sync/vault.rs).
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 keyring = "4"
-chacha20poly1305 = "0.10"
+chacha20poly1305 = "0.11"
