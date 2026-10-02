@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type SubmitEvent } from 'react';
 
-import { Icon } from '../components/ui/icon';
 import { syncCopy } from '@/copy/sync';
-import { CameraScan, ScanOverlay } from './sync-scan';
+import { EnterCode } from './sync-enter-code';
 import { ShowCode } from './sync-show-code';
 import { useSync } from '@/stores/sync-context';
 import { errorText } from '@/sync/sync-messages';
@@ -149,7 +148,7 @@ export function Pairing({
     }
   };
 
-  // Phones scan with the system's scanner; computers in the page (CameraScan, below).
+  // Phones scan with the system's scanner; computers in the page (CameraScan, in the EnterCode form).
   const onScan = () => {
     restart('Opening the camera…');
     setStep({ step: 'scanning' });
@@ -236,80 +235,23 @@ export function Pairing({
   }
   const joining = step.step === 'joining';
   return (
-    <form className="card sync-pairing" onSubmit={onSubmit}>
-      <ol className="t-small secondary sync-steps">
-        <li>{hint ?? syncCopy.pairing.stepShowCode}</li>
-        <li>{syncCopy.pairing.stepScan}</li>
-      </ol>
-      <p className="t-small secondary sync-note">{syncCopy.pairing.ownCodeOnly}</p>
-      <button type="button" className="outline-button accent" disabled={joining} onClick={onScan}>
-        Scan QR code
-      </button>
-      <p className="t-small secondary sync-or">{syncCopy.pairing.orType}</p>
-      <div className="sync-pair-row">
-        <label className="sync-field">
-          <span className="t-small secondary">Address</span>
-          <input
-            className="text-field sync-code-field"
-            value={address}
-            inputMode="decimal"
-            placeholder="192.168.1.20"
-            autoFocus={!isPhone()}
-            readOnly={joining}
-            onChange={(e) => onType(e.target.value, (v) => setAddress(typeAddress(address, v)))}
-          />
-        </label>
-        <label className="sync-field">
-          <span className="t-small secondary">Code</span>
-          <input
-            className="text-field sync-code-field"
-            value={code}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="000-000-000"
-            readOnly={joining}
-            onChange={(e) => onType(e.target.value, (v) => setCode(typeCode(code, v)))}
-          />
-        </label>
-      </div>
-      <div className="data-row">
-        {cancel}
-        <button
-          type="submit"
-          className="outline-button sync-primary"
-          disabled={joining || address === '' || digits.length !== 9}
-        >
-          {joining ? 'Connecting…' : 'Pair'}
-        </button>
-      </div>
-      {/* Always there, with room for four lines, so an error coming or going doesn't move anything. */}
-      <div className="sync-pair-error" role="alert">
-        {error && (
-          <>
-            <p className="t-small sync-error">
-              <strong>{syncCopy.pairing.failedLead}</strong> {error}
-            </p>
-            <button
-              type="button"
-              className="text-button secondary sync-error-close"
-              aria-label="Close the error"
-              onClick={() => setError(null)}
-            >
-              <Icon name="close" size={18} />
-            </button>
-          </>
-        )}
-      </div>
-      {step.step === 'scanning' &&
-        (isPhone() ? (
-          <ScanOverlay hint={syncCopy.pairing.phoneScanHint} onCancel={cancelPhoneScan} />
-        ) : (
-          <CameraScan
-            onFound={(text) => void onScanned(text)}
-            onCancel={() => void onScanned(null)}
-            onFail={onScanFailed}
-          />
-        ))}
-    </form>
+    <EnterCode
+      hint={hint}
+      address={address}
+      code={code}
+      canPair={address !== '' && digits.length === 9}
+      joining={joining}
+      scanning={step.step === 'scanning'}
+      error={error}
+      onAddress={(value) => onType(value, (v) => setAddress(typeAddress(address, v)))}
+      onCode={(value) => onType(value, (v) => setCode(typeCode(code, v)))}
+      onScan={onScan}
+      onScanned={onScanned}
+      onScanFailed={onScanFailed}
+      onCancelPhoneScan={cancelPhoneScan}
+      onCloseError={() => setError(null)}
+      onSubmit={onSubmit}
+      cancel={cancel}
+    />
   );
 }

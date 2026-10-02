@@ -1,5 +1,5 @@
 import { useHoverOrTap } from '../components/ui/info-tip';
-import { formatCount } from '@/lib/stats';
+import { formatCount } from '@/lib/format';
 
 /**
  * A count kept short for a narrow column (1.2K, 12K…). When shortened, hovering or tapping it shows the

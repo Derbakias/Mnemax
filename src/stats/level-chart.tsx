@@ -14,6 +14,7 @@ import { DATE_LOCALE, LEVEL_WINDOW } from '@/config/stats';
 import { roundMode, type LevelPoint } from '@/stats/levels';
 import { exponentialAverage } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
+import { rangeStart, useToday } from '@/stats/use-today';
 
 /**
  * Round scores (dots) and their trend, an exponential moving average of LEVEL_WINDOW (line), over the rounds
@@ -24,7 +25,8 @@ import { useTheme } from '@/lib/theme';
 export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[]; zoom: ChartZoom }) {
   const theme = useTheme();
   const [days, setDays] = useState<number | null>(null);
-  // The range is worked out when the history or range change (not once at mount), so it doesn't go stale.
+  // Whole days ending today, like the time-played chart; it moves on at midnight.
+  const since = rangeStart(useToday(), days);
   // The trend over every round ever played (it starts at the LEVEL_WINDOW-th, so the first rounds don't
   // show an average of fewer), cut to the range below.
   const allTrend = useMemo(
@@ -36,16 +38,14 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
     [allHistory],
   );
   const { history, trend } = useMemo(() => {
-    const now = Date.now();
-    const cutoff = days == null ? -Infinity : now - days * 86400000;
     // History is oldest first, so the range is its tail.
-    const start = allHistory.findIndex((p) => p.finishedAt >= cutoff);
+    const start = allHistory.findIndex((p) => p.finishedAt >= since);
     const from = start === -1 ? allHistory.length : start;
     return {
       history: allHistory.slice(from),
       trend: allTrend.slice(from),
     };
-  }, [allHistory, allTrend, days]);
+  }, [allHistory, allTrend, since]);
 
   const data = useMemo<uPlot.AlignedData>(
     () => [history.map((_, i) => i + 1), history.map((p) => p.score), trend],
@@ -100,7 +100,7 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
         }),
       ],
     };
-    // chartKey: a reset rebuilds the chart, and the rebuilt one needs fresh zoom state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chartKey: a reset rebuilds the chart, which needs fresh zoom state.
   }, [history, trend, theme, zoom.setZoomed, zoom.reset, zoom.chartKey]);
 
   return (

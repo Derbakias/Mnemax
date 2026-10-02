@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type uPlot from 'uplot';
 
 import { ChartLegend } from './chart-legend';
@@ -18,8 +18,10 @@ import { statsCopy } from '@/copy/stats';
 import type { RoundResult, StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
-import { computeRoundPoints, exponentialAverage, improvementRate, type PerfectEstimate } from '@/lib/stats';
+import { computeRoundPoints, exponentialAverage } from '@/lib/stats';
+import { improvementRate, type PerfectEstimate } from '@/stats/improvement';
 import { useTheme } from '@/lib/theme';
+import { rangeStart, useToday } from '@/stats/use-today';
 
 type Metric = 'accuracy' | 'reaction';
 /** Every line in the legend can be hidden: the round dots, the overall average and each stream. */
@@ -43,21 +45,17 @@ export function ProgressChart({
   const theme = useTheme();
   const [metric, setMetric] = useState<Metric>('accuracy');
   const [days, setDays] = useState<number | null>(null);
+  // Whole days ending today, like the time-played chart; it moves on at midnight.
+  const since = rangeStart(useToday(), days);
   const [hidden, setHidden] = useState<ReadonlySet<SeriesKey>>(new Set());
-  // Read by the chart options and tooltip, so toggling a stream doesn't rebuild the chart (or undo a zoom).
-  const hiddenRef = useRef(hidden);
-  hiddenRef.current = hidden;
-  const plotRef = useRef<uPlot | null>(null);
 
   // Every round of the mode, oldest first: the averages count rounds from before the range too.
   const allPoints = useMemo(() => computeRoundPoints(rounds), [rounds]);
-  // The range is worked out when the rounds or range change (not once at mount), so it doesn't go stale.
-  // `start`: the first round in it.
+  // `start`: the first round in the range.
   const start = useMemo(() => {
-    const cutoff = days == null ? -Infinity : Date.now() - days * 86400000;
-    const first = allPoints.findIndex((p) => p.finishedAt >= cutoff);
+    const first = allPoints.findIndex((p) => p.finishedAt >= since);
     return first === -1 ? allPoints.length : first;
-  }, [allPoints, days]);
+  }, [allPoints, since]);
   const points = useMemo(() => allPoints.slice(start), [allPoints, start]);
 
   // Values and their trends (exponential moving averages of PROGRESS_ROLLING_WINDOW) for every round, then cut
@@ -110,22 +108,18 @@ export function ProgressChart({
       cursor: interaction.cursor,
       series: [
         {},
-        { ...dotSeries('This round', mainColor, undefined, points.length), show: !hiddenRef.current.has('round') },
-        lineSeries(`Avg of ${PROGRESS_ROLLING_WINDOW}`, mainColor, undefined, {
-          width: 2.5,
-          show: !hiddenRef.current.has('avg'),
-        }),
+        dotSeries('This round', mainColor, undefined, points.length),
+        lineSeries(`Avg of ${PROGRESS_ROLLING_WINDOW}`, mainColor, undefined, { width: 2.5 }),
         ...streams.map((s) =>
           lineSeries(STREAM_LABELS[s], withAlpha(theme[STREAM_CHART_COLORS[s]], 0.8), undefined, {
             width: 1.5,
             dash: [4, 3],
-            show: !hiddenRef.current.has(s),
           }),
         ),
       ],
       plugins: [
         interaction.plugin,
-        tooltipPlugin((idx) => {
+        tooltipPlugin((idx, u) => {
           const point = points[idx];
           if (!point) {
             return null;
@@ -139,31 +133,35 @@ export function ProgressChart({
           });
           return {
             title,
+            // Row n is series n + 1 (round, avg, then the streams): hidden series are left out.
             rows: [
-              ['round', 'This round', perRound[idx]] as const,
-              ['avg', `Avg of ${PROGRESS_ROLLING_WINDOW}`, averages[0][idx]] as const,
-              ...streams.map((s, i) => [s, `${STREAM_LABELS[s]} avg`, averages[1 + i][idx]] as const),
+              ['This round', perRound[idx]] as const,
+              [`Avg of ${PROGRESS_ROLLING_WINDOW}`, averages[0][idx]] as const,
+              ...streams.map((s, i) => [`${STREAM_LABELS[s]} avg`, averages[1 + i][idx]] as const),
             ]
-              .filter(([key]) => !hiddenRef.current.has(key))
-              .map(([, label, value]): [string, string] => [label, fmt(value)]),
+              .filter((_, n) => u.series[n + 1].show)
+              .map(([label, value]): [string, string] => [label, fmt(value)]),
           };
         }),
       ],
     };
-    // chartKey: a reset rebuilds the chart, and the rebuilt one needs fresh zoom state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chartKey: a reset rebuilds the chart, which needs fresh zoom state.
   }, [theme, metric, unit, mainColor, points, streams, perRound, averages, zoom.setZoomed, zoom.reset, zoom.chartKey]);
+
+  // Shown or hidden on the live chart (see UPlotChart), so toggling a stream doesn't rebuild it (or undo a zoom).
+  const seriesShown = useMemo(
+    () => (['round', 'avg', ...streams] as const).map((key) => !hidden.has(key)),
+    [hidden, streams],
+  );
 
   const toggleSeries = (key: SeriesKey) => {
     const next = new Set(hidden);
-    const show = next.has(key);
-    if (show) {
+    if (next.has(key)) {
       next.delete(key);
     } else {
       next.add(key);
     }
     setHidden(next);
-    const index = key === 'round' ? 1 : key === 'avg' ? 2 : 3 + streams.indexOf(key);
-    plotRef.current?.setSeries(index, { show });
   };
 
   return (
@@ -180,7 +178,7 @@ export function ProgressChart({
           options={options}
           data={data}
           height={PROGRESS_CHART_HEIGHT}
-          plotRef={plotRef}
+          seriesShown={seriesShown}
           zoom={zoom}
         />
       ) : (

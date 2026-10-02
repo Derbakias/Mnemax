@@ -2,8 +2,6 @@ import {
   aggregateStreams,
   computeRoundPoints,
   filterRounds,
-  formatCount,
-  improvementRate,
   median,
   playedOnDayMs,
   exponentialAverage,
@@ -134,53 +132,6 @@ describe('filterRounds', () => {
   });
 });
 
-describe('improvementRate', () => {
-  /** Rounds of `minutes` each with the given accuracies, oldest first. */
-  const pointsFor = (accuracies: number[], minutes = 6) =>
-    accuracies.map((accuracy, i) => ({
-      round: round({ id: `r${i}` }),
-      index: i + 1,
-      nLevel: 2,
-      finishedAt: NOW + i,
-      durationMs: minutes * 60000,
-      accuracy,
-      streamAccuracy: {},
-      speedMs: null,
-      streamSpeedMs: {},
-    }));
-
-  it('estimates the play left to reach 100% on a learning curve that levels off', () => {
-    // The gap to 100% halves every ~1.4 hours of play (k = 0.5 per hour); rounds of 6 minutes.
-    const k = 0.5;
-    const accuracies = Array.from({ length: 30 }, (_, i) => 100 - 40 * Math.exp(-k * (i + 1) * 0.1));
-    const current = accuracies.slice(-10).reduce((a, b) => a + b, 0) / 10;
-    const expected = Math.log((100 - current) / 0.5) / k;
-    const estimate = improvementRate(pointsFor(accuracies)).toPerfect;
-    expect(estimate?.kind).toBe('eta');
-    if (estimate?.kind !== 'eta') {
-      return;
-    }
-    expect(estimate.hours).toBeGreaterThan(expected * 0.9);
-    expect(estimate.hours).toBeLessThan(expected * 1.1);
-  });
-
-  it('reports no progress for flat or falling accuracy', () => {
-    const flat = Array.from({ length: 30 }, (_, i) => (i % 2 ? 70 : 74));
-    expect(improvementRate(pointsFor(flat)).toPerfect).toEqual({ kind: 'noProgress' });
-    const falling = Array.from({ length: 30 }, (_, i) => 90 - i);
-    expect(improvementRate(pointsFor(falling)).toPerfect).toEqual({ kind: 'noProgress' });
-  });
-
-  it('reports 100% as reached when the latest rounds are perfect', () => {
-    const accuracies = [...Array.from({ length: 20 }, () => 80), ...Array.from({ length: 10 }, () => 100)];
-    expect(improvementRate(pointsFor(accuracies)).toPerfect).toEqual({ kind: 'reached' });
-  });
-
-  it('returns nulls with too little data', () => {
-    expect(improvementRate([])).toEqual({ toPerfect: null, speedMsPerHour: null });
-  });
-});
-
 describe('playedOnDayMs', () => {
   it('sums only the rounds finished on that local day', () => {
     const day = new Date(2026, 8, 25, 12);
@@ -191,21 +142,6 @@ describe('playedOnDayMs', () => {
       round({ finishedAt: new Date(2026, 8, 26, 0, 1).getTime(), durationMs: 90_000 }),
     ];
     expect(playedOnDayMs(rounds, day)).toBe(90_000);
-  });
-});
-
-describe('formatCount', () => {
-  it('keeps counts to four characters', () => {
-    expect(formatCount(0)).toBe('0');
-    expect(formatCount(999)).toBe('999');
-    expect(formatCount(1000)).toBe('1K');
-    expect(formatCount(1202)).toBe('1.2K');
-    expect(formatCount(9960)).toBe('10K');
-    expect(formatCount(12345)).toBe('12K');
-    expect(formatCount(999_499)).toBe('999K');
-    expect(formatCount(999_600)).toBe('1M');
-    expect(formatCount(1_250_000)).toBe('1.3M');
-    expect(formatCount(2_000_000_000)).toBe('2B');
   });
 });
 

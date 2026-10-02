@@ -11,8 +11,9 @@ import { DAILY_TIME_CHART_HEIGHT, MIN_ALL_DAYS, MIN_ZOOM_DAYS, MINUTE_STEPS } fr
 import { statsCopy } from '@/copy/stats';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
+import { rangeStart, useToday } from '@/stats/use-today';
 import { DATE_LOCALE } from '@/config/stats';
-import { formatDuration } from '@/lib/stats';
+import { formatDuration } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 
 const DAY_MS = 86400000;
@@ -54,8 +55,7 @@ function trendLine(points: { x: number; y: number }[], at: number[]): (number | 
 export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: ChartZoom }) {
   const theme = useTheme();
   const [rangeDays, setRangeDays] = useState<number | null>(30);
-  // Read on every render (the Stats screen stays mounted), so the chart moves on past midnight.
-  const today = startOfDay(Date.now());
+  const today = useToday();
 
   const allDays = useMemo(() => dailyStats(rounds), [rounds]);
 
@@ -63,9 +63,7 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
   // range always covers its full length, played or not.
   const days = useMemo(() => {
     const span = rangeDays ?? Math.max(MIN_ALL_DAYS, Math.round((today - (allDays[0]?.day ?? today)) / DAY_MS) + 1);
-    const start = new Date(today);
-    start.setDate(start.getDate() - (span - 1));
-    const first = start.getTime();
+    const first = rangeStart(today, span);
     const byDay = new Map(allDays.map((d) => [d.day, d]));
     const out: { day: number; stats: DayStats | null }[] = [];
     // Step by calendar date, not by 24h, so daylight-saving changes don't skip or repeat a day.
@@ -191,7 +189,7 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
         }),
       ],
     };
-    // chartKey: a reset rebuilds the chart, and the rebuilt one needs fresh zoom state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chartKey: a reset rebuilds the chart, which needs fresh zoom state.
   }, [days, theme, zoom.setZoomed, zoom.reset, zoom.chartKey]);
 
   return (
