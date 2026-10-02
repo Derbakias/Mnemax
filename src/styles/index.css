@@ -48,13 +48,8 @@
   --color-tile-bottom: #e8e8ed;
   --color-tile-highlight: rgba(255, 255, 255, 0.95);
   --color-tile-lip: rgba(15, 23, 42, 0.07);
-  --shadow-tile-drop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 8px 16px -8px rgba(15, 23, 42, 0.18);
   /* The grid tiles' soft shade inside, blurred rather than a hard band. */
   --color-tile-inner-shade: rgba(15, 23, 42, 0.1);
-  /* The empty tiles' faint shadow; the lit one gets a deep one, so it stands out from them. */
-  --shadow-tile-rest: 0 1px 2px rgba(15, 23, 42, 0.06);
-  /* A soft lift under the HUD chips and buttons. */
-  --shadow-chip: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 10px -4px rgba(15, 23, 42, 0.14);
   /* The round progress, light blue to blue. */
   --color-progress: #64b5f6;
   /* The faint washes of colour behind the Play screen. */
@@ -64,9 +59,6 @@
      soft shadow under it. --color-accent-ink is blue text on a light blue fill (the picked filter chip). */
   --color-surface: #ffffff;
   --color-surface-border: rgba(15, 23, 42, 0.07);
-  --shadow-surface: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -14px rgba(15, 23, 42, 0.16);
-  /* Panels that open over the page: the ⓘ notes and the HUD's dropdowns. */
-  --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.18);
   --color-accent-ink: #1565c0;
   --color-success: #43a047;
   --color-warning: #fb8c00;
@@ -105,6 +97,23 @@
     100% {
       opacity: 0;
     }
+  }
+}
+
+/* Shadows: plain variables rather than @theme ones. Tailwind copies a @theme shadow's value into its class,
+   so the dark values further down would never reach it. In a className, use them as shadow-(--shadow-chip). */
+@layer theme {
+  :root {
+    /* The grid tiles' shadow under them (see the tile colours above). */
+    --shadow-tile-drop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 8px 16px -8px rgba(15, 23, 42, 0.18);
+    /* The empty tiles' faint shadow; the lit one gets a deep one, so it stands out from them. */
+    --shadow-tile-rest: 0 1px 2px rgba(15, 23, 42, 0.06);
+    /* A soft lift under the HUD chips and buttons. */
+    --shadow-chip: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 10px -4px rgba(15, 23, 42, 0.14);
+    /* The Stats screen's raised panels. */
+    --shadow-surface: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -14px rgba(15, 23, 42, 0.16);
+    /* Panels that open over the page: the ⓘ notes and the HUD's dropdowns. */
+    --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.18);
   }
 }
 

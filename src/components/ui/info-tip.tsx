@@ -23,7 +23,7 @@ const styles = {
   panel: [
     'absolute top-[calc(100%+2px)] left-0 z-20 box-border w-[min(360px,100%)]',
     'flex flex-col gap-1.5 px-3.5 py-3 text-left text-text',
-    'rounded-xl border border-background-selected bg-background shadow-popover',
+    'rounded-xl border border-background-selected bg-background shadow-(--shadow-popover)',
     '[&_p]:m-0 [&_strong]:font-semibold [&_.icon]:align-[-2px]',
   ],
 };

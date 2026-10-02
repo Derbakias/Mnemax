@@ -9,7 +9,7 @@ const styles = {
     'absolute top-[calc(100%+8px)] left-1/2 z-10 transform-[translateX(-50%)]',
     'data-[above=true]:top-auto data-[above=true]:bottom-[calc(100%+8px)]',
     'flex flex-col items-center gap-2 px-3.5 pt-2.5 pb-3.5',
-    'rounded-[14px] border border-background-selected bg-background shadow-popover',
+    'rounded-[14px] border border-background-selected bg-background shadow-(--shadow-popover)',
     // max-height is set from the room left on screen, and the width stops at the screen less the page's 16px
     // sides; contents bigger than that scroll inside the panel, never the page.
     'max-w-[calc(100cqw-32px)] overflow-auto',

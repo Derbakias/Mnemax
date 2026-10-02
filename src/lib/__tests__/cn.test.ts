@@ -18,12 +18,11 @@ describe('cn', () => {
     expect(cn('bg-surface', 'bg-accent')).toBe('bg-accent');
   });
 
-  it("knows the app's own shadow names", () => {
-    expect(cn('shadow-chip', 'shadow-none')).toBe('shadow-none');
-    expect(cn('shadow-tile-rest', 'shadow-tile-drop')).toBe('shadow-tile-drop');
-    expect(cn('shadow-surface', 'shadow-chip')).toBe('shadow-chip');
+  it("knows the app's shadows, written as shadow-(--shadow-…)", () => {
+    expect(cn('shadow-(--shadow-chip)', 'shadow-none')).toBe('shadow-none');
+    expect(cn('shadow-(--shadow-tile-rest)', 'shadow-(--shadow-tile-drop)')).toBe('shadow-(--shadow-tile-drop)');
     // A shadow and a shadow colour are different things, so both stay.
-    expect(cn('shadow-chip', 'shadow-accent')).toBe('shadow-chip shadow-accent');
+    expect(cn('shadow-(--shadow-chip)', 'shadow-accent')).toBe('shadow-(--shadow-chip) shadow-accent');
   });
 
   it('tells a text colour apart from a text size', () => {
