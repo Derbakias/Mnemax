@@ -179,6 +179,7 @@ describe('the packages the app is built from', () => {
       'react',
       'react-dom',
       'uplot',
+      'zustand',
     ]);
     expect(Object.keys(pkg.devDependencies).sort()).toEqual([
       '@eslint/js',

@@ -19,23 +19,23 @@ import { useChartZoom } from '@/components/charts/zoom';
 import type { RoundResult } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
 import { levelHistory, levelSummary, modeOf, summarizeModes } from '@/stats/levels';
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 import { aggregateStreams, collectionSummary } from '@/lib/stats';
 import { formatDuration } from '@/lib/format';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
-import { useSync } from '@/stores/sync-context';
+import { useSyncStore } from '@/stores/sync';
 import { accuracyColor, useTheme } from '@/lib/theme';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
 export function StatsScreen({ onReady }: { onReady?: () => void }) {
   const theme = useTheme();
-  const { settings } = useSettings();
+  const settings = useSettingsStore((s) => s.settings);
   const [rounds, setRounds] = useState<RoundResult[]>([]);
   // False until the saved rounds have loaded once, so "play a few rounds" doesn't flash up first.
   const [loaded, setLoaded] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
-  const paired = (useSync().status?.peers.length ?? 0) > 0;
+  const paired = useSyncStore((s) => (s.status?.peers.length ?? 0) > 0);
   // Each chart's zoom lives here, so its crosshair switch and Reset zoom can go in the section header.
   const levelZoom = useChartZoom();
   const modeZoom = useChartZoom();

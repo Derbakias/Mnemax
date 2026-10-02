@@ -5,21 +5,31 @@ import { syncCopy } from '@/copy/sync';
 import { SyncLog } from './sync-log';
 import { Pairing } from './sync-pairing';
 import { PeerRow } from './sync-peer';
-import { useSettings } from '@/stores/settings-context';
-import { useSync } from '@/stores/sync-context';
+import { useSettingsStore } from '@/stores/settings';
+import { isUsable, useSyncStore } from '@/stores/sync';
 import { cancelPairing, renameDevice } from '@/sync/sync';
 
 /**
  * Sync with your other devices on the same Wi-Fi: the paired devices, pairing a new one, and the switch for
- * syncing by itself. The syncing itself runs for the whole app (see src/stores/sync-context.tsx). Only in the app.
+ * syncing by itself. The syncing itself runs for the whole app (see src/sync/sync-auto.ts). Only in the app.
  */
 export function SyncSection({ active }: { active: boolean }) {
-  return useSync().available ? <SyncPanel active={active} /> : null;
+  return useSyncStore((s) => s.available) ? <SyncPanel active={active} /> : null;
 }
 
 function SyncPanel({ active }: { active: boolean }) {
-  const { prefs, setAutoSync } = useSettings();
-  const { status, setStatus, usable, listening, refresh, notice, failWith, dismiss, log, syncing } = useSync();
+  const autoSync = useSettingsStore((s) => s.prefs.autoSync);
+  const setAutoSync = useSettingsStore((s) => s.setAutoSync);
+  const status = useSyncStore((s) => s.status);
+  const setStatus = useSyncStore((s) => s.setStatus);
+  const usable = useSyncStore(isUsable);
+  const listening = useSyncStore((s) => s.listening);
+  const refresh = useSyncStore((s) => s.refresh);
+  const notice = useSyncStore((s) => s.notice);
+  const failWith = useSyncStore((s) => s.failWith);
+  const dismiss = useSyncStore((s) => s.dismiss);
+  const log = useSyncStore((s) => s.log);
+  const syncing = useSyncStore((s) => s.syncing);
   const [pairing, setPairing] = useState<{ how: 'show' | 'enter'; hint?: string } | null>(null);
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   // Any pairing ends when the Sync section goes away.
@@ -141,11 +151,11 @@ function SyncPanel({ active }: { active: boolean }) {
               type="checkbox"
               role="switch"
               className="switch"
-              checked={prefs.autoSync}
+              checked={autoSync}
               onChange={(e) => setAutoSync(e.target.checked)}
             />
           </label>
-          {peers.length > 0 && <p className="t-small secondary">{reachText(listening, prefs.autoSync)}</p>}
+          {peers.length > 0 && <p className="t-small secondary">{reachText(listening, autoSync)}</p>}
         </div>
       )}
       {!usable && status == null && notice?.kind === 'error' && (

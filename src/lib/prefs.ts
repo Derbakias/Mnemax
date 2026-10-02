@@ -27,7 +27,7 @@ export interface AppPrefs {
    */
   tutorialHistory: boolean;
   tutorialSolution: boolean;
-  /** Sync with paired devices by itself while the app is open (see src/stores/sync-context.tsx). */
+  /** Sync with paired devices by itself while the app is open (see src/sync/sync-auto.ts). */
   autoSync: boolean;
 }
 

@@ -14,7 +14,7 @@ import { maxMatchesFor } from '@/game/rules';
 import { STREAM_IDS, STREAM_LABELS } from '@/game/types';
 import { MAX_DAILY_TARGET_MINUTES, MIN_DAILY_TARGET_MINUTES, STEP_DAILY_TARGET_MINUTES } from '@/config/stats';
 import type { ButtonLayout } from '@/lib/prefs';
-import { useSettings } from '@/stores/settings-context';
+import { useSettingsStore } from '@/stores/settings';
 import { buildStatsJson, exportStats, parseStatsPayload, pickStatsFileText, statsFilename } from '@/lib/stats-io';
 import { loadRounds, mergeRounds } from '@/lib/storage';
 
@@ -22,21 +22,19 @@ const BUTTON_LAYOUTS: ButtonLayout[] = ['grid', 'rows'];
 
 /** `active`: the Settings tab is showing (the screen stays mounted behind the other tabs). */
 export function SettingsScreen({ active }: { active: boolean }) {
-  const {
-    settings,
-    prefs,
-    toggleStream,
-    setNLevel,
-    setSpeed,
-    setMatchCount,
-    setButtonLayout,
-    setSwipeAnswers,
-    setDailyTargetMinutes,
-    setShowTrialTimer,
-    setTutorialAid,
-    setKeyBinding,
-    resetDefaults,
-  } = useSettings();
+  const settings = useSettingsStore((s) => s.settings);
+  const prefs = useSettingsStore((s) => s.prefs);
+  const toggleStream = useSettingsStore((s) => s.toggleStream);
+  const setNLevel = useSettingsStore((s) => s.setNLevel);
+  const setSpeed = useSettingsStore((s) => s.setSpeed);
+  const setMatchCount = useSettingsStore((s) => s.setMatchCount);
+  const setButtonLayout = useSettingsStore((s) => s.setButtonLayout);
+  const setSwipeAnswers = useSettingsStore((s) => s.setSwipeAnswers);
+  const setDailyTargetMinutes = useSettingsStore((s) => s.setDailyTargetMinutes);
+  const setShowTrialTimer = useSettingsStore((s) => s.setShowTrialTimer);
+  const setTutorialAid = useSettingsStore((s) => s.setTutorialAid);
+  const setKeyBinding = useSettingsStore((s) => s.setKeyBinding);
+  const resetDefaults = useSettingsStore((s) => s.resetDefaults);
   const [dataStatus, setDataStatus] = useState<string | null>(null);
   const [dataBusy, setDataBusy] = useState(false);
   // Key bindings only matter with a real keyboard; same test as the key hints on the Play screen.

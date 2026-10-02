@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { syncCopy } from '@/copy/sync';
 import { DATE_LOCALE } from '@/config/stats';
 import { FORGET_CONFIRM_MS } from '@/config/sync';
-import { useSync } from '@/stores/sync-context';
+import { useSyncStore } from '@/stores/sync';
 import { forgetDevice, type SyncPeer } from '@/sync/sync';
 
 /**
@@ -11,7 +11,12 @@ import { forgetDevice, type SyncPeer } from '@/sync/sync';
  * Forget, and under it how the latest sync with it went. `busy`: something else is going on, so no Sync now.
  */
 export function PeerRow({ peer, busy, onReconnect }: { peer: SyncPeer; busy: boolean; onReconnect?: () => void }) {
-  const { setStatus, inform, failWith, syncing, syncWithPeer, peerNote } = useSync();
+  const setStatus = useSyncStore((s) => s.setStatus);
+  const inform = useSyncStore((s) => s.inform);
+  const failWith = useSyncStore((s) => s.failWith);
+  const syncing = useSyncStore((s) => s.syncing);
+  const syncWithPeer = useSyncStore((s) => s.syncWithPeer);
+  const peerNote = useSyncStore((s) => s.peerNote);
   const [confirming, setConfirming] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
