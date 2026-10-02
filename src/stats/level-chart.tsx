@@ -14,6 +14,7 @@ import { DATE_LOCALE, LEVEL_WINDOW } from '@/config/stats';
 import { roundMode, type LevelPoint } from '@/stats/levels';
 import { exponentialAverage } from '@/lib/stats';
 import { useTheme } from '@/lib/theme';
+import { rangeStart, useToday } from '@/stats/use-today';
 
 /**
  * Round scores (dots) and their trend, an exponential moving average of LEVEL_WINDOW (line), over the rounds
@@ -23,10 +24,9 @@ import { useTheme } from '@/lib/theme';
  */
 export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[]; zoom: ChartZoom }) {
   const theme = useTheme();
-  // The picked range, and its cutoff: worked out when it's picked, so it doesn't go stale.
-  const [range, setRange] = useState<{ days: number | null; since: number }>({ days: null, since: -Infinity });
-  const pickRange = (days: number | null) =>
-    setRange({ days, since: days == null ? -Infinity : Date.now() - days * 86400000 });
+  const [days, setDays] = useState<number | null>(null);
+  // Whole days ending today, like the time-played chart; it moves on at midnight.
+  const since = rangeStart(useToday(), days);
   // The trend over every round ever played (it starts at the LEVEL_WINDOW-th, so the first rounds don't
   // show an average of fewer), cut to the range below.
   const allTrend = useMemo(
@@ -39,13 +39,13 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
   );
   const { history, trend } = useMemo(() => {
     // History is oldest first, so the range is its tail.
-    const start = allHistory.findIndex((p) => p.finishedAt >= range.since);
+    const start = allHistory.findIndex((p) => p.finishedAt >= since);
     const from = start === -1 ? allHistory.length : start;
     return {
       history: allHistory.slice(from),
       trend: allTrend.slice(from),
     };
-  }, [allHistory, allTrend, range.since]);
+  }, [allHistory, allTrend, since]);
 
   const data = useMemo<uPlot.AlignedData>(
     () => [history.map((_, i) => i + 1), history.map((p) => p.score), trend],
@@ -105,7 +105,7 @@ export function LevelChart({ history: allHistory, zoom }: { history: LevelPoint[
 
   return (
     <div className="stack-8">
-      <RangeChips days={range.days} zoom={zoom} onPick={pickRange} />
+      <RangeChips days={days} zoom={zoom} onPick={setDays} />
       {history.length > 0 ? (
         <UPlotChart key={zoom.chartKey} options={options} data={data} height={LEVEL_CHART_HEIGHT} zoom={zoom} />
       ) : (

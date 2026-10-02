@@ -21,6 +21,7 @@ import { DATE_LOCALE } from '@/config/stats';
 import { computeRoundPoints, exponentialAverage } from '@/lib/stats';
 import { improvementRate, type PerfectEstimate } from '@/stats/improvement';
 import { useTheme } from '@/lib/theme';
+import { rangeStart, useToday } from '@/stats/use-today';
 
 type Metric = 'accuracy' | 'reaction';
 /** Every line in the legend can be hidden: the round dots, the overall average and each stream. */
@@ -43,19 +44,18 @@ export function ProgressChart({
 }) {
   const theme = useTheme();
   const [metric, setMetric] = useState<Metric>('accuracy');
-  // The picked range, and its cutoff: worked out when it's picked, so it doesn't go stale.
-  const [range, setRange] = useState<{ days: number | null; since: number }>({ days: null, since: -Infinity });
-  const pickRange = (days: number | null) =>
-    setRange({ days, since: days == null ? -Infinity : Date.now() - days * 86400000 });
+  const [days, setDays] = useState<number | null>(null);
+  // Whole days ending today, like the time-played chart; it moves on at midnight.
+  const since = rangeStart(useToday(), days);
   const [hidden, setHidden] = useState<ReadonlySet<SeriesKey>>(new Set());
 
   // Every round of the mode, oldest first: the averages count rounds from before the range too.
   const allPoints = useMemo(() => computeRoundPoints(rounds), [rounds]);
   // `start`: the first round in the range.
   const start = useMemo(() => {
-    const first = allPoints.findIndex((p) => p.finishedAt >= range.since);
+    const first = allPoints.findIndex((p) => p.finishedAt >= since);
     return first === -1 ? allPoints.length : first;
-  }, [allPoints, range.since]);
+  }, [allPoints, since]);
   const points = useMemo(() => allPoints.slice(start), [allPoints, start]);
 
   // Values and their trends (exponential moving averages of PROGRESS_ROLLING_WINDOW) for every round, then cut
@@ -170,7 +170,7 @@ export function ProgressChart({
         <FilterChip label="Accuracy" active={metric === 'accuracy'} onPress={() => setMetric('accuracy')} />
         <FilterChip label="Reaction time" active={metric === 'reaction'} onPress={() => setMetric('reaction')} />
       </div>
-      <RangeChips days={range.days} zoom={zoom} onPick={pickRange} />
+      <RangeChips days={days} zoom={zoom} onPick={setDays} />
 
       {hasData ? (
         <UPlotChart

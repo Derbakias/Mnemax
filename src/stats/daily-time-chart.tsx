@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import uPlot from 'uplot';
 
 import { ChartLegend } from './chart-legend';
@@ -11,6 +11,7 @@ import { DAILY_TIME_CHART_HEIGHT, MIN_ALL_DAYS, MIN_ZOOM_DAYS, MINUTE_STEPS } fr
 import { statsCopy } from '@/copy/stats';
 import type { RoundResult } from '@/game/types';
 import { dailyStats, startOfDay, type DayStats } from '@/stats/levels';
+import { rangeStart, useToday } from '@/stats/use-today';
 import { DATE_LOCALE } from '@/config/stats';
 import { formatDuration } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
@@ -20,20 +21,6 @@ const DAY_MS = 86400000;
 function minutesCeiling(maxMinutes: number): number {
   const target = maxMinutes * 1.15;
   return MINUTE_STEPS.find((step) => step >= target) ?? Math.ceil(target / 60) * 60;
-}
-
-/** The start of today, which moves on at midnight (the Stats screen stays mounted). */
-function useToday(): number {
-  const [today, setToday] = useState(() => startOfDay(Date.now()));
-  useEffect(() => {
-    const d = new Date(today);
-    // The next midnight by the calendar, so a daylight-saving day (23 or 25 hours) still works. At least
-    // `next`, in case the timer fires a moment early; later if the device slept through midnight.
-    const next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
-    const timer = setTimeout(() => setToday(Math.max(next, startOfDay(Date.now()))), next - Date.now());
-    return () => clearTimeout(timer);
-  }, [today]);
-  return today;
 }
 
 /**
@@ -76,9 +63,7 @@ export function DailyTimeChart({ rounds, zoom }: { rounds: RoundResult[]; zoom: 
   // range always covers its full length, played or not.
   const days = useMemo(() => {
     const span = rangeDays ?? Math.max(MIN_ALL_DAYS, Math.round((today - (allDays[0]?.day ?? today)) / DAY_MS) + 1);
-    const start = new Date(today);
-    start.setDate(start.getDate() - (span - 1));
-    const first = start.getTime();
+    const first = rangeStart(today, span);
     const byDay = new Map(allDays.map((d) => [d.day, d]));
     const out: { day: number; stats: DayStats | null }[] = [];
     // Step by calendar date, not by 24h, so daylight-saving changes don't skip or repeat a day.
