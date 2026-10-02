@@ -1,34 +1,30 @@
-import { useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
-// Same palette as the old expo app index.css mirrors these as CSS variables;
-// this object is for values computed in JS (SVG attributes, accuracy colors).
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    accent: '#1E88E5',
-    success: '#43A047',
-    warning: '#FB8C00',
-    danger: '#E53935',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    accent: '#64B5F6',
-    success: '#66BB6A',
-    warning: '#FFA726',
-    danger: '#EF5350',
-  },
+// The palette lives in src/styles/index.css (its @theme block); this reads the colours that are drawn in JS
+// (SVG attributes, chart lines, accuracy colours) from there, so there is one place to change them.
+const NAMES = {
+  text: 'text',
+  background: 'background',
+  backgroundElement: 'background-element',
+  backgroundSelected: 'background-selected',
+  textSecondary: 'text-secondary',
+  accent: 'accent',
+  success: 'success',
+  warning: 'warning',
+  danger: 'danger',
 } as const;
 
-export type Theme = (typeof Colors)['light'] | (typeof Colors)['dark'];
-export type ThemeColor = keyof typeof Colors.light;
+export type ThemeColor = keyof typeof NAMES;
+export type Theme = Record<ThemeColor, string>;
+
+function readTheme(): Theme {
+  const style = getComputedStyle(document.documentElement);
+  const theme = {} as Theme;
+  for (const key of Object.keys(NAMES) as ThemeColor[]) {
+    theme[key] = style.getPropertyValue(`--color-${NAMES[key]}`).trim();
+  }
+  return theme;
+}
 
 const darkQuery = () => window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -42,8 +38,11 @@ export function useColorScheme(): 'light' | 'dark' {
   return useSyncExternalStore(subscribe, () => (darkQuery().matches ? 'dark' : 'light'));
 }
 
+// Read again when the phone switches between light and dark, so an open chart picks up the new colours.
 export function useTheme(): Theme {
-  return Colors[useColorScheme()];
+  const scheme = useColorScheme();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- scheme: the colours in the CSS change with it.
+  return useMemo(() => readTheme(), [scheme]);
 }
 
 export function accuracyColor(pct: number, theme: Theme): string {

@@ -183,6 +183,7 @@ describe('the packages the app is built from', () => {
     ]);
     expect(Object.keys(pkg.devDependencies).sort()).toEqual([
       '@eslint/js',
+      '@tailwindcss/vite',
       '@tauri-apps/cli',
       '@types/node',
       '@types/react',
@@ -193,6 +194,7 @@ describe('the packages the app is built from', () => {
       'globals',
       'husky',
       'prettier',
+      'tailwindcss',
       'typescript',
       'typescript-eslint',
       'vite',

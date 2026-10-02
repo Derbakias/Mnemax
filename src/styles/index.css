@@ -1,181 +1,200 @@
 /* TODO: !important! Migrate everything to tailwind */
 
-/* Palette mirrors src/lib/theme.ts */
-:root {
-  --text: #000000;
-  --background: #ffffff;
-  --background-element: #f0f0f3;
-  --background-selected: #e0e1e6;
-  --text-secondary: #60646c;
-  --accent: #1e88e5;
-  --accent-soft: rgba(30, 136, 229, 0.14);
-  /* Blue fills with white on them (the Play button, a right answer): from --accent-fill to the deeper
-     --accent-strong, so the white stays readable (dark mode's --accent is too light for that). */
-  --accent-fill: #1e88e5;
-  --accent-strong: #1565c0;
+/* Tailwind: its theme (the palette below) and its utility classes. Its base reset (Preflight) is left out
+   until the old CSS is gone, because it changes the look. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* The palette: the one place the app's colours are set. src/lib/theme.ts reads them from here for the
+   colours drawn in JS (the charts, accuracy colours). static: every value is always written out, even one
+   no class uses, so JS can read it. */
+@theme static {
+  /* Only the app's own colours, none of Tailwind's, so every colour stays on the palette. */
+  --color-*: initial;
+
+  --color-text: #000000;
+  --color-background: #ffffff;
+  --color-background-element: #f0f0f3;
+  --color-background-selected: #e0e1e6;
+  --color-text-secondary: #60646c;
+  --color-accent: #1e88e5;
+  --color-accent-soft: rgba(30, 136, 229, 0.14);
+  /* Blue fills with white on them (the Play button, a right answer): from --color-accent-fill to the deeper
+     --color-accent-strong, so the white stays readable (dark mode's --color-accent is too light for that). */
+  --color-accent-fill: #1e88e5;
+  --color-accent-strong: #1565c0;
   /* The Play screen's second colour, for time and stopping (the trial timer, the stop button), where blue
      is for actions and progress. -ink is for icons on the light surfaces, which the fill orange is too pale
      for. */
-  --orange: #fb8c00;
-  --orange-ink: #e8590c;
-  --orange-soft: rgba(251, 140, 0, 0.14);
+  --color-orange: #fb8c00;
+  --color-orange-ink: #e8590c;
+  --color-orange-soft: rgba(251, 140, 0, 0.14);
   /* The trial timer: a smooth fade from light orange to dark orange, reached as the box goes off and answers
      close. */
-  --timer-start: #ffcc80;
-  --timer-end: #e65100;
+  --color-timer-start: #ffcc80;
+  --color-timer-end: #e65100;
   /* Accents for the HUD's other chips, so each has its own: gold speed bolts, a teal daily target. */
-  --gold: #d49a00;
-  --teal: #00897b;
+  --color-gold: #d49a00;
+  --color-teal: #00897b;
   /* Frosted glass for the stream cards: a see-through surface (a touch of grey, so an unpicked card is
      quieter than a picked one, never whiter) and a soft sheen from the top left. */
-  --glass-bg: rgba(240, 240, 243, 0.72);
-  --glass-sheen: rgba(255, 255, 255, 0.45);
-  --glass-shadow: rgba(15, 23, 42, 0.14);
+  --color-glass-bg: rgba(240, 240, 243, 0.72);
+  --color-glass-sheen: rgba(255, 255, 255, 0.45);
+  --color-glass-shadow: rgba(15, 23, 42, 0.14);
   /* The grid's boxes as raised tiles: a top-to-bottom face, a light top edge, a darker bottom lip and a
      shadow under them. */
-  --tile-top: #f8f8fa;
-  --tile-bottom: #e8e8ed;
-  --tile-highlight: rgba(255, 255, 255, 0.95);
-  --tile-lip: rgba(15, 23, 42, 0.07);
-  --tile-drop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 8px 16px -8px rgba(15, 23, 42, 0.18);
+  --color-tile-top: #f8f8fa;
+  --color-tile-bottom: #e8e8ed;
+  --color-tile-highlight: rgba(255, 255, 255, 0.95);
+  --color-tile-lip: rgba(15, 23, 42, 0.07);
+  --shadow-tile-drop: 0 2px 4px rgba(15, 23, 42, 0.06), 0 8px 16px -8px rgba(15, 23, 42, 0.18);
   /* The grid tiles' soft shade inside, blurred rather than a hard band. */
-  --tile-inner-shade: rgba(15, 23, 42, 0.1);
+  --color-tile-inner-shade: rgba(15, 23, 42, 0.1);
   /* The empty tiles' faint shadow; the lit one gets a deep one, so it stands out from them. */
-  --tile-rest: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-tile-rest: 0 1px 2px rgba(15, 23, 42, 0.06);
   /* A soft lift under the HUD chips and buttons. */
-  --chip-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 10px -4px rgba(15, 23, 42, 0.14);
+  --shadow-chip: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 10px -4px rgba(15, 23, 42, 0.14);
   /* The round progress, light blue to blue. */
-  --progress: #64b5f6;
+  --color-progress: #64b5f6;
   /* The faint washes of colour behind the Play screen. */
-  --wash-blue: rgba(30, 136, 229, 0.09);
-  --wash-orange: rgba(251, 140, 0, 0.07);
+  --color-wash-blue: rgba(30, 136, 229, 0.09);
+  --color-wash-orange: rgba(251, 140, 0, 0.07);
   /* Raised panels on the Stats screen: a white surface over the screen's colour wash, a hairline edge and a
-     soft shadow under it. --accent-ink is blue text on a light blue fill (the picked filter chip). */
-  --surface: #ffffff;
-  --surface-border: rgba(15, 23, 42, 0.07);
-  --surface-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -14px rgba(15, 23, 42, 0.16);
-  --accent-ink: #1565c0;
-  --success: #43a047;
-  --warning: #fb8c00;
-  --danger: #e53935;
+     soft shadow under it. --color-accent-ink is blue text on a light blue fill (the picked filter chip). */
+  --color-surface: #ffffff;
+  --color-surface-border: rgba(15, 23, 42, 0.07);
+  --shadow-surface: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -14px rgba(15, 23, 42, 0.16);
+  --color-accent-ink: #1565c0;
+  --color-success: #43a047;
+  --color-warning: #fb8c00;
+  --color-danger: #e53935;
 
   --font-display:
     'Spline Sans', Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-
-  --tab-bar-height: 56px;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-
-  color-scheme: light dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #ffffff;
-    --background: #000000;
-    --background-element: #212225;
-    --background-selected: #2e3135;
-    --text-secondary: #b0b4ba;
-    --accent: #64b5f6;
-    --accent-soft: rgba(100, 181, 246, 0.2);
-    --accent-fill: #1e88e5;
-    --accent-strong: #0d47a1;
-    --orange: #ffa726;
-    --orange-ink: #ffa726;
-    --orange-soft: rgba(255, 167, 38, 0.18);
-    --gold: #ffca28;
-    --teal: #4db6ac;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-sheen: rgba(255, 255, 255, 0.06);
-    --glass-shadow: rgba(0, 0, 0, 0.5);
-    --chip-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 10px -4px rgba(0, 0, 0, 0.7);
-    --tile-top: #2a2b30;
-    --tile-bottom: #1b1c1f;
-    --tile-highlight: rgba(255, 255, 255, 0.07);
-    --tile-lip: rgba(0, 0, 0, 0.4);
-    --tile-drop: 0 2px 4px rgba(0, 0, 0, 0.5), 0 8px 16px -8px rgba(0, 0, 0, 0.8);
-    --tile-inner-shade: rgba(0, 0, 0, 0.45);
-    --tile-rest: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --progress: #1e88e5;
-    --wash-blue: rgba(100, 181, 246, 0.12);
-    --wash-orange: rgba(255, 167, 38, 0.08);
-    --surface: #141518;
-    --surface-border: rgba(255, 255, 255, 0.07);
-    --surface-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.9);
-    --accent-ink: #64b5f6;
-    --success: #66bb6a;
-    --warning: #ffa726;
-    --danger: #ef5350;
+@layer theme {
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-text: #ffffff;
+      --color-background: #000000;
+      --color-background-element: #212225;
+      --color-background-selected: #2e3135;
+      --color-text-secondary: #b0b4ba;
+      --color-accent: #64b5f6;
+      --color-accent-soft: rgba(100, 181, 246, 0.2);
+      --color-accent-fill: #1e88e5;
+      --color-accent-strong: #0d47a1;
+      --color-orange: #ffa726;
+      --color-orange-ink: #ffa726;
+      --color-orange-soft: rgba(255, 167, 38, 0.18);
+      --color-gold: #ffca28;
+      --color-teal: #4db6ac;
+      --color-glass-bg: rgba(255, 255, 255, 0.05);
+      --color-glass-sheen: rgba(255, 255, 255, 0.06);
+      --color-glass-shadow: rgba(0, 0, 0, 0.5);
+      --shadow-chip: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 10px -4px rgba(0, 0, 0, 0.7);
+      --color-tile-top: #2a2b30;
+      --color-tile-bottom: #1b1c1f;
+      --color-tile-highlight: rgba(255, 255, 255, 0.07);
+      --color-tile-lip: rgba(0, 0, 0, 0.4);
+      --shadow-tile-drop: 0 2px 4px rgba(0, 0, 0, 0.5), 0 8px 16px -8px rgba(0, 0, 0, 0.8);
+      --color-tile-inner-shade: rgba(0, 0, 0, 0.45);
+      --shadow-tile-rest: 0 1px 2px rgba(0, 0, 0, 0.5);
+      --color-progress: #1e88e5;
+      --color-wash-blue: rgba(100, 181, 246, 0.12);
+      --color-wash-orange: rgba(255, 167, 38, 0.08);
+      --color-surface: #141518;
+      --color-surface-border: rgba(255, 255, 255, 0.07);
+      --shadow-surface: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+      --color-accent-ink: #64b5f6;
+      --color-success: #66bb6a;
+      --color-warning: #ffa726;
+      --color-danger: #ef5350;
+    }
   }
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Plain element styles. They sit in a layer because Tailwind's utilities do, and CSS outside any layer
+   always wins over CSS in one: left outside, these would beat a utility (p-2 on a button would do nothing).
+   The class styles below stay outside for now; they go as the components move to Tailwind. */
+@layer base {
+  :root {
+    --tab-bar-height: 56px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light dark;
+  }
 
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-/* An app, not a page: no pinch or double-tap zoom (it also blew up the charts). Scrolling still works, and
-   touch-action narrows down the tree, so nothing inside can turn zoom back on. The viewport meta says the
-   same for webviews that go by that. */
-html {
-  touch-action: pan-x pan-y;
-}
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
 
-body {
-  background: var(--background);
-  color: var(--text);
-  font-family: var(--font-display);
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
+  /* An app, not a page: no pinch or double-tap zoom (it also blew up the charts). Scrolling still works, and
+     touch-action narrows down the tree, so nothing inside can turn zoom back on. The viewport meta says the
+     same for webviews that go by that. */
+  html {
+    touch-action: pan-x pan-y;
+  }
 
-button,
-select,
-input {
-  font: inherit;
-  color: inherit;
-}
+  body {
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 
-button {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  touch-action: manipulation;
-}
+  button,
+  select,
+  input {
+    font: inherit;
+    color: inherit;
+  }
 
-button:disabled {
-  cursor: default;
-}
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
 
-button:focus-visible,
-select:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+  button:disabled {
+    cursor: default;
+  }
 
-h2,
-p {
-  margin: 0;
-}
+  button:focus-visible,
+  select:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
 
-[hidden] {
-  display: none !important;
+  h2,
+  p {
+    margin: 0;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
 }
 
 /* ---------- Typography (ThemedText types) ---------- */
@@ -212,13 +231,13 @@ p {
   font-weight: 500;
 }
 .secondary {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 .good {
-  color: var(--success);
+  color: var(--color-success);
 }
 .bad {
-  color: var(--danger);
+  color: var(--color-danger);
 }
 
 /* ---------- App shell ---------- */
@@ -251,8 +270,8 @@ p {
 .tab-bar {
   display: flex;
   flex-shrink: 0;
-  border-top: 1px solid var(--background-selected);
-  background: var(--background);
+  border-top: 1px solid var(--color-background-selected);
+  background: var(--color-background);
   padding-bottom: var(--safe-bottom);
   /* The tabs sit in the pages' column (see .content: 640px less its 16px sides), not spread across a wide
      window; the border still runs the full width. */
@@ -279,10 +298,10 @@ p {
   gap: 2px;
   font-size: 11px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 .tab.on {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 
 .content {
@@ -319,8 +338,8 @@ p {
 .screen.play-screen,
 .screen.stats-screen {
   background:
-    radial-gradient(120% 55% at 0% 0%, var(--wash-blue), transparent 70%),
-    radial-gradient(110% 50% at 100% 100%, var(--wash-orange), transparent 70%), var(--background);
+    radial-gradient(120% 55% at 0% 0%, var(--color-wash-blue), transparent 70%),
+    radial-gradient(110% 50% at 100% 100%, var(--color-wash-orange), transparent 70%), var(--color-background);
 }
 
 /* A round fills the screen exactly, with nothing to scroll: the HUD and round progress at the top, the grid,
@@ -400,10 +419,10 @@ p {
   /* Room for "20/20", so the bars don't move as the count grows. */
   min-width: 5ch;
   line-height: 16px;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 .round-count .current {
-  color: var(--accent);
+  color: var(--color-accent);
   font-weight: 700;
 }
 .round-bars {
@@ -426,12 +445,12 @@ p {
 }
 .round-progress {
   height: 8px;
-  background: var(--background-element);
+  background: var(--color-background-element);
   overflow: hidden;
 }
 .round-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--progress), var(--accent));
+  background: linear-gradient(90deg, var(--color-progress), var(--color-accent));
   transition: width 0.2s;
 }
 
@@ -448,7 +467,7 @@ p {
 .start-label {
   margin-top: 4px;
   text-align: center;
-  color: var(--accent);
+  color: var(--color-accent);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -467,12 +486,12 @@ p {
   gap: 10px;
   aspect-ratio: 1.1;
   border-radius: 20px;
-  border: 1px solid var(--background-selected);
-  background: linear-gradient(160deg, var(--glass-sheen), transparent 55%), var(--glass-bg);
+  border: 1px solid var(--color-background-selected);
+  background: linear-gradient(160deg, var(--color-glass-sheen), transparent 55%), var(--color-glass-bg);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 6px 18px -12px var(--glass-shadow);
-  color: var(--text-secondary);
+  box-shadow: 0 6px 18px -12px var(--color-glass-shadow);
+  color: var(--color-text-secondary);
   transition:
     background-color 0.15s,
     border-color 0.15s,
@@ -488,19 +507,19 @@ p {
   border-color: rgba(30, 136, 229, 0.18);
   /* The tint is a layer of its own (only the last background layer can be a plain colour). */
   background:
-    linear-gradient(160deg, var(--glass-sheen), transparent 55%),
-    linear-gradient(var(--accent-soft), var(--accent-soft)), var(--glass-bg);
+    linear-gradient(160deg, var(--color-glass-sheen), transparent 55%),
+    linear-gradient(var(--color-accent-soft), var(--color-accent-soft)), var(--color-glass-bg);
   box-shadow: 0 6px 18px -12px rgba(30, 136, 229, 0.45);
-  color: var(--text);
+  color: var(--color-text);
 }
 /* The stream's icon: grey when off, blue when picked. */
 .stream-icon {
   display: flex;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   transition: color 0.15s;
 }
 .stream-card.on .stream-icon {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 /* A tick on the ones picked, so it isn't told by colour alone. */
 .stream-check {
@@ -508,7 +527,7 @@ p {
   top: 10px;
   right: 10px;
   display: flex;
-  color: var(--accent);
+  color: var(--color-accent);
 }
 @media (hover: hover) {
   .stream-card:hover {
@@ -523,8 +542,8 @@ p {
   height: 64px;
   margin-top: 8px;
   border-radius: 16px;
-  background: var(--accent-fill);
-  box-shadow: 0 10px 24px -10px var(--accent-fill);
+  background: var(--color-accent-fill);
+  box-shadow: 0 10px 24px -10px var(--color-accent-fill);
   color: #ffffff;
   transition:
     transform 0.1s,
@@ -532,11 +551,11 @@ p {
 }
 .start-button:active {
   transform: scale(0.98);
-  box-shadow: 0 4px 12px -6px var(--accent);
+  box-shadow: 0 4px 12px -6px var(--color-accent);
 }
 @media (hover: hover) {
   .start-button:hover {
-    box-shadow: 0 14px 28px -10px var(--accent);
+    box-shadow: 0 14px 28px -10px var(--color-accent);
   }
 }
 .start-note {
@@ -584,17 +603,17 @@ p {
   display: inline-flex;
   padding: 3px;
   border-radius: 50%;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 .info-tip-button.on {
-  color: var(--text);
-  background: var(--background-element);
+  color: var(--color-text);
+  background: var(--color-background-element);
 }
 @media (hover: hover) {
   .info-tip-button:hover {
-    color: var(--text);
-    background: var(--background-element);
+    color: var(--color-text);
+    background: var(--color-background-element);
   }
 }
 .info-tip-panel {
@@ -609,10 +628,10 @@ p {
   gap: 6px;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid var(--background-selected);
-  background: var(--background);
+  border: 1px solid var(--color-background-selected);
+  background: var(--color-background);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  color: var(--text);
+  color: var(--color-text);
   text-align: left;
 }
 .info-tip-panel p {
@@ -630,7 +649,7 @@ p {
 }
 
 .card {
-  background: var(--background-element);
+  background: var(--color-background-element);
   border-radius: 14px;
 }
 
@@ -685,7 +704,7 @@ p {
 .hud-row .hud-chip {
   flex-grow: 1;
   justify-content: center;
-  box-shadow: var(--chip-shadow);
+  box-shadow: var(--shadow-chip);
   padding-block: 0;
   padding-inline: clamp(6px, 2.4vw, 16px);
 }
@@ -694,7 +713,7 @@ p {
   flex-shrink: 0;
   align-items: center;
   gap: clamp(3px, 1vw, 6px);
-  background: var(--background-element);
+  background: var(--color-background-element);
   border-radius: 999px;
   padding: clamp(7px, 2.2vw, 9px) clamp(6px, 2.4vw, 16px);
   font-size: clamp(10.5px, 3.3vw, 14px);
@@ -720,11 +739,11 @@ p {
 }
 .hud-chip .chip-icon-blue {
   display: inline-flex;
-  color: var(--accent);
+  color: var(--color-accent);
 }
 .hud-chip .chip-icon-teal {
   display: inline-flex;
-  color: var(--teal);
+  color: var(--color-teal);
 }
 .hud-row .hud-chip .speed-bolt .icon {
   width: var(--hud-bolt) !important;
@@ -747,9 +766,9 @@ p {
   width: var(--hud-h);
   height: var(--hud-h);
   border-radius: 50%;
-  background: var(--accent-soft);
-  box-shadow: var(--chip-shadow);
-  color: var(--accent);
+  background: var(--color-accent-soft);
+  box-shadow: var(--shadow-chip);
+  color: var(--color-accent);
   transition:
     transform 0.1s,
     background-color 0.15s;
@@ -758,16 +777,16 @@ p {
   transform: scale(0.94);
 }
 .hud-icon-button.stop {
-  background: var(--orange-soft);
-  color: var(--orange-ink);
+  background: var(--color-orange-soft);
+  color: var(--color-orange-ink);
 }
 .hud-icon-button.tutorial {
-  background: var(--background-element);
-  color: var(--text-secondary);
+  background: var(--color-background-element);
+  color: var(--color-text-secondary);
 }
 .hud-icon-button.tutorial.on {
-  background: linear-gradient(135deg, var(--accent-fill), var(--accent-strong));
-  box-shadow: 0 6px 14px -6px var(--accent-fill);
+  background: linear-gradient(135deg, var(--color-accent-fill), var(--color-accent-strong));
+  box-shadow: 0 6px 14px -6px var(--color-accent-fill);
   color: #ffffff;
 }
 @media (hover: hover) {
@@ -787,11 +806,11 @@ p {
   cursor: pointer;
 }
 .hud-chip.interactive[aria-expanded='true'] {
-  background: var(--background-selected);
+  background: var(--color-background-selected);
 }
 @media (hover: hover) {
   .hud-chip.interactive:not(:disabled):hover {
-    background: var(--background-selected);
+    background: var(--color-background-selected);
   }
 }
 .hud-popover {
@@ -806,8 +825,8 @@ p {
   gap: 8px;
   padding: 10px 14px 14px;
   border-radius: 14px;
-  border: 1px solid var(--background-selected);
-  background: var(--background);
+  border: 1px solid var(--color-background-selected);
+  background: var(--color-background);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   /* max-height is set from the room left on screen, and the width stops at the screen less the page's 16px
      sides; contents bigger than that scroll inside the panel, never the page. */
@@ -828,16 +847,16 @@ p {
 .target-bar {
   height: 10px;
   border-radius: 5px;
-  background: var(--background-element);
+  background: var(--color-background-element);
   overflow: hidden;
 }
 .target-fill {
   height: 100%;
   border-radius: 5px;
-  background: var(--accent);
+  background: var(--color-accent);
 }
 .target-fill.reached {
-  background: var(--success);
+  background: var(--color-success);
 }
 .target-stats {
   display: grid;
@@ -869,12 +888,12 @@ p {
   opacity: 0.25;
 }
 .hud-toggle.on {
-  color: var(--accent);
+  color: var(--color-accent);
   opacity: 1;
 }
 /* Gold speed bolts. */
 .speed-bolt.on {
-  color: var(--gold);
+  color: var(--color-gold);
 }
 /* The unlit bolts stay faint, so the lit ones read at a glance. */
 .speed-bolt:not(.on) {
@@ -894,7 +913,7 @@ p {
   /* As specific as the rule above, so these win (it would otherwise also dim the hovered bolt itself). */
   .speed-bolts:has(> button.speed-bolt:hover) > button.speed-bolt:hover,
   .speed-bolts > button.speed-bolt:has(~ button.speed-bolt:hover) {
-    color: var(--gold);
+    color: var(--color-gold);
     opacity: 1;
   }
 }
@@ -923,9 +942,9 @@ p {
   border-radius: 10px;
   /* Soft 3D like the grid's lit tile, a little flatter at this size: a grey tile face here, and in the
      trial's colour below. */
-  background: linear-gradient(160deg, var(--tile-top) 20%, var(--tile-bottom));
+  background: linear-gradient(160deg, var(--color-tile-top) 20%, var(--color-tile-bottom));
   box-shadow:
-    inset 0 -5px 8px -6px var(--tile-inner-shade),
+    inset 0 -5px 8px -6px var(--color-tile-inner-shade),
     0 1px 2px rgba(15, 23, 42, 0.08),
     0 4px 8px -4px rgba(15, 23, 42, 0.2);
   line-height: 1.15;
@@ -946,7 +965,7 @@ p {
 }
 /* An outline with a gap, so it still shows around a chip that's the same blue. */
 .pill.highlighted {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
 .pill .arrow {
@@ -989,10 +1008,10 @@ p {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: linear-gradient(160deg, var(--tile-top) 20%, var(--tile-bottom));
+  background: linear-gradient(160deg, var(--color-tile-top) 20%, var(--color-tile-bottom));
   box-shadow:
-    inset 0 -6px 10px -8px var(--tile-inner-shade),
-    var(--tile-rest);
+    inset 0 -6px 10px -8px var(--color-tile-inner-shade),
+    var(--shadow-tile-rest);
 }
 .trial-grid .box {
   display: flex;
@@ -1047,7 +1066,7 @@ p {
 
 .trial-timer {
   height: 6px;
-  background: var(--background-element);
+  background: var(--color-background-element);
   overflow: hidden;
 }
 .trial-timer.idle {
@@ -1058,7 +1077,7 @@ p {
   width: 100%;
   /* Laid out over the whole track and uncovered from the left, so each part of the bar keeps its colour as it
      fills: light at the start of the answer time, dark at its end. */
-  background: linear-gradient(90deg, var(--timer-start), var(--timer-end));
+  background: linear-gradient(90deg, var(--color-timer-start), var(--color-timer-end));
   animation-name: trial-timer;
   animation-timing-function: linear;
   animation-fill-mode: both;
@@ -1147,12 +1166,12 @@ p {
      --key-ring is the tutorial outline, kept in every state's shadow list. */
   --key-ring: 0 0 0 0 transparent;
   border: none;
-  background: linear-gradient(160deg, var(--tile-top) 20%, var(--tile-bottom));
+  background: linear-gradient(160deg, var(--color-tile-top) 20%, var(--color-tile-bottom));
   box-shadow:
     var(--key-ring),
-    inset 0 -6px 10px -8px var(--tile-inner-shade),
-    var(--tile-rest);
-  color: var(--text);
+    inset 0 -6px 10px -8px var(--color-tile-inner-shade),
+    var(--shadow-tile-rest);
+  color: var(--color-text);
   /* Settles back quicker than it rises. */
   transition:
     transform 0.09s ease-in,
@@ -1162,7 +1181,7 @@ p {
 .response-button .icon {
   width: 28px;
   height: 28px;
-  color: var(--accent);
+  color: var(--color-accent);
 }
 .response-buttons.rows .response-button {
   flex-direction: row;
@@ -1191,18 +1210,22 @@ p {
   color: #ffffff;
 }
 .response-button.correct {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--accent-fill) 80%, #ffffff) 0%, var(--accent-fill) 60%);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-accent-fill) 80%, #ffffff) 0%,
+    var(--color-accent-fill) 60%
+  );
   box-shadow:
     var(--key-ring),
-    inset 0 -6px 10px -8px var(--accent-strong),
-    var(--tile-rest);
+    inset 0 -6px 10px -8px var(--color-accent-strong),
+    var(--shadow-tile-rest);
 }
 .response-button.wrong {
   background: linear-gradient(160deg, color-mix(in srgb, #e53935 80%, #ffffff) 0%, #e53935 60%);
   box-shadow:
     var(--key-ring),
     inset 0 -6px 10px -8px #b71c1c,
-    var(--tile-rest);
+    var(--shadow-tile-rest);
 }
 .response-button.correct .icon,
 .response-button.wrong .icon {
@@ -1211,7 +1234,7 @@ p {
 /* Tutorial: the buttons that should be pressed this trial, outlined in the blue a right answer fills with.
    Inset, so the button doesn't change size. */
 .response-button.solution {
-  --key-ring: inset 0 0 0 2px var(--accent-fill);
+  --key-ring: inset 0 0 0 2px var(--color-accent-fill);
 }
 /* Once answered right the outline has done its job, and would show as a darker edge on the blue. */
 .response-button.solution.correct {
@@ -1340,7 +1363,7 @@ p {
   vertical-align: middle;
 }
 .detail-table tbody tr:nth-child(even) td {
-  background: var(--background-element);
+  background: var(--color-background-element);
 }
 .detail-table tbody tr:nth-child(even) td:first-child {
   border-radius: 6px 0 0 6px;
@@ -1419,13 +1442,13 @@ p {
 }
 .history-list::-webkit-scrollbar-thumb {
   border-radius: 4px;
-  background: var(--background-selected);
+  background: var(--color-background-selected);
 }
 .history-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: var(--color-text-secondary);
 }
 .history-entry + .history-entry {
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--color-surface-border);
 }
 .history-row {
   display: flex;
@@ -1441,7 +1464,7 @@ p {
 }
 @media (hover: hover) {
   .history-row:hover {
-    background: var(--background-element);
+    background: var(--color-background-element);
   }
 }
 .history-row-title {
@@ -1456,7 +1479,7 @@ p {
 /* Points down when closed and up when open. */
 .history-chevron {
   display: inline-flex;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   transition: transform 0.2s;
 }
 .history-entry.open .history-chevron {
@@ -1489,7 +1512,7 @@ p {
 }
 .grid-loader-cell {
   border-radius: 6px;
-  background: var(--background-element);
+  background: var(--color-background-element);
   position: relative;
 }
 .grid-loader-cell::after {
@@ -1535,7 +1558,7 @@ p {
   align-items: center;
   justify-content: center;
   gap: 20px;
-  background: var(--background);
+  background: var(--color-background);
   transition: opacity 0.25s ease-out;
 }
 .splash.fading {
@@ -1546,7 +1569,7 @@ p {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 .grid-loader.large {
   padding: 0;
@@ -1587,9 +1610,9 @@ p {
 /* A raised panel: the Stats screen's cards, tables and charts. */
 .panel {
   border-radius: 16px;
-  border: 1px solid var(--surface-border);
-  background: var(--surface);
-  box-shadow: var(--surface-shadow);
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-surface);
 }
 .panel-pad {
   padding: 14px;
@@ -1626,8 +1649,8 @@ p {
   width: 30px;
   height: 30px;
   border-radius: 10px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
 }
 .stat-tile-label {
   overflow: hidden;
@@ -1728,12 +1751,12 @@ p {
   width: 55px;
 }
 .mode-row.header {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding-block: 6px;
 }
 /* The mode shown in By mode: tinted blue. */
 .mode-row.on {
-  background: var(--accent-soft);
+  background: var(--color-accent-soft);
 }
 .mode-row:not(.header) {
   cursor: pointer;
@@ -1771,7 +1794,7 @@ p {
 /* The star is set in the same font as the percentages, sized from the capital height and placed on the
    text baseline, so it centres on the digits whatever font the engine picks. */
 .mode-row .mastered {
-  color: var(--warning);
+  color: var(--color-warning);
   text-align: center;
 }
 .mode-row .mastered .icon {
@@ -1795,7 +1818,7 @@ p {
 .stream-slot.off {
   justify-content: center;
   width: 14px;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   opacity: 0.6;
 }
 /* Lists: N always takes two digits' room, so single- and double-digit levels line up. */
@@ -1810,7 +1833,7 @@ p {
   opacity: 0.25;
 }
 .mode-badge .bolts > .on {
-  color: var(--accent);
+  color: var(--color-accent);
   opacity: 1;
 }
 
@@ -1848,20 +1871,20 @@ p {
   border-radius: 10px;
 }
 .mode-option.on {
-  background: var(--accent-soft);
+  background: var(--color-accent-soft);
 }
 .mode-picker .hud-chip {
-  border: 1px solid var(--surface-border);
-  background: var(--surface);
-  box-shadow: var(--chip-shadow);
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-chip);
 }
 @media (hover: hover) {
   .mode-option:not(.on):hover {
-    background: var(--background-element);
+    background: var(--color-background-element);
   }
   /* The selected row keeps its own tint. */
   .mode-row:not(.header):not(.on):hover {
-    background: var(--background-element);
+    background: var(--color-background-element);
   }
 }
 
@@ -1884,10 +1907,10 @@ p {
 /* Every stream has a row, so the table keeps its height from mode to mode; the ones the mode doesn't use are
    dashed out, in grey (not faded, which left the name too faint to read). */
 .stream-table-row + .stream-table-row:not(.header) {
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--color-surface-border);
 }
 .stream-table-row.off {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 /* A shortened count (1.2K): hovering or tapping it opens the exact number under it, growing to the left
    (these counts sit in the right-hand columns). */
@@ -1906,10 +1929,10 @@ p {
   right: -8px;
   padding: 6px 10px;
   border-radius: 10px;
-  border: 1px solid var(--background-selected);
-  background: var(--background);
+  border: 1px solid var(--color-background-selected);
+  background: var(--color-background);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  color: var(--text);
+  color: var(--color-text);
   white-space: nowrap;
 }
 .outcome-heading {
@@ -1926,7 +1949,7 @@ p {
   display: inline-flex;
 }
 .outcome-mark.accuracy {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 .stream-table-row > :first-child {
   justify-self: start;
@@ -1945,7 +1968,7 @@ p {
 }
 /* Grey words rather than a faded row, so the symbols keep their full colour. */
 .stream-table-row.header {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   padding-block: 6px;
 }
 /* Small phones: the stream names need the room. */
@@ -1993,20 +2016,20 @@ p {
   border-radius: 8px;
   padding: 5px 10px;
   border: 1px solid transparent;
-  background: var(--background-element);
-  color: var(--text-secondary);
+  background: var(--color-background-element);
+  color: var(--color-text-secondary);
   transition:
     background-color 0.15s,
     color 0.15s;
 }
 .filter-chip.on {
-  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-  background: var(--accent-soft);
-  color: var(--accent-ink);
+  border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 @media (hover: hover) {
   .filter-chip:not(.on):hover {
-    color: var(--text);
+    color: var(--color-text);
   }
 }
 
@@ -2024,16 +2047,16 @@ p {
   height: 28px;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 .crosshair-toggle .icon .ionicon-stroke-width {
-  fill: var(--background-selected);
+  fill: var(--color-background-selected);
 }
 .crosshair-toggle.on {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 .crosshair-toggle.on .icon .ionicon-stroke-width {
-  fill: var(--accent);
+  fill: var(--color-accent);
 }
 @media (hover: none) {
   .crosshair-toggle {
@@ -2054,7 +2077,7 @@ p {
 }
 .uplot-box .u-legend .u-series:first-child {
   display: block;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 .uplot-box .u-legend .u-series {
   cursor: pointer;
@@ -2096,7 +2119,7 @@ p {
 }
 @media (hover: hover) {
   .legend-toggle:hover {
-    background: var(--background-element);
+    background: var(--color-background-element);
   }
 }
 .legend-swatch {
@@ -2131,7 +2154,7 @@ p {
   gap: 4px 20px;
 }
 .chart-stats strong {
-  color: var(--text);
+  color: var(--color-text);
   font-weight: 600;
 }
 /* The mouse controls; touch screens get their own (pinch) hint. */
@@ -2199,10 +2222,10 @@ p {
   min-width: 170px;
   padding: 8px 10px;
   border-radius: 10px;
-  background: var(--text);
+  background: var(--color-text);
   /* See-through, so the points under the tooltip stay visible. */
-  background: color-mix(in srgb, var(--text) 72%, transparent);
-  color: var(--background);
+  background: color-mix(in srgb, var(--color-text) 72%, transparent);
+  color: var(--color-background);
   font-size: 12px;
   line-height: 17px;
   pointer-events: none;
@@ -2246,8 +2269,8 @@ p {
 .year-dropdown {
   align-self: flex-start;
   border-radius: 8px;
-  border: 1px solid var(--background-selected);
-  background: var(--background-element);
+  border: 1px solid var(--color-background-selected);
+  background: var(--color-background-element);
   padding: 6px 10px;
   cursor: pointer;
 }
@@ -2292,7 +2315,7 @@ p {
   width: 17px;
   height: 17px;
   border-radius: 3px;
-  border: 1px solid var(--background);
+  border: 1px solid var(--color-background);
 }
 .calendar-cell.empty {
   background: transparent;
@@ -2328,7 +2351,7 @@ p {
   height: 26px;
   margin: 0;
   border-radius: 13px;
-  background: var(--background-selected);
+  background: var(--color-background-selected);
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -2345,7 +2368,7 @@ p {
   transition: transform 0.15s;
 }
 .switch:checked {
-  background: var(--accent);
+  background: var(--color-accent);
 }
 .switch:checked::after {
   transform: translateX(18px);
@@ -2366,8 +2389,8 @@ p {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  border: 1px solid var(--background-selected);
-  background: var(--background-element);
+  border: 1px solid var(--color-background-selected);
+  background: var(--color-background-element);
 }
 .stepper-button:disabled {
   opacity: 0.35;
@@ -2380,7 +2403,7 @@ p {
 .slider {
   width: 100%;
   margin: 8px 0;
-  accent-color: var(--accent);
+  accent-color: var(--color-accent);
   cursor: pointer;
 }
 
@@ -2413,11 +2436,11 @@ p {
   align-items: center;
   border-radius: 12px;
   padding: 6px 12px;
-  background: var(--background-element);
-  color: var(--text);
+  background: var(--color-background-element);
+  color: var(--color-text);
 }
 .preset-chip.on {
-  background: var(--accent);
+  background: var(--color-accent);
   color: #ffffff;
 }
 .preset-sub {
@@ -2453,17 +2476,17 @@ p {
   min-width: 44px;
   padding: 0 12px;
   border-radius: 8px;
-  border: 1px solid var(--background-selected);
+  border: 1px solid var(--color-background-selected);
   border-bottom-width: 3px;
-  background: var(--background-element);
+  background: var(--color-background-element);
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
   text-align: center;
 }
 .key-binding.listening {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
   font-family: var(--font-display);
   font-weight: 500;
 }
@@ -2493,20 +2516,20 @@ p {
   opacity: 0.5;
 }
 .outline-button.accent {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 .outline-button.danger {
-  border-color: var(--danger);
-  color: var(--danger);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 .outline-button.secondary {
-  border-color: var(--background-selected);
+  border-color: var(--color-background-selected);
 }
 /* The one main action in a pairing card (Pair, New code): filled blue, so it stands apart from Cancel. */
 .outline-button.sync-primary {
-  border-color: var(--accent-fill);
-  background: var(--accent-fill);
+  border-color: var(--color-accent-fill);
+  background: var(--color-accent-fill);
   color: #ffffff;
 }
 /* The steps at the top of a pairing card, numbered. */
@@ -2528,8 +2551,8 @@ p {
   box-sizing: border-box;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1.5px solid var(--background-selected);
-  background: var(--background-element);
+  border: 1.5px solid var(--color-background-selected);
+  background: var(--color-background-element);
   font-size: 16px;
   line-height: 24px;
   user-select: text;
@@ -2604,12 +2627,12 @@ p {
   padding: 10px 6px;
   border-width: 1px;
   border-radius: 8px;
-  background: var(--background);
+  background: var(--color-background);
   /* Small enough for the longest address (15 characters) and a code to fit side by side on a small phone. */
   font-size: 14px;
 }
 .sync-field .text-field:focus {
-  border-color: var(--accent);
+  border-color: var(--color-accent);
   outline: none;
 }
 .sync-code-field {
@@ -2637,7 +2660,7 @@ p {
 /* Holds the QR code's place until it's ready. */
 .sync-qr-waiting {
   aspect-ratio: 1;
-  background: var(--background-selected);
+  background: var(--color-background-selected);
 }
 /* White behind the QR code in dark mode too: scanners look for dark modules on a light ground. */
 .sync-qr {
@@ -2649,7 +2672,7 @@ p {
 
 /* A failed pairing or sync: labelled, not only red. */
 .sync-error {
-  color: var(--danger);
+  color: var(--color-danger);
 }
 /* A message under the section, with a small Dismiss at its bottom right. */
 .sync-notice {
@@ -2671,7 +2694,7 @@ p {
 }
 /* A paired device that can't be reached: a warning sign (after a day) and the words. */
 .text-button.sync-link {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 
 /* Every step of the latest attempt, to find out why one failed. */
@@ -2686,7 +2709,7 @@ p {
   margin: 0;
   padding: 10px 12px;
   border-radius: 12px;
-  background: var(--background-element);
+  background: var(--color-background-element);
   list-style: none;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -2696,7 +2719,7 @@ p {
   -webkit-user-select: text;
 }
 .sync-log-time {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 /* Scanning: on a phone the camera shows behind the page, so while it's open the page clears its background,
@@ -2762,7 +2785,7 @@ html.scanning #root {
   right: 16px;
   top: 50%;
   display: flex;
-  color: var(--success);
+  color: var(--color-success);
   opacity: 0;
   transform: translateY(-50%) scale(0.6);
   transition:
