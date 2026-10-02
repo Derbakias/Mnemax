@@ -174,10 +174,12 @@ describe('the packages the app is built from', () => {
       '@tauri-apps/plugin-dialog',
       '@tauri-apps/plugin-fs',
       '@tauri-apps/plugin-store',
+      'clsx',
       'ionicons',
       'jsqr',
       'react',
       'react-dom',
+      'tailwind-merge',
       'uplot',
       'zustand',
     ]);
