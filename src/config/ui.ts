@@ -11,7 +11,7 @@ import type { StreamId, StreamOutcome } from '@/game/types';
 export const SPLASH_MIN_MS = 1500;
 export const SPLASH_MAX_MS = 2500;
 
-/** TODO: SPLASH_FADE_MS is not the actual source of the fade duration: src/styles/index.css:1539 still hard-codes 0.25s. Changing this new config value can remove the splash before its transition finishes or leave an invisible overlay mounted after it. Drive both the CSS transition and removal from one value (or remove the timer on transitionend) */
+/** TODO: SPLASH_FADE_MS is not the actual source of the fade duration: the `.splash` rule in src/styles/index.css still hard-codes 0.25s. Changing this new config value can remove the splash before its transition finishes or leave an invisible overlay mounted after it. Drive both the CSS transition and removal from one value (or remove the timer on transitionend) */
 /** Matches the fade-out transition of .splash in index.css. */
 export const SPLASH_FADE_MS = 250;
 
