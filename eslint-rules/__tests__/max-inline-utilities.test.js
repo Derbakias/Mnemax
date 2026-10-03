@@ -28,6 +28,7 @@ tester.run('max-inline-utilities', rule, {
     `<div title="${seven}" />`,
     // Things deeper than one call are left alone.
     `<div className={cn(['${seven}'])} />`,
+    "<div className={cn('a b c', on && 'd e f')} />",
   ],
   invalid: [
     { code: `<div className="${seven}" />`, errors: [error(7)] },
@@ -39,5 +40,8 @@ tester.run('max-inline-utilities', rule, {
     { code: `<div className={on && '${seven}'} />`, errors: [error(7)] },
     { code: `<div className={cn(styles.a, active && '${seven}')} />`, errors: [error(7)] },
     { code: `<div className={cn(name || '${seven}')} />`, errors: [error(7)] },
+    // Split across arguments, the classes still add up; each argument counts its longest branch.
+    { code: "<div className={cn('a b c d', 'e f g h')} />", errors: [error(8)] },
+    { code: "<div className={cn('a b c', on ? 'd' : 'e f g h')} />", errors: [error(7)] },
   ],
 });

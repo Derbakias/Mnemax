@@ -40,12 +40,12 @@ export default {
   create(context) {
     const max = context.options[0] ?? 6;
 
-    function check(node) {
-      for (const text of classTexts(node)) {
-        const count = countClasses(text);
-        if (count > max) {
-          context.report({ node, messageId: 'tooMany', data: { max, count } });
-        }
+    /** The most classes `node` can hand over, taking its longest branch. */
+    const mostClasses = (node) => Math.max(0, ...classTexts(node).map(countClasses));
+
+    function check(node, count) {
+      if (count > max) {
+        context.report({ node, messageId: 'tooMany', data: { max, count } });
       }
     }
 
@@ -55,10 +55,14 @@ export default {
           return;
         }
         const value = attribute.value.type === 'JSXExpressionContainer' ? attribute.value.expression : attribute.value;
-        check(value);
-        // cn('a b c', ...): look at what is passed straight into the call, one level deep.
+        check(value, mostClasses(value));
+        // cn('a b c', 'd e f', ...): look at what is passed straight into the call, one level deep. The
+        // arguments add up, so splitting a long list across them doesn't get round the limit.
         if (value.type === 'CallExpression') {
-          value.arguments.forEach(check);
+          check(
+            value,
+            value.arguments.reduce((sum, arg) => sum + mostClasses(arg), 0),
+          );
         }
       },
     };
