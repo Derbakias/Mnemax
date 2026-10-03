@@ -4,8 +4,10 @@ import { Icon } from '@/components/ui/icon';
 import { STREAM_ICONS } from '@/config/ui';
 import type { StreamId } from '@/game/types';
 import { STREAM_LABELS } from '@/game/types';
+import { cn } from '@/lib/cn';
 import { keyLabel, normalizeKey, type ButtonLayout } from '@/lib/prefs';
 
+import { styles } from './buttons.styles';
 import { useSwipe } from './use-swipe';
 
 interface ResponseButtonsProps {
@@ -129,15 +131,13 @@ export function ResponseButtons({
         }
       }}
       type="button"
-      className={[
-        'response-button',
-        // Stays until the trial ends, so even a quick tap shows whether it was right.
-        responded[stream] ? (match[stream] ? 'correct' : 'wrong') : '',
-        showSolution && match[stream] ? 'solution' : '',
-        held.has(stream) ? 'held' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={cn(styles.button)}
+      // Stays until the trial ends, so even a quick tap shows whether it was right.
+      data-result={responded[stream] ? (match[stream] ? 'correct' : 'wrong') : undefined}
+      // Once answered (right, as it was a match) the outline has done its job, and would show as a darker edge on
+      // the blue.
+      data-solution={showSolution && match[stream] && !responded[stream]}
+      data-held={held.has(stream)}
       disabled={disabled}
       // Answers come from the assigned keys, so these never need focus (a focused button would keep its ring).
       tabIndex={-1}
@@ -178,22 +178,24 @@ export function ResponseButtons({
       }}
     >
       <Icon name={STREAM_ICONS[stream]} />
-      <span className={large ? 't-default response-label' : 't-small response-label'}>{STREAM_LABELS[stream]}</span>
-      <kbd className="key-hint">{keyLabel(keys[stream])}</kbd>
+      <span className={cn(large ? 't-default' : 't-small', styles.label)}>{STREAM_LABELS[stream]}</span>
+      <kbd className={cn(styles.keyHint)}>{keyLabel(keys[stream])}</kbd>
     </button>
   );
 
   return (
     <div
       ref={container}
-      className={`response-buttons ${layout}${swipeOn ? ' swipe' : ''}`}
+      className={cn(styles.root)}
+      data-layout={layout}
+      data-swipe={swipeOn}
       {...containerHandlers}
       // With the container holding the pointer the click lands here, not on the button, so reset here too.
       onClick={() => {
         answeredOnDown.current = false;
       }}
     >
-      {swipeOn && <canvas ref={canvasRef} className="swipe-trail" aria-hidden />}
+      {swipeOn && <canvas ref={canvasRef} className={cn(styles.trail)} aria-hidden />}
       {streams.map(renderButton)}
     </div>
   );
