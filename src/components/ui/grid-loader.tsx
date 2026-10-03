@@ -8,7 +8,7 @@ const styles = {
   // Only fades in if loading takes a moment, so a fast load doesn't flash it. The large one is the startup
   // screen: shown straight away, not a fallback for slow loads.
   root: [
-    'group flex justify-center py-18 animate-grid-loader-in',
+    'group flex justify-center py-18 animate-grid-loader-in motion-reduce:animate-none',
     'data-[size=large]:p-0 data-[size=large]:animate-none',
   ],
   grid: [
