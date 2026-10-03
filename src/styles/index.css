@@ -24,6 +24,8 @@
      --color-accent-strong, so the white stays readable (dark mode's --color-accent is too light for that). */
   --color-accent-fill: #1e88e5;
   --color-accent-strong: #1565c0;
+  /* Text and icons on those blue fills. */
+  --color-on-accent: #ffffff;
   /* The Play screen's second colour, for time and stopping (the trial timer, the stop button), where blue
      is for actions and progress. -ink is for icons on the light surfaces, which the fill orange is too pale
      for. */
@@ -426,18 +428,13 @@
 }
 /* The HUD, round progress and answer buttons line up with the grid's edges (on phones they take the full
    width instead; see below). The HUD never gets narrower than it needs to stay on one line. */
-.play-stage .hud-row,
 .play-stage .tutorial-history,
 .play-stage .round-status,
 .play-stage .response-buttons {
   align-self: center;
   width: var(--stage-grid);
 }
-.play-stage .hud-row {
-  min-width: max-content;
-}
 @media (max-width: 599.98px) {
-  .play-stage .hud-row,
   .play-stage .tutorial-history,
   .play-stage .round-status,
   .play-stage .response-buttons {
@@ -495,116 +492,6 @@
   transition: width 0.2s;
 }
 
-/* The start screen: the HUD, the streams to play, and the Play button. */
-.start-stage {
-  --hud-h: clamp(36px, calc(100cqw * 0.1), 46px);
-  display: flex;
-  flex-direction: column;
-  align-self: center;
-  gap: 12px;
-  width: 100%;
-  max-width: 480px;
-}
-.start-label {
-  margin-top: 4px;
-  text-align: center;
-  color: var(--color-accent);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-.stream-picker {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-/* Frosted glass: see-through over the screen's colour wash, with a soft sheen from the top left. Nothing colourful sits behind the cards, so every picked card gets the same blue. */
-.stream-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  aspect-ratio: 1.1;
-  border-radius: 20px;
-  border: 1px solid var(--color-background-selected);
-  background: linear-gradient(160deg, var(--color-glass-sheen), transparent 55%), var(--color-glass-bg);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 6px 18px -12px var(--color-glass-shadow);
-  color: var(--color-text-secondary);
-  transition:
-    background-color 0.15s,
-    border-color 0.15s,
-    box-shadow 0.15s,
-    color 0.15s,
-    transform 0.1s;
-}
-.stream-card:active {
-  transform: scale(0.98);
-}
-/* Picked: the same glass tinted light blue, with a faint blue edge. */
-.stream-card.on {
-  border-color: rgba(30, 136, 229, 0.18);
-  /* The tint is a layer of its own (only the last background layer can be a plain colour). */
-  background:
-    linear-gradient(160deg, var(--color-glass-sheen), transparent 55%),
-    linear-gradient(var(--color-accent-soft), var(--color-accent-soft)), var(--color-glass-bg);
-  box-shadow: 0 6px 18px -12px rgba(30, 136, 229, 0.45);
-  color: var(--color-text);
-}
-/* The stream's icon: grey when off, blue when picked. */
-.stream-icon {
-  display: flex;
-  color: var(--color-text-secondary);
-  transition: color 0.15s;
-}
-.stream-card.on .stream-icon {
-  color: var(--color-accent);
-}
-/* A tick on the ones picked, so it isn't told by colour alone. */
-.stream-check {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  color: var(--color-accent);
-}
-@media (hover: hover) {
-  .stream-card:hover {
-    border-color: rgba(30, 136, 229, 0.25);
-  }
-}
-/* The screen's one main action: a blue button with a soft glow of its colour. */
-.start-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 64px;
-  margin-top: 8px;
-  border-radius: 16px;
-  background: var(--color-accent-fill);
-  box-shadow: 0 10px 24px -10px var(--color-accent-fill);
-  color: #ffffff;
-  transition:
-    transform 0.1s,
-    box-shadow 0.15s;
-}
-.start-button:active {
-  transform: scale(0.98);
-  box-shadow: 0 4px 12px -6px var(--color-accent);
-}
-@media (hover: hover) {
-  .start-button:hover {
-    box-shadow: 0 14px 28px -10px var(--color-accent);
-  }
-}
-.start-note {
-  text-align: center;
-}
-.start-note.off {
-  visibility: hidden;
-}
 .content.stats .section {
   gap: 8px;
 }
@@ -635,210 +522,6 @@
 }
 
 /* ---------- Play ---------- */
-
-/* One line at every width: text, padding and icons scale with the window (full size from ~420px up),
-   so everything fits even on a 320px phone. One height for all (--hud-h, set on the stage), so the chips,
-   the round buttons and the tutorial history line up. */
-.hud-row {
-  --hud-icon: clamp(12px, 4vw, 18px);
-  --hud-bolt: clamp(10px, 3.4vw, 16px);
-  display: flex;
-  flex-wrap: nowrap;
-  flex: none;
-  height: var(--hud-h);
-  gap: clamp(4px, 1.4vw, 8px);
-  justify-content: center;
-  /* As wide as the answer buttons below, the chips sharing the extra room. */
-  align-self: stretch;
-}
-.hud-row .hud-chip {
-  flex-grow: 1;
-  justify-content: center;
-  box-shadow: var(--shadow-chip);
-  padding-block: 0;
-  padding-inline: clamp(6px, 2.4vw, 16px);
-}
-.hud-chip {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: clamp(3px, 1vw, 6px);
-  background: var(--color-background-element);
-  border-radius: 999px;
-  padding: clamp(7px, 2.2vw, 9px) clamp(6px, 2.4vw, 16px);
-  font-size: clamp(10.5px, 3.3vw, 14px);
-  line-height: 1.3;
-  white-space: nowrap;
-}
-.hud-row .hud-chip .icon {
-  width: var(--hud-icon) !important;
-  height: var(--hud-icon) !important;
-}
-/* A chip's text centred on its icon by the digits themselves: the line box keeps room below the baseline
-   that digits never use, which left them sitting about 2px above the icon's middle. Trimmed to the cap
-   height where the browser can; elsewhere nudged down by that room instead. */
-.hud-chip .chip-text {
-  position: relative;
-  top: 0.15em;
-}
-@supports (text-box: trim-both cap alphabetic) {
-  .hud-chip .chip-text {
-    top: 0;
-    text-box: trim-both cap alphabetic;
-  }
-}
-.hud-chip .chip-icon-blue {
-  display: inline-flex;
-  color: var(--color-accent);
-}
-.hud-chip .chip-icon-teal {
-  display: inline-flex;
-  color: var(--color-teal);
-}
-.hud-row .hud-chip .speed-bolt .icon {
-  width: var(--hud-bolt) !important;
-  height: var(--hud-bolt) !important;
-}
-
-.speed-bolts {
-  display: inline-flex;
-  gap: 2px;
-}
-
-/* Round icon buttons at the end of the HUD: pause and stop in a round, tutorial mode on the start screen.
-   Tinted in their colour: pause blue (an action), stop orange; tutorial goes blue when it's on, like the
-   picked streams. */
-.hud-icon-button {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--hud-h);
-  height: var(--hud-h);
-  border-radius: 50%;
-  background: var(--color-accent-soft);
-  box-shadow: var(--shadow-chip);
-  color: var(--color-accent);
-  transition:
-    transform 0.1s,
-    background-color 0.15s;
-}
-.hud-icon-button:active {
-  transform: scale(0.94);
-}
-.hud-icon-button.stop {
-  background: var(--color-orange-soft);
-  color: var(--color-orange-ink);
-}
-.hud-icon-button.tutorial {
-  background: var(--color-background-element);
-  color: var(--color-text-secondary);
-}
-.hud-icon-button.tutorial.on {
-  background: linear-gradient(135deg, var(--color-accent-fill), var(--color-accent-strong));
-  box-shadow: 0 6px 14px -6px var(--color-accent-fill);
-  color: #ffffff;
-}
-@media (hover: hover) {
-  .hud-icon-button:hover {
-    filter: brightness(0.96);
-  }
-}
-
-/* HUD chips that open a panel (daily target, N-back), centred under the HUD row. */
-.hud-row {
-  position: relative;
-}
-.hud-chip.interactive:not(:disabled) {
-  cursor: pointer;
-}
-.hud-chip.interactive[aria-expanded='true'] {
-  background: var(--color-background-selected);
-}
-@media (hover: hover) {
-  .hud-chip.interactive:not(:disabled):hover {
-    background: var(--color-background-selected);
-  }
-}
-.target-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: min(260px, calc(100vw - 64px));
-}
-.target-bar {
-  height: 10px;
-  border-radius: 5px;
-  background: var(--color-background-element);
-  overflow: hidden;
-}
-.target-fill {
-  height: 100%;
-  border-radius: 5px;
-  background: var(--color-accent);
-}
-.target-fill.reached {
-  background: var(--color-success);
-}
-.target-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 2px;
-}
-.target-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  white-space: nowrap;
-}
-.target-stat:nth-child(2) {
-  align-items: center;
-  text-align: center;
-}
-.target-stat:last-child {
-  align-items: flex-end;
-  text-align: right;
-}
-
-/* Icons inside a HUD chip that can be tapped to change a setting in place (speed bolts, streams). */
-.hud-toggle {
-  display: inline-flex;
-  margin: -4px -2px;
-  padding: 4px 2px;
-  border-radius: 6px;
-  opacity: 0.25;
-}
-.hud-toggle.on {
-  color: var(--color-accent);
-  opacity: 1;
-}
-/* Gold speed bolts. */
-.speed-bolt.on {
-  color: var(--color-gold);
-}
-/* The unlit bolts stay faint, so the lit ones read at a glance. */
-.speed-bolt:not(.on) {
-  opacity: 0.15;
-}
-.hud-toggle:disabled {
-  cursor: default;
-}
-/* Hovering a bolt previews that speed: it and the bolts before it light gold, the rest go faint, as a click
-   would set them. Only the bolts that are buttons (the start screen's) do this; in a round they just show
-   the speed, which can't change then. */
-@media (hover: hover) {
-  .speed-bolts:has(> button.speed-bolt:hover) > button.speed-bolt {
-    color: inherit;
-    opacity: 0.15;
-  }
-  /* As specific as the rule above, so these win (it would otherwise also dim the hovered bolt itself). */
-  .speed-bolts:has(> button.speed-bolt:hover) > button.speed-bolt:hover,
-  .speed-bolts > button.speed-bolt:has(~ button.speed-bolt:hover) {
-    color: var(--color-gold);
-    opacity: 1;
-  }
-}
 
 /* Tutorial history between the round status and the grid: one slot per trial from N back to the current one
    (--history-slots), oldest on the left. The slots share the width, up to a bit narrower than they're tall. */
@@ -1163,11 +846,7 @@
   --key-ring: 0 0 0 0 transparent;
 }
 @media (prefers-reduced-motion: reduce) {
-  .response-button,
-  .stream-card,
-  .stream-icon,
-  .start-button,
-  .hud-icon-button {
+  .response-button {
     transition: none;
   }
 }
@@ -1719,11 +1398,6 @@
 }
 .mode-option.on {
   background: var(--color-accent-soft);
-}
-.mode-picker .hud-chip {
-  border: 1px solid var(--color-surface-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-chip);
 }
 @media (hover: hover) {
   .mode-option:not(.on):hover {

@@ -171,6 +171,7 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
           <div className="mode-picker">
             <HudDropdown
               label="Mode"
+              chipClassName="border border-surface-border bg-surface shadow-(--shadow-chip)"
               chip={
                 <>
                   <ModeBadge mode={selected.mode} />
@@ -293,8 +294,5 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
 }
 
 function shortDate(time: number): string {
-  return new Date(time).toLocaleDateString(DATE_LOCALE, {
-    day: 'numeric',
-    month: 'short',
-  });
+  return new Date(time).toLocaleDateString(DATE_LOCALE, { day: 'numeric', month: 'short' });
 }

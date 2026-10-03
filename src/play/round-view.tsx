@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { Icon } from '@/components/ui/icon';
-import { Chip, DailyTargetChip, SpeedBolts } from '@/play/hud-chips';
+import { Chip, DailyTargetChip, hudStyles, SpeedBolts } from '@/play/hud-chips';
 import { ResponseButtons } from '@/play/response-buttons/buttons';
 import { playCopy } from '@/copy/play';
 import { TrialGrid } from '@/play/trial-grid';
@@ -11,6 +11,7 @@ import { speedOf, stimulusVisibleMs } from '@/game/rules';
 import type { GameEngineState } from '@/stores/round';
 import type { GameSettings, StreamId } from '@/game/types';
 import { STREAM_IDS } from '@/game/types';
+import { cn } from '@/lib/cn';
 import type { AppPrefs } from '@/lib/prefs';
 
 /**
@@ -65,21 +66,23 @@ export function RoundView({
       {/* The round fills the screen: the HUD and round progress at the top, the grid, and the answer
           buttons sharing whatever height is left, in thumb reach. */}
       <div className={`play-stage ${prefs.buttonLayout}${showHistory ? ' with-history' : ''}`}>
-        <div className="hud-row">
+        {/* Lined up with the grid's edges (the full width on phones), but never narrower than it needs to stay
+            on one line. */}
+        <div className={cn(hudStyles.row, 'w-(--stage-grid) min-w-max self-center max-[600px]:w-full')}>
           {/* Tutorial rounds don't count towards it. */}
           {!tutorial && <DailyTargetChip loaded={loaded} todayMs={todayMs} />}
           <Chip title={playCopy.hud.nLevel.chipTitle(n)}>
-            <span className="chip-icon-blue">
+            <span className="inline-flex text-accent">
               <Icon name="counter-clockwise" size={18} />
             </span>
-            <span className="chip-text">{n}</span>
+            <span className={cn(hudStyles.chipText)}>{n}</span>
           </Chip>
           <Chip title={playCopy.hud.speed.chipTitle(speedOf(shown).label)}>
             <SpeedBolts speed={speedOf(shown).id} />
           </Chip>
           <button
             type="button"
-            className="hud-icon-button"
+            className={cn(hudStyles.iconButton)}
             aria-label={state.paused ? 'Resume' : 'Pause'}
             title={state.paused ? 'Resume (Space)' : 'Pause (Space)'}
             onClick={onMain}
@@ -88,7 +91,7 @@ export function RoundView({
           </button>
           <button
             type="button"
-            className="hud-icon-button stop"
+            className={cn(hudStyles.iconButton, 'bg-orange-soft text-orange-ink')}
             aria-label="Stop"
             title="Stop (Esc)"
             onClick={stopRound}

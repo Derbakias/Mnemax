@@ -3,6 +3,22 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { DROPDOWN_EDGE_MARGIN, DROPDOWN_PANEL_GAP } from '@/config/ui';
 import { cn } from '@/lib/cn';
 
+/**
+ * A HUD chip's look: a grey pill with an icon and a short text in the code font. Sizes follow the window (full
+ * size from about 420px wide), so the Play HUD stays on one line even on a 320px phone. Play's chips that aren't
+ * dropdowns use it too (src/play/hud-chips.tsx).
+ */
+export const chipStyles = {
+  base: [
+    'inline-flex shrink-0 items-center gap-[clamp(3px,1vw,6px)] whitespace-nowrap',
+    'rounded-full bg-background-element px-[clamp(6px,2.4vw,16px)] py-[clamp(7px,2.2vw,9px)]',
+    // The code font, as t-code gives it, but at a size that grows with the window.
+    'font-mono font-medium text-[length:clamp(10.5px,3.3vw,14px)] leading-[1.3]',
+  ],
+  // Chips that do something when tapped: grey a shade darker under the mouse and while their panel is open.
+  interactive: ['enabled:cursor-pointer enabled:hover:bg-background-selected aria-expanded:bg-background-selected'],
+};
+
 const styles = {
   // Centred under the chip row, or opening upwards when there's more room above (data-above).
   popover: [
@@ -124,12 +140,13 @@ export function HudDropdown({
 
   return (
     <div className="contents" ref={rootRef}>
-      {/* The chip's look is the HUD's .hud-chip and .interactive rules in index.css, shared with chips that
-          aren't dropdowns (see src/play/hud-chips.tsx). */}
+      {/* `hud-chip` has no look of its own: it's the name the Play HUD row uses to find its chips (see
+          src/play/hud-chips.tsx). chipClassName comes last, so its classes replace the look's where both set
+          the same thing. */}
       <button
         ref={chipRef}
         type="button"
-        className={`hud-chip t-code interactive${chipClassName ? ` ${chipClassName}` : ''}`}
+        className={cn('hud-chip', chipStyles.base, chipStyles.interactive, chipClassName)}
         aria-label={label}
         aria-haspopup="dialog"
         aria-expanded={open}

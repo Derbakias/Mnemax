@@ -126,8 +126,8 @@ export type IconName = keyof typeof ICONS;
 /** Without `size`, the icon takes its size from CSS. */
 export function Icon({ name, size, color }: { name: IconName; size?: number; color?: string }) {
   return (
-    // `icon` has no look of its own any more: it's the name other CSS uses to size and colour icons in its
-    // own places (.response-button .icon, .hud-row .hud-chip .icon and more).
+    // `icon` has no look of its own any more: it's the name other code uses to size and colour icons in its
+    // own places (.response-button .icon, the Play HUD's chips in src/play/hud-chips.tsx, and more).
     <span
       className={cn('icon', styles.root)}
       aria-hidden
