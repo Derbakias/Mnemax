@@ -13,7 +13,7 @@ import { ProgressChart } from '@/stats/progress-chart';
 import { RoundHistoryList } from '@/components/rounds/round-history-list';
 import { Section } from '@/components/ui/section';
 import { StatTile } from '@/stats/stat-tile';
-import { AccuracyHeading, OutcomeHeading, StreamName } from '@/components/rounds/stream-table';
+import { AccuracyHeading, OutcomeHeading, StreamName, streamTableStyles } from '@/components/rounds/stream-table';
 import { ChartZoomActions } from '@/components/charts/uplot-chart';
 import { useChartZoom } from '@/components/charts/zoom';
 import type { RoundResult } from '@/game/types';
@@ -25,6 +25,7 @@ import { formatDuration } from '@/lib/format';
 import { clearRounds, loadRounds, onRoundsChanged } from '@/lib/storage';
 import { useSyncStore } from '@/stores/sync';
 import { accuracyColor, useTheme } from '@/lib/theme';
+import { cn } from '@/lib/cn';
 
 /** `onReady` fires once the saved rounds have loaded and the stats have been drawn with them. */
 export function StatsScreen({ onReady }: { onReady?: () => void }) {
@@ -213,8 +214,8 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
           />
         </div>
 
-        <div className="panel stream-table">
-          <div className="stream-table-row header t-code">
+        <div className={cn('panel', streamTableStyles.table)}>
+          <div className={cn(streamTableStyles.row, streamTableStyles.header)}>
             <span>Stream</span>
             <AccuracyHeading />
             <OutcomeHeading outcome="hit" label="Matched" />
@@ -223,7 +224,7 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
           </div>
           {streamAgg.map((a) =>
             a.roundsPlayed > 0 ? (
-              <div key={a.stream} className="stream-table-row">
+              <div key={a.stream} className={cn(streamTableStyles.row)}>
                 <StreamName stream={a.stream} />
                 <span className="t-code" style={{ color: accuracyColor(a.accuracy * 100, theme) }}>
                   {Math.round(a.accuracy * 100)}%
@@ -233,7 +234,7 @@ export function StatsScreen({ onReady }: { onReady?: () => void }) {
                 <Count className="t-code bad" value={a.falseAlarms} label="false matches" />
               </div>
             ) : (
-              <div key={a.stream} className="stream-table-row off">
+              <div key={a.stream} className={cn(streamTableStyles.row)} data-off>
                 <StreamName stream={a.stream} />
                 <span className="visually-hidden">not in this mode</span>
                 {[0, 1, 2, 3].map((i) => (

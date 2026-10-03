@@ -6,6 +6,27 @@ import { RoundSummaryCard } from './round-summary-card';
 import { roundsCopy } from '@/copy/rounds';
 import type { RoundResult } from '@/game/types';
 import { DATE_LOCALE } from '@/config/stats';
+import { cn } from '@/lib/cn';
+
+const styles = {
+  list: [
+    'self-stretch overflow-y-auto',
+    // A classic scrollbar with its own lane beside the rows (styling it turns off the overlay kind, which would
+    // be drawn over the results), and a little room between the two.
+    '[scrollbar-gutter:stable] pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent',
+    '[&::-webkit-scrollbar-thumb]:rounded-[4px] [&::-webkit-scrollbar-thumb]:bg-background-selected',
+    '[&::-webkit-scrollbar-thumb:hover]:bg-text-secondary',
+  ],
+  row: [
+    'group flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-1 py-3 text-left',
+    '[transition:background-color_0.15s] hover:bg-background-element',
+  ],
+  // Points down when closed and up when open.
+  chevron: [
+    'inline-flex text-text-secondary group-aria-expanded:transform-[rotate(180deg)]',
+    '[transition:transform_0.2s] motion-reduce:transition-none',
+  ],
+};
 
 interface RoundHistoryListProps {
   rounds: RoundResult[];
@@ -41,21 +62,21 @@ function RoundEntry({
   onToggle: (id: string) => void;
 }) {
   return (
-    <div className={expanded ? 'history-entry open' : 'history-entry'}>
-      <button type="button" className="history-row" aria-expanded={expanded} onClick={() => onToggle(round.id)}>
-        <span className="t-small history-row-title">
+    <div className="border-surface-border not-first:border-t">
+      <button type="button" className={cn(styles.row)} aria-expanded={expanded} onClick={() => onToggle(round.id)}>
+        <span className="t-small min-w-0">
           {formatTimestamp(round.finishedAt)} · N={round.settings.nLevel}
           {round.stopped && <span className="secondary"> {roundsCopy.history.stoppedAt(round.trials.length)}</span>}
         </span>
-        <span className="history-row-end">
+        <span className="inline-flex flex-none items-center gap-2">
           <RoundSummaryCard result={round} compact />
-          <span className="history-chevron">
+          <span className={cn(styles.chevron)}>
             <Icon name="chevron-down" size={16} />
           </span>
         </span>
       </button>
       {expanded && (
-        <div className="history-detail">
+        <div className="pb-3">
           <RoundDetailTable result={round} legend={false} />
         </div>
       )}
@@ -80,7 +101,7 @@ export const RoundHistoryList = memo(function RoundHistoryList({
   return (
     <>
       {legend && <OutcomeLegend inline />}
-      <div className="history-list" style={scrollHeight ? { maxHeight: scrollHeight } : undefined}>
+      <div className={cn(styles.list)} style={scrollHeight ? { maxHeight: scrollHeight } : undefined}>
         {rounds.map((round) => (
           <RoundEntry key={round.id} round={round} expanded={round.id === openId} onToggle={toggle} />
         ))}

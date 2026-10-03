@@ -73,6 +73,8 @@
   --color-surface: #ffffff;
   --color-surface-border: rgba(15, 23, 42, 0.07);
   --color-accent-ink: #1565c0;
+  /* The line under a round's trial table headings: a see-through grey, so the same in dark mode. */
+  --color-table-rule: #88888855;
   --color-success: #43a047;
   --color-warning: #fb8c00;
   --color-danger: #e53935;
@@ -454,231 +456,6 @@
   gap: 10px;
 }
 
-/* ---------- Round results ---------- */
-
-.summary-card {
-  display: flex;
-  flex-direction: column;
-  align-self: stretch;
-  gap: 8px;
-  padding: 14px;
-}
-/* The last round's stream table: five number columns, so a little narrower, and its headings are symbols
-   only until there's room for the words too. It sits in the card, lined up with the card's edges. */
-.stream-table.five {
-  --stat-count: 5;
-  --stat-col: 44px;
-  padding: 0;
-}
-.stream-table.five .stream-table-row {
-  padding-inline: 0;
-}
-/* Wide enough for "〇 No match" on one line. */
-@media (min-width: 600px) {
-  .stream-table.five {
-    --stat-col: 72px;
-  }
-}
-@media (max-width: 599.98px) {
-  .stream-table.five .stream-table-row.header .heading-long {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-}
-@media (max-width: 399.98px) {
-  .stream-table.five {
-    --stat-col: 36px;
-  }
-}
-/* The smallest phones: the stream icons alone, which are the answer buttons' own (the names stay for
-   screen readers). */
-@media (max-width: 359.98px) {
-  .stream-table.five .stream-name-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-}
-.overall-row {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.detail-table {
-  display: flex;
-  flex-direction: column;
-  align-self: stretch;
-  gap: 8px;
-}
-.h-scroll {
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.h-scroll::-webkit-scrollbar {
-  display: none;
-}
-.detail-table table {
-  /* Fills the width; the column widths below are minimums (narrow screens scroll sideways). */
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  white-space: nowrap;
-}
-.detail-table th {
-  font-weight: 700;
-  padding: 5px 0;
-  border-bottom: 1px solid #88888855;
-}
-/* One height for every row, with or without a reaction time under the symbol, all centred. */
-.detail-table td {
-  height: 36px;
-  padding: 2px 0;
-  vertical-align: middle;
-}
-.detail-table tbody tr:nth-child(even) td {
-  background: var(--color-background-element);
-}
-.detail-table tbody tr:nth-child(even) td:first-child {
-  border-radius: 6px 0 0 6px;
-}
-.detail-table tbody tr:nth-child(even) td:last-child {
-  border-radius: 0 6px 6px 0;
-}
-.detail-table .c-idx {
-  width: 38px;
-  padding-left: 4px;
-}
-/* A stream's column: its icon and short name over cells of what the trial showed beside how it was answered. */
-.detail-table .c-stream {
-  width: 64px;
-}
-.detail-heading {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.detail-table .trial-cell {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 16px;
-}
-.detail-table .rt {
-  font-size: 9px;
-  line-height: 11px;
-  height: 11px;
-  opacity: 0.75;
-}
-.table-swatch {
-  display: inline-block;
-  vertical-align: middle;
-  width: 22px;
-  height: 14px;
-  border-radius: 4px;
-}
-.legend-list {
-  display: flex;
-  flex-direction: column;
-  align-self: flex-start;
-  gap: 8px;
-}
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.legend-list.inline {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 14px;
-  row-gap: 4px;
-}
-.legend-list.inline .legend-note {
-  flex-basis: 100%;
-}
-
-.history-list {
-  align-self: stretch;
-  overflow-y: auto;
-  /* A classic scrollbar with its own lane beside the rows (styling it turns off the overlay kind, which
-     would be drawn over the results), and a little room between the two. */
-  scrollbar-gutter: stable;
-  padding-right: 8px;
-}
-.history-list::-webkit-scrollbar {
-  width: 8px;
-}
-.history-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-.history-list::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background: var(--color-background-selected);
-}
-.history-list::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
-}
-.history-entry + .history-entry {
-  border-top: 1px solid var(--color-surface-border);
-}
-.history-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 4px;
-  border-radius: 8px;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-@media (hover: hover) {
-  .history-row:hover {
-    background: var(--color-background-element);
-  }
-}
-.history-row-title {
-  min-width: 0;
-}
-.history-row-end {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 8px;
-}
-/* Points down when closed and up when open. */
-.history-chevron {
-  display: inline-flex;
-  color: var(--color-text-secondary);
-  transition: transform 0.2s;
-}
-.history-entry.open .history-chevron {
-  transform: rotate(180deg);
-}
-@media (prefers-reduced-motion: reduce) {
-  .history-chevron {
-    transition: none;
-  }
-}
-.history-detail {
-  padding-bottom: 12px;
-}
-
 /* ---------- Stats ---------- */
 
 /* The startup screen: a big loader over the whole app, fading out once it's ready. */
@@ -808,28 +585,24 @@
   gap: 2px;
   padding: 6px;
 }
-/* Every number column in the modes and stream tables is this wide, so the two tables line up alike. */
-.mode-table,
-.stream-table {
+/* Every number column in the modes table is this wide, as in the stream table under By mode
+   (src/components/rounds/stream-table.tsx), so the two tables line up alike. */
+.mode-table {
   --stat-col: 64px;
 }
 @media (max-width: 479.98px) {
-  .mode-table,
-  .stream-table {
+  .mode-table {
     --stat-col: 56px;
   }
 }
-/* Small phones: the stream table's headings shrink to their symbols (below), so the columns can too, leaving
-   the stream names room. */
+/* Small phones: narrower columns, as the stream table's, whose headings shrink to their symbols there. */
 @media (max-width: 399.98px) {
-  .mode-table,
-  .stream-table {
+  .mode-table {
     --stat-col: 42px;
   }
 }
 /* Column headings a size down, so "Accuracy" fits a narrow column. */
-.mode-row.header,
-.stream-table-row.header {
+.mode-row.header {
   font-size: 11px;
 }
 .mode-row {
@@ -993,30 +766,6 @@
   }
 }
 
-.stream-table {
-  display: flex;
-  flex-direction: column;
-  padding: 6px;
-}
-.stream-table-row {
-  display: grid;
-  /* Stream | Accuracy | Matched | Missed | False (and No match, in the last round's table). The name column
-     never grows past its share (a long name is cut short instead), so the numbers line up from row to row:
-     each row is its own grid. */
-  grid-template-columns: minmax(0, 1fr) repeat(var(--stat-count, 4), var(--stat-col));
-  align-items: center;
-  gap: 6px;
-  padding: 8px;
-  text-align: center;
-}
-/* Every stream has a row, so the table keeps its height from mode to mode; the ones the mode doesn't use are
-   dashed out, in grey (not faded, which left the name too faint to read). */
-.stream-table-row + .stream-table-row:not(.header) {
-  border-top: 1px solid var(--color-surface-border);
-}
-.stream-table-row.off {
-  color: var(--color-text-secondary);
-}
 /* A shortened count (1.2K): hovering or tapping it opens the exact number under it, growing to the left
    (these counts sit in the right-hand columns). */
 .count-tip {
@@ -1039,68 +788,6 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   color: var(--color-text);
   white-space: nowrap;
-}
-.outcome-heading {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  white-space: nowrap;
-}
-/* The headings' symbols: 14px icons, bigger than the headings' small type so they read at a glance. All the
-   same even size, so centred in their columns they land on whole pixels and stay sharp, and share a middle.
-   The accuracy pie is blue: green and red mean good and bad here, and accuracy is neither. */
-.outcome-mark {
-  display: inline-flex;
-}
-.outcome-mark.accuracy {
-  color: var(--color-accent);
-}
-.stream-table-row > :first-child {
-  justify-self: start;
-}
-.stream-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 100%;
-  min-width: 0;
-}
-.stream-name-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* Grey words rather than a faded row, so the symbols keep their full colour. */
-.stream-table-row.header {
-  color: var(--color-text-secondary);
-  padding-block: 6px;
-}
-/* Small phones: the stream names need the room. */
-@media (max-width: 399.98px) {
-  .stream-table-row {
-    column-gap: 4px;
-  }
-}
-@media (max-width: 339.98px) {
-  .stream-table-row {
-    padding-inline: 4px;
-  }
-  .stream-name {
-    gap: 6px;
-  }
-}
-/* Small phones: the headings shrink to their symbols (a pie chart for accuracy, ✓ ✕ ■ for the outcomes). The
-   words stay for screen readers. */
-@media (max-width: 399.98px) {
-  .stream-table-row.header .heading-long {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
 }
 
 .text-button {
