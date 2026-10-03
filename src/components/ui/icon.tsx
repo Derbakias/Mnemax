@@ -27,6 +27,17 @@ import {
   volumeHighOutline,
 } from 'ionicons/icons';
 
+import { cn } from '@/lib/cn';
+
+const styles = {
+  root: [
+    'inline-flex shrink-0',
+    // Same rules the <ion-icon> web component applies to its SVGs.
+    '[&_svg]:size-full [&_svg]:fill-current [&_svg]:stroke-current',
+    '[&_.ionicon-fill-none]:fill-none [&_.ionicon-stroke-width]:stroke-[32px]',
+  ],
+};
+
 // ionicons ships each icon as an inline-SVG data URI; strip the prefix so the SVG
 // can be inlined and pick up `currentColor` like @expo/vector-icons did.
 const inline = (uri: string) => uri.slice(uri.indexOf(',') + 1);
@@ -49,8 +60,8 @@ const PIE =
 
 // The stream table's outcome headings (✓ ✕ ■ as in the round tables' key), drawn on a 14px grid to be shown
 // at 14px, pixel for pixel: as font characters they were centred at fractions of a pixel and came out soft.
-// Fill and stroke are set on the shapes themselves, over the fill and stroke `.icon svg` gives every icon
-// (the tick came out filled in, the square outlined).
+// Fill and stroke are set on the shapes themselves, over the fill and stroke every icon's SVG gets (styles.root
+// above): without that, the tick came out filled in and the square outlined.
 const OUTCOME_HIT =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><path d="M2 7.5l3.5 3.5L12 3.5" fill="none" ' +
   'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -115,8 +126,10 @@ export type IconName = keyof typeof ICONS;
 /** Without `size`, the icon takes its size from CSS. */
 export function Icon({ name, size, color }: { name: IconName; size?: number; color?: string }) {
   return (
+    // `icon` has no look of its own any more: it's the name other CSS uses to size and colour icons in its
+    // own places (.response-button .icon, .hud-row .hud-chip .icon and more).
     <span
-      className="icon"
+      className={cn('icon', styles.root)}
       aria-hidden
       style={{ width: size, height: size, color }}
       dangerouslySetInnerHTML={{ __html: ICONS[name] }}

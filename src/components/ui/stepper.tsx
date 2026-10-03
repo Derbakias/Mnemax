@@ -1,4 +1,14 @@
+import { cn } from '@/lib/cn';
+
 import { Icon } from './icon';
+
+const styles = {
+  button: [
+    'flex size-11 items-center justify-center rounded-xl',
+    'border border-background-selected bg-background-element',
+    'disabled:opacity-35',
+  ],
+};
 
 interface StepperProps {
   value: number;
@@ -14,20 +24,20 @@ export function Stepper({ value, min, max, step = 1, disabled = false, onChange 
   const canIncrement = !disabled && value + step <= max;
 
   return (
-    <div className={disabled ? 'stepper disabled' : 'stepper'}>
+    <div className="flex items-center gap-4 data-[disabled=true]:opacity-45" data-disabled={disabled}>
       <button
         type="button"
-        className="stepper-button"
+        className={cn(styles.button)}
         aria-label="Decrease"
         disabled={!canDecrement}
         onClick={() => canDecrement && onChange(value - step)}
       >
         <Icon name="remove" size={20} />
       </button>
-      <span className="t-subtitle stepper-value">{value}</span>
+      <span className="t-subtitle min-w-14 text-center">{value}</span>
       <button
         type="button"
-        className="stepper-button"
+        className={cn(styles.button)}
         aria-label="Increase"
         disabled={!canIncrement}
         onClick={() => canIncrement && onChange(value + step)}

@@ -13,12 +13,22 @@ export function fittedRange(step: number, floor: number, ceiling = Infinity): uP
   };
 }
 
-/** Adds an alpha channel to a #rrggbb color. */
+/** Gives a hex colour see-through-ness (alpha 0 to 1). The colours come from the CSS, where the build may write
+ *  #ffaa00 short as #fa0, so the short forms are written out in full first. A colour that has its own alpha
+ *  gets this one instead. */
 export function withAlpha(hex: string, alpha: number): string {
+  let digits = hex.trim().replace(/^#/, '');
+  if (digits.length === 3 || digits.length === 4) {
+    digits = [...digits].map((d) => d + d).join('');
+  }
+  if (!/^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(digits)) {
+    // Not a hex colour (rgb(), a name): left as it is rather than broken.
+    return hex;
+  }
   const a = Math.round(alpha * 255)
     .toString(16)
     .padStart(2, '0');
-  return `${hex}${a}`;
+  return `#${digits.slice(0, 6)}${a}`;
 }
 
 /** A series drawn as dots only (one per round); smaller once there are many, so they don't merge into a band. */
